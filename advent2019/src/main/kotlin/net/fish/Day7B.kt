@@ -1,6 +1,6 @@
 package net.fish
 
-import java.lang.Integer.max
+import java.lang.Long.max
 
 /*
 It's no good - in this configuration, the amplifiers can't generate a large enough output signal to produce the thrust
@@ -53,17 +53,17 @@ class Day7B {
         @JvmStatic
         fun main(args: Array<String>) {
             val day7 = Day7B()
-            val memoryInitialState = Helpers.loadResourceCSVAsList("/day7-input.txt")
-            val phaseSequences = permute(listOf(5, 6, 7, 8, 9))
-            val highestThrust = phaseSequences.fold(0) { highestThrust, sequence ->
-                val thrust: Int = day7.calculateThrust(memoryInitialState, sequence)
+            val memoryInitialState = Helpers.loadResourceCSVAsListOfLongs("/day7-input.txt")
+            val phaseSequences = permute(listOf(5L, 6L, 7L, 8L, 9L))
+            val highestThrust = phaseSequences.fold(0L) { highestThrust, sequence ->
+                val thrust = day7.calculateThrust(memoryInitialState, sequence)
                 max(highestThrust, thrust)
             }
             println("Highest thrust: $highestThrust") // 70602018
         }
     }
 
-    fun calculateThrust(memoryInitialState: List<Int>, sequence: List<Int>): Int {
+    fun calculateThrust(memoryInitialState: List<Long>, sequence: List<Long>): Long {
         var machineA = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[0], 0)).runProgram()
         var machineB = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[1], machineA.takeOutput())).runProgram()
         var machineC = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[2], machineB.takeOutput())).runProgram()

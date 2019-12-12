@@ -39,7 +39,7 @@ What is 100 * noun + verb? (For example, if noun=12 and verb=2, the answer would
 object Day2B {
     @JvmStatic
     fun main(args: Array<String>) {
-        val loadedMemory = Helpers.loadResourceCSVAsList("/day2-input.txt")
+        val loadedMemory = Helpers.loadResourceCSVAsListOfInts("/day2-input.txt")
         for (noun in 0..99) {
             for (verb in 0..99) {
                 val initialMemory = loadedMemory.toMutableList()

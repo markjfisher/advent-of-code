@@ -1,6 +1,7 @@
 package net.fish
 
 import net.fish.Helpers.loadResourceLinesAsInts
+import net.fish.Helpers.loadResourceLinesAsLongs
 
 /*
 During the second Go / No Go poll, the Elf in charge of the Rocket Equation Double-Checker stops the launch sequence.

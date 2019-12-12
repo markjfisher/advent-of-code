@@ -1,6 +1,6 @@
 package net.fish
 
-import java.lang.Integer.max
+import java.lang.Long.max
 
 /*
 Based on the navigational maps, you're going to need to send more power to your ship's thrusters to reach Santa in time.
@@ -68,17 +68,17 @@ class Day7A {
         @JvmStatic
         fun main(args: Array<String>) {
             val day7 = Day7A()
-            val memoryInitialState = Helpers.loadResourceCSVAsList("/day7-input.txt")
-            val phaseSequences = permute(listOf(0, 1, 2, 3, 4))
-            val highestThrust = phaseSequences.fold(0) { highestThrust, sequence ->
-                val thrust: Int = day7.calculateThrust(memoryInitialState, sequence)
+            val memoryInitialState = Helpers.loadResourceCSVAsListOfLongs("/day7-input.txt")
+            val phaseSequences = permute(listOf(0L, 1L, 2L, 3L, 4L))
+            val highestThrust = phaseSequences.fold(0L) { highestThrust, sequence ->
+                val thrust = day7.calculateThrust(memoryInitialState, sequence)
                 max(highestThrust, thrust)
             }
             println("Highest thrust: $highestThrust") // 79723
         }
     }
 
-    fun calculateThrust(memoryInitialState: List<Int>, sequence: List<Int>): Int {
+    fun calculateThrust(memoryInitialState: List<Long>, sequence: List<Long>): Long {
         val machineA = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[0], 0)).runProgram()
         val machineB = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[1], machineA.outputs.first())).runProgram()
         val machineC = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[2], machineB.outputs.first())).runProgram()

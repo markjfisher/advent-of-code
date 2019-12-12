@@ -23,11 +23,19 @@ fun <T> permute(input: List<T>): List<List<T>> {
 }
 
 object Helpers {
+    fun loadResourceLinesAsLongs(path: String): List<Long> {
+        return String(resourceStream(path).readBytes()).lines().map { it.toLong() }
+    }
+
     fun loadResourceLinesAsInts(path: String): List<Int> {
         return String(resourceStream(path).readBytes()).lines().map { it.toInt() }
     }
 
-    fun loadResourceCSVAsList(path: String): List<Int> {
+    fun loadResourceCSVAsListOfLongs(path: String): List<Long> {
+        return String(resourceStream(path).readBytes()).split(",").map { it.toLong() }
+    }
+
+    fun loadResourceCSVAsListOfInts(path: String): List<Int> {
         return String(resourceStream(path).readBytes()).split(",").map { it.toInt() }
     }
 

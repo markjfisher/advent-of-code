@@ -1,6 +1,7 @@
 package net.fish
 
 import net.fish.Helpers.loadResourceLinesAsInts
+import net.fish.Helpers.loadResourceLinesAsLongs
 
 /*
 Fuel required to launch a given module is based on its mass. Specifically, to find the fuel

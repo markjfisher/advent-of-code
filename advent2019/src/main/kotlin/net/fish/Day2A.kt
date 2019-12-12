@@ -72,7 +72,7 @@ What value is left at position 0 after the program halts?
 object Day2A {
     @JvmStatic
     fun main(args: Array<String>) {
-        val loadedMemory = Helpers.loadResourceCSVAsList("/day2-input.txt").toMutableList()
+        val loadedMemory = Helpers.loadResourceCSVAsListOfInts("/day2-input.txt").toMutableList()
         loadedMemory[1] = 12
         loadedMemory[2] = 2
         val machine = Day2Machine(memory = loadedMemory, instructionPointer = 0).runProgram()

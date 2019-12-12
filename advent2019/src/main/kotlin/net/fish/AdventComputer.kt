@@ -1,30 +1,32 @@
 package net.fish
 
+import net.fish.ParamMode.*
 import java.lang.Exception
 
 data class AdventComputer (
-    var memory: MutableList<Int>,
-    var inputs: List<Int> = emptyList()
+    var memory: MutableList<Long>,
+    var inputs: List<Long> = emptyList()
 ) {
     private var instructionPointer: Int = 0
-    private var currentInput: Int = 0
+    private var relativeBase: Int = 0
+    private var currentInput: Long = 0
     private var waitingInput: Boolean = false
     private lateinit var currentInstruction: Instruction
 
-    var outputs = mutableListOf<Int>()
+    var outputs = mutableListOf<Long>()
     var running: Boolean = true
 
-    fun takeOutput(): Int {
+    fun takeOutput(): Long {
         return outputs.removeAt(0)
     }
 
     private fun add() {
-        memory[memory[instructionPointer + 3]] = param1Value() + param2Value()
+        memory[memory[instructionPointer + 3].toInt()] = param1Value() + param2Value()
         instructionPointer += 4
     }
 
     private fun mult() {
-        memory[memory[instructionPointer + 3]] = param1Value() * param2Value()
+        memory[memory[instructionPointer + 3].toInt()] = param1Value() * param2Value()
         instructionPointer += 4
     }
 
@@ -42,52 +44,58 @@ data class AdventComputer (
         waitingInput = false
         currentInput = inputs.first()
         inputs = inputs.drop(1)
-        memory[memory[instructionPointer + 1]] = currentInput
+        memory[memory[instructionPointer + 1].toInt()] = currentInput
         instructionPointer += 2
     }
 
     private fun jumpIfTrue() {
-        if (param1Value() != 0) {
-            instructionPointer = param2Value()
+        if (param1Value() != 0L) {
+            instructionPointer = param2Value().toInt()
         } else {
             instructionPointer += 3
         }
     }
 
     private fun jumpIfFalse() {
-        if (param1Value() == 0) {
-            instructionPointer = param2Value()
+        if (param1Value() == 0L) {
+            instructionPointer = param2Value().toInt()
         } else {
             instructionPointer += 3
         }
     }
 
     private fun isLessThan() {
-        memory[memory[instructionPointer + 3]] = if (param1Value() < param2Value()) 1 else 0
+        memory[memory[instructionPointer + 3].toInt()] = if (param1Value() < param2Value()) 1 else 0
         instructionPointer += 4
     }
 
     private fun doEquals() {
-        memory[memory[instructionPointer + 3]] = if (param1Value() == param2Value()) 1 else 0
+        memory[memory[instructionPointer + 3].toInt()] = if (param1Value() == param2Value()) 1 else 0
         instructionPointer += 4
     }
 
-    private fun param1Value(): Int {
-        return if (currentInstruction.param1IsImmediate) memory[instructionPointer + 1] else memory[memory[instructionPointer + 1]]
+    private fun param1Value(): Long {
+        return paramAt(0)
     }
 
-    private fun param2Value(): Int {
-        return if (currentInstruction.param2IsImmediate) memory[instructionPointer + 2] else memory[memory[instructionPointer + 2]]
+    private fun param2Value(): Long {
+        return paramAt(1)
     }
 
-    private fun param3Value(): Int {
-        return if (currentInstruction.param3IsImmediate) memory[instructionPointer + 3] else memory[memory[instructionPointer + 3]]
+    private fun paramAt(i: Int): Long {
+        // 0 based index, param1 = 0, param2 = 1, ...
+        val pos = instructionPointer + i + 1
+        return when(currentInstruction.modes[i]) {
+            POSITIONAL -> memory[memory[pos].toInt()]
+            IMMEDIATE -> memory[pos]
+            RELATIVE -> memory[pos + relativeBase]
+        }
     }
 
     fun runProgram(): AdventComputer {
         if (waitingInput) input()
         while(running && !waitingInput) {
-            currentInstruction = Instruction.from(memory[instructionPointer])
+            currentInstruction = Instruction.from(memory[instructionPointer].toInt())
             when (val opCode = currentInstruction.opCode) {
                 1 -> add()
                 2 -> mult()
@@ -107,19 +115,23 @@ data class AdventComputer (
     class BadMachine(message: String): Exception(message)
 }
 
+enum class ParamMode(val value: Int) {
+    POSITIONAL(0), IMMEDIATE(1), RELATIVE(2);
+
+    companion object {
+        fun from(v: Int) = values().find { it.value == v } ?: throw Exception("Unknown value $v")
+    }
+}
+
 class Instruction (
-    val param1IsImmediate: Boolean,
-    val param2IsImmediate: Boolean,
-    val param3IsImmediate: Boolean,
+    val modes: List<ParamMode>,
     val opCode: Int
 ){
     companion object {
         fun from(instruction: Int): Instruction {
             val digits = convertNumberToListOf5Digits(instruction)
             return Instruction(
-                param1IsImmediate = digits[2] == 1,
-                param2IsImmediate = digits[1] == 1,
-                param3IsImmediate = digits[0] == 1,
+                modes = listOf(ParamMode.from(digits[2]), ParamMode.from(digits[1]), ParamMode.from(digits[0])),
                 opCode = instruction % 100
             )
         }

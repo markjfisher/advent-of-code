@@ -83,7 +83,7 @@ class Day5A {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val loadedMemory = Helpers.loadResourceCSVAsList("/day5-input.txt")
+            val loadedMemory = Helpers.loadResourceCSVAsListOfLongs("/day5-input.txt")
             val machine = AdventComputer(memory = loadedMemory.toMutableList(), inputs = listOf(1))
             machine.runProgram() // 9025675
         }

@@ -1,13 +1,13 @@
 package net.fish
 
-import net.fish.Helpers.loadResourceLinesAsInts
+import net.fish.Helpers.loadResourceLinesAsLongs
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 internal class Day1ATest {
     @Test
     fun `can load resources`() {
-        assertThat(loadResourceLinesAsInts("/test-masses.txt")).containsExactly(1,2,3,100,5000)
+        assertThat(loadResourceLinesAsLongs("/test-masses.txt")).containsExactly(1,2,3,100,5000)
     }
 
     @Test
