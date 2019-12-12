@@ -79,11 +79,11 @@ class Day7A {
     }
 
     fun calculateThrust(memoryInitialState: List<Long>, sequence: List<Long>): Long {
-        val machineA = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[0], 0)).runProgram()
-        val machineB = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[1], machineA.outputs.first())).runProgram()
-        val machineC = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[2], machineB.outputs.first())).runProgram()
-        val machineD = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[3], machineC.outputs.first())).runProgram()
-        val machineE = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[4], machineD.outputs.first())).runProgram()
+        val machineA = AdventComputer(bootMemory = memoryInitialState.toMutableList(), inputs = listOf(sequence[0], 0)).runProgram()
+        val machineB = AdventComputer(bootMemory = memoryInitialState.toMutableList(), inputs = listOf(sequence[1], machineA.outputs.first())).runProgram()
+        val machineC = AdventComputer(bootMemory = memoryInitialState.toMutableList(), inputs = listOf(sequence[2], machineB.outputs.first())).runProgram()
+        val machineD = AdventComputer(bootMemory = memoryInitialState.toMutableList(), inputs = listOf(sequence[3], machineC.outputs.first())).runProgram()
+        val machineE = AdventComputer(bootMemory = memoryInitialState.toMutableList(), inputs = listOf(sequence[4], machineD.outputs.first())).runProgram()
         return machineE.outputs[0]
     }
 }

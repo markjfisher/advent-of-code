@@ -53,4 +53,12 @@ Once your Intcode computer is fully functional, the BOOST program should report 
 test mode; it should only output a single value, the BOOST keycode. What BOOST keycode does it produce?
  */
 class Day9A {
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val bootMemory = Helpers.loadResourceCSVAsListOfLongs("/day9-input.txt")
+            val computer = AdventComputer(bootMemory = bootMemory.toMutableList(), inputs = listOf(1)).runProgram()
+            println(computer.outputs) // 4261108180
+        }
+    }
 }

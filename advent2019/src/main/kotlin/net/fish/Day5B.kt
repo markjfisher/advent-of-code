@@ -50,7 +50,7 @@ class Day5B {
         @JvmStatic
         fun main(args: Array<String>) {
             val loadedMemory = Helpers.loadResourceCSVAsListOfLongs("/day5-input.txt")
-            val machine = AdventComputer(memory = loadedMemory.toMutableList(), inputs = listOf(5)).runProgram()
+            val machine = AdventComputer(bootMemory = loadedMemory.toMutableList(), inputs = listOf(5)).runProgram()
             println(machine.takeOutput()) // 11981754
         }
     }

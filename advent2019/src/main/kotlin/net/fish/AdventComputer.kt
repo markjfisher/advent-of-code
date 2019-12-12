@@ -4,36 +4,43 @@ import net.fish.ParamMode.*
 import java.lang.Exception
 
 data class AdventComputer (
-    var memory: MutableList<Long>,
+    var bootMemory: MutableList<Long>,
     var inputs: List<Long> = emptyList()
 ) {
-    private var instructionPointer: Int = 0
-    private var relativeBase: Int = 0
+    private var mem: MutableList<Long> = LongArray(65536) { 0L }.toMutableList()
+    private var pc: Int = 0
+    private var base: Int = 0
     private var currentInput: Long = 0
     private var waitingInput: Boolean = false
-    private lateinit var currentInstruction: Instruction
+    private lateinit var instruction: Instruction
 
     var outputs = mutableListOf<Long>()
     var running: Boolean = true
+
+    init {
+        bootMemory.forEachIndexed { index, l -> mem[index] = l }
+    }
+
+    fun memoryAt(location: Int): Long = mem[location]
 
     fun takeOutput(): Long {
         return outputs.removeAt(0)
     }
 
     private fun add() {
-        memory[memory[instructionPointer + 3].toInt()] = param1Value() + param2Value()
-        instructionPointer += 4
+        set(get(1) + get(2), 3)
+        pc += 4
     }
 
     private fun mult() {
-        memory[memory[instructionPointer + 3].toInt()] = param1Value() * param2Value()
-        instructionPointer += 4
+        set(get(1) * get(2), 3)
+        pc += 4
     }
 
     private fun output() {
-        val output = param1Value()
+        val output = get(1)
         outputs.add(output)
-        instructionPointer += 2
+        pc += 2
     }
 
     private fun input() {
@@ -44,59 +51,62 @@ data class AdventComputer (
         waitingInput = false
         currentInput = inputs.first()
         inputs = inputs.drop(1)
-        memory[memory[instructionPointer + 1].toInt()] = currentInput
-        instructionPointer += 2
+        set(currentInput, 1)
+        pc += 2
     }
 
     private fun jumpIfTrue() {
-        if (param1Value() != 0L) {
-            instructionPointer = param2Value().toInt()
+        if (get(1) != 0L) {
+            pc = get(2).toInt()
         } else {
-            instructionPointer += 3
+            pc += 3
         }
     }
 
     private fun jumpIfFalse() {
-        if (param1Value() == 0L) {
-            instructionPointer = param2Value().toInt()
+        if (get(1) == 0L) {
+            pc = get(2).toInt()
         } else {
-            instructionPointer += 3
+            pc += 3
         }
     }
 
     private fun isLessThan() {
-        memory[memory[instructionPointer + 3].toInt()] = if (param1Value() < param2Value()) 1 else 0
-        instructionPointer += 4
+        set(if (get(1) < get(2)) 1 else 0, 3)
+        pc += 4
     }
 
     private fun doEquals() {
-        memory[memory[instructionPointer + 3].toInt()] = if (param1Value() == param2Value()) 1 else 0
-        instructionPointer += 4
+        set(if (get(1) == get(2)) 1 else 0, 3)
+        pc += 4
     }
 
-    private fun param1Value(): Long {
-        return paramAt(0)
+    private fun changeRelativeBase() {
+        base += get(1).toInt()
+        pc += 2
     }
 
-    private fun param2Value(): Long {
-        return paramAt(1)
+    private fun get(offset: Int): Long {
+        val pos = pc + offset
+        return when(instruction.modes[offset - 1]) {
+            POSITIONAL -> mem[mem[pos].toInt()]
+            IMMEDIATE -> mem[pos]
+            RELATIVE -> mem[mem[pos].toInt() + base]
+        }
     }
 
-    private fun paramAt(i: Int): Long {
-        // 0 based index, param1 = 0, param2 = 1, ...
-        val pos = instructionPointer + i + 1
-        return when(currentInstruction.modes[i]) {
-            POSITIONAL -> memory[memory[pos].toInt()]
-            IMMEDIATE -> memory[pos]
-            RELATIVE -> memory[pos + relativeBase]
+    private fun set(v: Long, offset: Int) {
+        when(instruction.modes[offset - 1]) {
+            RELATIVE -> mem[base + mem[pc + offset].toInt()] = v
+            else -> mem[mem[pc + offset].toInt()] = v
         }
     }
 
     fun runProgram(): AdventComputer {
         if (waitingInput) input()
         while(running && !waitingInput) {
-            currentInstruction = Instruction.from(memory[instructionPointer].toInt())
-            when (val opCode = currentInstruction.opCode) {
+            instruction = Instruction.from(mem[pc].toInt())
+            when (val opCode = instruction.opCode) {
                 1 -> add()
                 2 -> mult()
                 3 -> input()
@@ -105,6 +115,7 @@ data class AdventComputer (
                 6 -> jumpIfFalse()
                 7 -> isLessThan()
                 8 -> doEquals()
+                9 -> changeRelativeBase()
                 99 -> running = false
                 else -> throw BadMachine("Got opCode: $opCode in machine: $this")
             }

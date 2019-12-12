@@ -64,11 +64,11 @@ class Day7B {
     }
 
     fun calculateThrust(memoryInitialState: List<Long>, sequence: List<Long>): Long {
-        var machineA = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[0], 0)).runProgram()
-        var machineB = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[1], machineA.takeOutput())).runProgram()
-        var machineC = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[2], machineB.takeOutput())).runProgram()
-        var machineD = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[3], machineC.takeOutput())).runProgram()
-        var machineE = AdventComputer(memory = memoryInitialState.toMutableList(), inputs = listOf(sequence[4], machineD.takeOutput())).runProgram()
+        var machineA = AdventComputer(bootMemory = memoryInitialState.toMutableList(), inputs = listOf(sequence[0], 0)).runProgram()
+        var machineB = AdventComputer(bootMemory = memoryInitialState.toMutableList(), inputs = listOf(sequence[1], machineA.takeOutput())).runProgram()
+        var machineC = AdventComputer(bootMemory = memoryInitialState.toMutableList(), inputs = listOf(sequence[2], machineB.takeOutput())).runProgram()
+        var machineD = AdventComputer(bootMemory = memoryInitialState.toMutableList(), inputs = listOf(sequence[3], machineC.takeOutput())).runProgram()
+        var machineE = AdventComputer(bootMemory = memoryInitialState.toMutableList(), inputs = listOf(sequence[4], machineD.takeOutput())).runProgram()
         var stillRunning = listOf(machineA, machineB, machineC, machineD, machineE).any { it.running }
         while(stillRunning) {
             machineA.inputs = listOf(machineE.takeOutput())
