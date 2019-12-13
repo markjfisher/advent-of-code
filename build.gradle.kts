@@ -10,7 +10,7 @@ tasks {
 }
 
 defaultTasks(
-    ":advent2019:clean", ":advent2019:build"
+    ":advents:clean", ":advents:build"
 )
 
 allprojects {

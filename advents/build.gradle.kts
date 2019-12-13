@@ -42,6 +42,11 @@ dependencies {
 }
 
 tasks {
+    register("advent2019", JavaExec::class) {
+        main = "net.fish.y2019.AdventOfCode2019"
+        classpath = sourceSets["main"].runtimeClasspath
+    }
+
     named<KotlinCompile>("compileKotlin") {
         kotlinOptions {
             jvmTarget = "1.8"
@@ -63,26 +68,4 @@ tasks {
     named<Test>("test") {
         useJUnitPlatform()
     }
-
-    named<Jar>("jar") {
-        archiveBaseName.set(this@Build_gradle.archiveBaseName)
-    }
-
-    register<Jar>("sourcesJar") {
-        from(sourceSets.main.get().allSource)
-        archiveClassifier.set("sources")
-    }
-
-    register<Jar>("javadocJar") {
-        from(javadoc)
-        archiveClassifier.set("javadoc")
-    }
-
-    javadoc {
-        if (JavaVersion.current().isJava9Compatible) {
-            (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
-        }
-    }
-
 }
-

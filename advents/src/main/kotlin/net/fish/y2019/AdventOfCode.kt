@@ -1,3 +1,4 @@
+@file:JvmName("AdventOfCode2019")
 package net.fish.y2019
 
 import net.fish.Reflect
