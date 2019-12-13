@@ -1,7 +1,7 @@
 rootProject.name = "advent-of-code"
 
 include(
-    "advent2019"
+    "advents"
 )
 
 val kotlinVersion: String by settings
