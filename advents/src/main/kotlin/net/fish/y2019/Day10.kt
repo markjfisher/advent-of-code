@@ -53,8 +53,8 @@ object Day10: Day {
         while (true) {
             val list = asteroidsByAngleSortedByDistance[index++ % asteroidsByAngleSortedByDistance.size].second
             if (list.isNotEmpty()) {
-                val p = list.removeAt(0)
-                orderedAsteroids.add(p)
+                val point = list.removeAt(0)
+                orderedAsteroids.add(point)
                 if (orderedAsteroids.size == numAsteroids) break
             }
         }

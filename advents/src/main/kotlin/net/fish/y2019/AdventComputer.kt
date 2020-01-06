@@ -7,8 +7,8 @@ data class AdventComputer (
     var program: List<Long>,
     var initialInput: List<Long> = emptyList()
 ) {
-    private var mem: MutableList<Long> = LongArray(4096) { 0L }.toMutableList()
-    private var inputs: MutableList<Long>
+    private var mem: Memory = Memory(program.mapIndexed { i, v -> i to v }.toMap().toMutableMap())
+    private var inputs: MutableList<Long> = initialInput.toMutableList()
     private var pc: Int = 0
     private var base: Int = 0
     private var currentInput: Long = 0
@@ -18,12 +18,15 @@ data class AdventComputer (
     var outputs = mutableListOf<Long>()
     var running: Boolean = true
 
-    init {
-        program.forEachIndexed { index, l -> mem[index] = l }
-        inputs = initialInput.toMutableList()
+    data class Memory(val memory: MutableMap<Int, Long>) {
+        fun get(address: Int) = memory.computeIfAbsent(address) { 0 }
+        fun set(address: Int, value: Long) {
+            memory[address] = value
+        }
     }
 
-    fun memoryAt(location: Int): Long = mem[location]
+
+    fun memoryAt(location: Int): Long = mem.get(location)
 
     fun out(): Long {
         return outputs.removeAt(0)
@@ -94,23 +97,23 @@ data class AdventComputer (
     private fun get(offset: Int): Long {
         val pos = pc + offset
         return when(instruction.modes[offset - 1]) {
-            POSITIONAL -> mem[mem[pos].toInt()]
-            IMMEDIATE -> mem[pos]
-            RELATIVE -> mem[mem[pos].toInt() + base]
+            POSITIONAL -> mem.get(mem.get(pos).toInt())
+            IMMEDIATE -> mem.get(pos)
+            RELATIVE -> mem.get(mem.get(pos).toInt() + base)
         }
     }
 
     private fun set(v: Long, offset: Int) {
         when(instruction.modes[offset - 1]) {
-            RELATIVE -> mem[base + mem[pc + offset].toInt()] = v
-            else -> mem[mem[pc + offset].toInt()] = v
+            RELATIVE -> mem.set(base + mem.get(pc + offset).toInt(), v)
+            else -> mem.set(mem.get(pc + offset).toInt(), v)
         }
     }
 
     fun run(): AdventComputer {
         if (waitingInput) input()
         while(running && !waitingInput) {
-            instruction = Instruction.from(mem[pc].toInt())
+            instruction = Instruction.from(mem.get(pc).toInt())
             when (val opCode = instruction.opCode) {
                 1 -> add()
                 2 -> mult()
