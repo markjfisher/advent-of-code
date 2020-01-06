@@ -5,9 +5,10 @@ import java.lang.Exception
 
 data class AdventComputer (
     var program: List<Long>,
-    var inputs: List<Long> = emptyList()
+    var initialInput: List<Long> = emptyList()
 ) {
-    private var mem: MutableList<Long> = LongArray(65536) { 0L }.toMutableList()
+    private var mem: MutableList<Long> = LongArray(4096) { 0L }.toMutableList()
+    private var inputs: MutableList<Long>
     private var pc: Int = 0
     private var base: Int = 0
     private var currentInput: Long = 0
@@ -19,12 +20,17 @@ data class AdventComputer (
 
     init {
         program.forEachIndexed { index, l -> mem[index] = l }
+        inputs = initialInput.toMutableList()
     }
 
     fun memoryAt(location: Int): Long = mem[location]
 
     fun out(): Long {
         return outputs.removeAt(0)
+    }
+
+    fun addInput(input: Long) {
+        inputs.add(input)
     }
 
     private fun add() {
@@ -49,7 +55,7 @@ data class AdventComputer (
         }
         waitingInput = false
         currentInput = inputs.first()
-        inputs = inputs.drop(1)
+        inputs = inputs.drop(1).toMutableList()
         set(currentInput, 1)
         pc += 2
     }

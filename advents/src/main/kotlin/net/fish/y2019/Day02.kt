@@ -24,6 +24,12 @@ object Day02: Day {
         }
         return AdventComputer(alteredProgram.toList()).run().memoryAt(0).toInt()
     }
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        println(part1())
+        println(part2())
+    }
 }
 
 /*

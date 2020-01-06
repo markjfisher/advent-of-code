@@ -34,11 +34,11 @@ object Day07: Day {
         val machineE = AdventComputer(initialState.toMutableList(), listOf(sequence[4], machineD.out())).run()
         var stillRunning = listOf(machineA, machineB, machineC, machineD, machineE).any { it.running }
         while(stillRunning) {
-            with(machineA) { inputs = listOf(machineE.out()); run() }
-            with(machineB) { inputs = listOf(machineA.out()); run() }
-            with(machineC) { inputs = listOf(machineB.out()); run() }
-            with(machineD) { inputs = listOf(machineC.out()); run() }
-            with(machineE) { inputs = listOf(machineD.out()); run() }
+            with(machineA) { addInput(machineE.out()); run() }
+            with(machineB) { addInput(machineA.out()); run() }
+            with(machineC) { addInput(machineB.out()); run() }
+            with(machineD) { addInput(machineC.out()); run() }
+            with(machineE) { addInput(machineD.out()); run() }
             stillRunning = listOf(machineA, machineB, machineC, machineD, machineE).any { it.running }
         }
         return machineE.outputs.last()

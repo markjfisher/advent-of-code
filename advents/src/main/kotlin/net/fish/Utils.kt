@@ -48,3 +48,20 @@ fun lcm(x: Long, y: Long): Long {
     }
     return x / b * y
 }
+
+fun Collection<Point>.minX() = this.map { it.x }.min()
+fun Collection<Point>.minY() = this.map { it.y }.min()
+fun Collection<Point>.maxX() = this.map { it.x }.max()
+fun Collection<Point>.maxY() = this.map { it.y }.max()
+
+fun Collection<Point>.bounds() =
+    this.fold(listOf(Int.MAX_VALUE, Int.MAX_VALUE, Int.MIN_VALUE, Int.MIN_VALUE)) { list, point ->
+        listOf(
+            kotlin.math.min(list[0], point.x),
+            kotlin.math.min(list[1], point.y),
+            kotlin.math.max(list[2], point.x),
+            kotlin.math.max(list[3], point.y)
+        )
+    }.let { (minX, minY, maxX, maxY) ->
+        Point(minX, minY) to Point(maxX, maxY)
+    }
