@@ -27,9 +27,9 @@ object Day11: Day {
         val grid = Grid(mutableMapOf())
         val bot = Bot(Point(0, 0), Direction.NORTH)
 
-        var computer = AdventComputer(program, listOf(initialColour))
+        val computer = AdventComputer(program, listOf(initialColour))
         while(computer.running) {
-            computer = computer.run()
+            computer.run()
             grid.set(bot.position, computer.out().toInt())
             bot.move(computer.out().toInt())
             computer.addInput(grid.get(bot.position).toLong())

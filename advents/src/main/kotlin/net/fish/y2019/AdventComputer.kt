@@ -25,11 +25,14 @@ data class AdventComputer (
         }
     }
 
-
     fun memoryAt(location: Int): Long = mem.get(location)
 
     fun out(): Long {
         return outputs.removeAt(0)
+    }
+
+    fun clearOutput() {
+        outputs.clear()
     }
 
     fun addInput(input: Long) {
