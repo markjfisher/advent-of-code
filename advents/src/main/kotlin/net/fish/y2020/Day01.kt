@@ -1,5 +1,6 @@
 package net.fish.y2020
 
+import net.fish.CombinationsOf
 import net.fish.Day
 import net.fish.resourceLines
 
@@ -7,14 +8,13 @@ object Day01 : Day {
     private val expenses = resourceLines(2020, 1).map { it.toInt() }
 
     override fun part1() = findMatchingExpensesMultiplied(expenses, 2)
-    override fun part2(): Any {
-        return ""
-    }
+    override fun part2() = findMatchingExpensesMultiplied(expenses, 3)
 
     fun findMatchingExpensesMultiplied(expenses: List<Int>, num: Int): Set<Int> {
-        return expenses.fold(mutableSetOf()) { acc, i ->
-            val otherHalf = 2020 - i
-            if (expenses.contains(otherHalf)) acc.add(i * otherHalf)
+        val combinations = CombinationsOf(expenses.size, num).toList()
+        return combinations.fold(mutableSetOf()) { acc, list ->
+            val x: List<Int> = list.map { expenses[it] }
+            if (x.sum() == 2020) acc.add(x.reduce{ a, i -> a*i})
             acc
         }
     }
@@ -22,6 +22,7 @@ object Day01 : Day {
     @JvmStatic
     fun main(args: Array<String>) {
         println(part1())
+        println(part2())
     }
 }
 

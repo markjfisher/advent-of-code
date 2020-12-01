@@ -32,7 +32,7 @@ object Day13 : Day {
 
         val screen = createScreenMap(computer)
         while(blockCount(screen) > 0) {
-            val score = screen[Point(-1, 0)] ?: 0
+            // val score = screen[Point(-1, 0)] ?: 0
             val paddle = screen.filter { it.value == 3 }.keys.first()
             val ball = screen.filter { it.value == 4 }.keys.first()
             val joystick = when {
