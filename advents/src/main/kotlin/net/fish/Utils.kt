@@ -65,3 +65,25 @@ fun Collection<Point>.bounds() =
     }.let { (minX, minY, maxX, maxY) ->
         Point(minX, minY) to Point(maxX, maxY)
     }
+
+class Combinations(private val m: Int, private val n: Int) {
+    private val combination = IntArray(m)
+
+    init {
+        generate(0)
+    }
+
+    private fun generate(k: Int) {
+        if (k >= m) {
+            for (i in 0 until m) print("${combination[i]} ")
+            println()
+        }
+        else {
+            for (j in 0 until n)
+                if (k == 0 || j > combination[k - 1]) {
+                    combination[k] = j
+                    generate(k + 1)
+                }
+        }
+    }
+}

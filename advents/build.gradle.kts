@@ -7,7 +7,7 @@ plugins {
 
 group = "net.markjfisher"
 version = "1.0.0"
-val archiveBaseName = "advent-2019"
+val archiveBaseName = "advent-20XX"
 
 val mathsToolKitVersion: String by project
 val reflectionsVersion: String by project
@@ -44,6 +44,11 @@ dependencies {
 tasks {
     register("advent2019", JavaExec::class) {
         main = "net.fish.y2019.AdventOfCode2019"
+        classpath = sourceSets["main"].runtimeClasspath
+    }
+
+    register("advent2020", JavaExec::class) {
+        main = "net.fish.y2020.AdventOfCode2020"
         classpath = sourceSets["main"].runtimeClasspath
     }
 
