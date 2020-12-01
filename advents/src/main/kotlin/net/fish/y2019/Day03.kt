@@ -21,13 +21,13 @@ object Day03 : Day {
         return findIntersections(path1, path2)
             .map { abs(it.first) + abs(it.second) }
             .filter { it > 0 }
-            .min() ?: 0
+            .minOrNull() ?: 0
     }
 
     fun minimumSignalDelay(path1: PathsType, path2: PathsType): Int {
         return findIntersections(path1, path2)
             .map { intersection -> stepsTo(intersection, path1) + stepsTo(intersection, path2) }
-            .min() ?: 0
+            .minOrNull() ?: 0
     }
 
     fun stepsTo(intersection: Pair<Int, Int>, points: PathsType): Int {

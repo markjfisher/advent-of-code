@@ -9,8 +9,8 @@ object Day08: Day {
 
     // 2125
     override fun part1() = image.layers
-            .minBy { it.count(0) }!!
-            .run { count(1) * count(2) }
+            .minByOrNull { it.count(0) }
+            ?.run { count(1) * count(2) } ?: 0
 
     // JYZHF
     override fun part2() = image.image()

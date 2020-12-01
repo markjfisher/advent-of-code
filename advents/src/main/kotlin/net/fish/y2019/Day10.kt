@@ -34,7 +34,7 @@ object Day10: Day {
     }
 
     fun highestVisiblePointAndCount(map: List<List<Char>>): Pair<Point, Int> {
-        return points(map).map { it to visible(it, map) }.maxBy { it.second }!!
+        return points(map).map { it to visible(it, map) }.maxByOrNull { it.second } ?: throw Exception("Couldn't find a highest - check input data: $map")
     }
 
     fun blastAsteroidsOrder(map: List<List<Char>>, p: Point): List<Point> {

@@ -2,6 +2,7 @@ package net.fish
 
 // Useful combinations/permutations implementations from
 // https://medium.com/@voddan/a-handful-of-kotlin-permutations-7659c555d421
+// However, non of it is used, but the more efficient functions at the end...
 
 import java.util.*
 
@@ -64,11 +65,6 @@ class BinaryBits(N: Int) : IntCombinations(N) {
     override fun state() = state.map {it.state()}.reversed()
 }
 
-class CombinationsOf(m: Int, n: Int) : IntCombinations(n) {
-    override val state = Array(n) { Ring(m) }.toList()
-    override fun state() = state.map {it.state()}.reversed()
-}
-
 class Permutations(N: Int) : IntCombinations(N) {
     override val state = mutableListOf<Ring>()
 
@@ -91,10 +87,56 @@ fun main(args: Array<String>) {
     println("Which is consistent with a practical result of $sumNumbers.\n")
 
     BinaryBits(5).asSequence().filter {it.sum() == 2}.take(5).forEach { println(it) }
-    CombinationsOf(5, 2).asSequence().forEach { println(it) }
 
     println("\npermutations of 3 elements:")
     for(configuration in Permutations(3)) {
         println(configuration)
     }
 }
+
+fun <T> Iterable<T>.combinations(length: Int): Sequence<List<T>> =
+    sequence {
+        val pool = this@combinations as? List<T> ?: toList()
+        val n = pool.size
+        if(length > n) return@sequence
+        val indices = IntArray(length) { it }
+        while(true) {
+            yield(indices.map { pool[it] })
+            var i = length
+            do {
+                i--
+                if(i == -1) return@sequence
+            } while(indices[i] == i + n - length)
+            indices[i]++
+            for(j in i+1 until length) indices[j] = indices[j - 1] + 1
+        }
+    }
+
+fun <T> Iterable<T>.permutations(length: Int? = null): Sequence<List<T>> =
+    sequence {
+        val pool = this@permutations as? List<T> ?: toList()
+        val n = pool.size
+        val r = length ?: n
+        if(r > n) return@sequence
+        val indices = IntArray(n) { it }
+        val cycles = IntArray(r) { n - it }
+        yield(List(r) { pool[indices[it]] })
+        if(n == 0) return@sequence
+        cyc@ while(true) {
+            for(i in r-1 downTo 0) {
+                cycles[i]--
+                if(cycles[i] == 0) {
+                    val temp = indices[i]
+                    for(j in i until n-1) indices[j] = indices[j+1]
+                    indices[n-1] = temp
+                    cycles[i] = n - i
+                } else {
+                    val j = n - cycles[i]
+                    indices[i] = indices[j].also { indices[j] = indices[i] }
+                    yield(List(r) { pool[indices[it]] })
+                    continue@cyc
+                }
+            }
+            return@sequence
+        }
+    }

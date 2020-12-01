@@ -1,7 +1,7 @@
 package net.fish.y2019
 
 import net.fish.Day
-import net.fish.collections.permutations
+import net.fish.permutations
 import net.fish.resourceString
 
 object Day07: Day {
@@ -10,12 +10,12 @@ object Day07: Day {
     override fun part1() = (0L..4L).toList()
         .permutations()
         .map { calculateThrust(program, it) }
-        .max()!! // 79723
+        .maxOrNull() ?: 0 // 79723
 
     override fun part2() = (5L..9L).toList()
         .permutations()
         .map { calculateThrustFeedback(program, it) }
-        .max()!! // 70602018
+        .maxOrNull() ?: 0 // 70602018
 
     fun calculateThrust(initialState: List<Long>, sequence: List<Long>): Long {
         val outA = AdventComputer(initialState.toMutableList(), listOf(sequence[0], 0)).run().out()
