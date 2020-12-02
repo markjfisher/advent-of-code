@@ -11,8 +11,13 @@ object Day01 : Day {
     override fun part1() = doPart1(expenses)
     override fun part2() = doPart2(expenses)
 
-    fun doPart1(e: List<Int>): Int = e.first { e.contains(2020 - it) }.let { it * (2020 - it) }
-    fun doPart2(e: List<Int>): Int = e.combinations(2).first { e.contains(2020 - it.sum()) }.let { it.product() * (2020 - it.sum()) }
+    fun doPart1(e: List<Int>): Int = e
+        .first { e.contains(2020 - it) }
+        .let { it * (2020 - it) }
+
+    fun doPart2(e: List<Int>): Int = e.combinations(2)
+        .first { e.contains(2020 - it.sum()) }
+        .let { it.product() * (2020 - it.sum()) }
 
     @JvmStatic
     fun main(args: Array<String>) {

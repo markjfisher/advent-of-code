@@ -1,8 +1,11 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
+    kotlin("kapt")
     `java-library`
+    id("com.github.johnrengelman.shadow")
 }
 
 group = "net.markjfisher"
@@ -50,6 +53,10 @@ tasks {
     register("advent2020", JavaExec::class) {
         main = "net.fish.y2020.AdventOfCode2020"
         classpath = sourceSets["main"].runtimeClasspath
+    }
+
+    named<ShadowJar>("shadowJar") {
+        mergeServiceFiles()
     }
 
     named<KotlinCompile>("compileKotlin") {
