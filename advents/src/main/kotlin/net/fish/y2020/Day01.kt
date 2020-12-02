@@ -2,16 +2,17 @@ package net.fish.y2020
 
 import net.fish.Day
 import net.fish.combinations
+import net.fish.product
 import net.fish.resourceLines
 
 object Day01 : Day {
     private val expenses = resourceLines(2020, 1).map { it.toInt() }
 
-    override fun part1() = findMatchingExpensesMultiplied(expenses, 2, 2020)
-    override fun part2() = findMatchingExpensesMultiplied(expenses, 3, 2020)
+    override fun part1() = doPart1(expenses)
+    override fun part2() = doPart2(expenses)
 
-    fun findMatchingExpensesMultiplied(expenses: List<Int>, num: Int, sum: Int): Int =
-        expenses.combinations(num).first { it.sum() == sum }.reduce { a, i -> a * i }
+    fun doPart1(e: List<Int>): Int = e.first { e.contains(2020 - it) }.let { it * (2020 - it) }
+    fun doPart2(e: List<Int>): Int = e.combinations(2).first { e.contains(2020 - it.sum()) }.let { it.product() * (2020 - it.sum()) }
 
     @JvmStatic
     fun main(args: Array<String>) {

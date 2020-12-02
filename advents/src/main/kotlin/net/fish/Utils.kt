@@ -65,3 +65,5 @@ fun Collection<Point>.bounds() =
     }.let { (minX, minY, maxX, maxY) ->
         Point(minX, minY) to Point(maxX, maxY)
     }
+
+fun Iterable<Int>.product() = this.fold(1, Int::times)
