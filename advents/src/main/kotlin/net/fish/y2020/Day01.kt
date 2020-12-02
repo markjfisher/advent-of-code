@@ -10,13 +10,8 @@ object Day01 : Day {
     override fun part1() = findMatchingExpensesMultiplied(expenses, 2, 2020)
     override fun part2() = findMatchingExpensesMultiplied(expenses, 3, 2020)
 
-    fun findMatchingExpensesMultiplied(expenses: List<Int>, num: Int, sum: Int): Set<Int> {
-        val combinations = expenses.combinations(num)
-        return combinations.fold(mutableSetOf()) { acc, list ->
-            if (list.sum() == sum) acc.add(list.reduce{ a, i -> a*i})
-            acc
-        }
-    }
+    fun findMatchingExpensesMultiplied(expenses: List<Int>, num: Int, sum: Int): Int =
+        expenses.combinations(num).first { it.sum() == sum }.reduce { a, i -> a * i }
 
     @JvmStatic
     fun main(args: Array<String>) {
