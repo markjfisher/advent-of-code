@@ -22,7 +22,7 @@ object Day02 : Day {
         fun isValidInPart2(): Boolean {
             val valid1 = password[a - 1] == char
             val valid2 = password[b - 1] == char
-            return (valid1 && !valid2) || (!valid1 && valid2)
+            return valid1.xor(valid2)
         }
     }
 
