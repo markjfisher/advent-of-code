@@ -5,7 +5,7 @@ import net.fish.resourceLines
 
 object Day02 : Day {
     private val policyExtractor by lazy { Regex("""([0-9]+)-([0-9]+) (.): (.+)""") }
-    private val rules = toRules(resourceLines(2020, 2).map { it })
+    private val rules = toRules(resourceLines(2020, 2))
 
     fun toRules(lines: List<String>): List<Rule> = lines.map { line ->
         policyExtractor.find(line)?.destructured!!.let { (a, b, l, p) ->
@@ -14,20 +14,12 @@ object Day02 : Day {
     }
 
     data class Rule(val a: Int, val b: Int, val char: Char, val password: String) {
-        fun isValidInPart1(): Boolean {
-            val count = password.count { it == char }
-            return (count in a..b)
-        }
-
-        fun isValidInPart2(): Boolean {
-            val valid1 = password[a - 1] == char
-            val valid2 = password[b - 1] == char
-            return valid1.xor(valid2)
-        }
+        fun isValidInPart1() = password.count { it == char } in a..b
+        fun isValidInPart2() = (password[a - 1] == char).xor(password[b - 1] == char)
     }
 
     override fun part1() = rules.filter { it.isValidInPart1() }.count() // 580
-    override fun part2() = rules.filter { it.isValidInPart2() }.count()
+    override fun part2() = rules.filter { it.isValidInPart2() }.count() // 611
 
     @JvmStatic
     fun main(args: Array<String>) {
