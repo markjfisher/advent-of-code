@@ -8,11 +8,11 @@ class Day01Test {
 
     @Test
     fun `should find pairs that add to 2020 and multiply the pairs values`() {
-        assertThat(Day01.findMatchingExpensesMultiplied(receipts, 2, 2020)).isEqualTo(setOf(514579))
+        assertThat(Day01.findMatchingExpensesMultiplied(receipts, 2, 2020)).isEqualTo(514579)
     }
 
     @Test
     fun `should find triples that add to 2020 and multiply the sets of values`() {
-        assertThat(Day01.findMatchingExpensesMultiplied(receipts, 3, 2020)).isEqualTo(setOf(241861950))
+        assertThat(Day01.findMatchingExpensesMultiplied(receipts, 3, 2020)).isEqualTo(241861950)
     }
 }
