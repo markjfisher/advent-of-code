@@ -5,7 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class Day06Test {
-    val data = resourcePath("/orbit-data.txt")
+    val data = resourcePath("/2019/orbit-data.txt")
     val comObj = Body("COM")
     val bObj = Body("B")
     val cObj = Body("C")

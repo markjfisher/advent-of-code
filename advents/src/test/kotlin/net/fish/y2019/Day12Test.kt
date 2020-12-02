@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 class Day12Test {
     @Test
     fun `run sim`() {
-        val bodies = Day12.toBodies(resourcePath("/day12-test1.txt"))
+        val bodies = Day12.toBodies(resourcePath("/2019/day12-test1.txt"))
         Day12.runSimulation(bodies.toMutableList(), 1)
         assertThat(bodies[0].position).isEqualTo(Day12.Point3D(2, -1, 1))
         assertThat(bodies[0].velocity).isEqualTo(Day12.Point3D(3, -1, -1))

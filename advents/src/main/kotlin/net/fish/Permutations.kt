@@ -80,7 +80,7 @@ class Permutations(N: Int) : IntCombinations(N) {
     }
 }
 
-fun main(args: Array<String>) {
+fun main() {
     val n = 100
     val sumNumbers = Ring(n).sum()
     println("In theory, the sum of numbers 0..${n - 1} is ${n * (n - 1) / 2}.")
