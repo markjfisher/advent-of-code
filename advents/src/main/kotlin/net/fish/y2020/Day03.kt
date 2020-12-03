@@ -14,7 +14,7 @@ object Day03 : Day {
     override fun part2() = traverseForest(forestData, part2Runs)
 
     fun traverseForest(forestData: List<String>, runs: List<Delta>): Long = runs
-        .map { delta ->  skiSequence(forestData, delta).filter(Square::isTree).count() }
+        .map { delta -> skiSequence(forestData, delta).count(Square::isTree) }
         .product()
 
     fun skiSequence(data: List<String>, delta: Delta): Sequence<Square> =
@@ -26,11 +26,12 @@ object Day03 : Day {
 
     enum class Square {
         GAP, TREE;
+
         fun isTree() = this == TREE
     }
 
     data class Location(val x: Int, val y: Int) {
-        // This should really be in a "Mover" class, but do I really need to go that far... no.
+        // This should really be in a "Mover" class which can hold the data width, but do I really need to go that far... no.
         fun move(delta: Delta, width: Int): Location {
             return Location((x + delta.dx) % width, y + delta.dy)
         }
