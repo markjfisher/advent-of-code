@@ -7,24 +7,36 @@ import net.fish.resourceLines
 object Day03 : Day {
     private val forestData = resourceLines(2020, 3)
 
-    val part1Runs = listOf(Pair(3, 1))
-    val part2Runs = listOf(Pair(1, 1), Pair(3, 1), Pair(5, 1), Pair(7, 1), Pair(1, 2))
+    val part1Runs = listOf(Delta(3, 1))
+    val part2Runs = listOf(Delta(1, 1), Delta(3, 1), Delta(5, 1), Delta(7, 1), Delta(1, 2))
 
     override fun part1() = traverseForest(forestData, part1Runs)
     override fun part2() = traverseForest(forestData, part2Runs)
 
-    fun traverseForest(forestData: List<String>, runs: List<Pair<Int, Int>>): Long = runs
-        .map { generateForestValueSequence(forestData, it.first, it.second).filter { c -> c == '#' }.count() }
+    fun traverseForest(forestData: List<String>, runs: List<Delta>): Long = runs
+        .map { delta ->  skiSequence(forestData, delta).filter(Square::isTree).count() }
         .product()
 
-    fun generateForestValueSequence(data: List<String>, x: Int, y: Int): Sequence<Char> =
-        generateLocationSequence(x, y, data.first().length, data.size)
-            .map { data[it.second][it.first] }
+    fun skiSequence(data: List<String>, delta: Delta): Sequence<Square> =
+        generateLocationSequence(delta, data.first().length, data.size)
+            .map { (x, y) -> if (data[y][x] == '#') Square.TREE else Square.GAP }
 
-    fun generateLocationSequence(x: Int, y: Int, mod: Int, n: Int): Sequence<Pair<Int, Int>> =
-        generateSequence(Pair(0, 0)) { current ->
-            Pair((current.first + x) % mod, current.second + y).takeIf { it.second < n }
+    fun generateLocationSequence(delta: Delta, width: Int, maxRows: Int): Sequence<Location> =
+        generateSequence(Location(0, 0)) { current -> current.move(delta, width).takeIf { it.y < maxRows } }
+
+    enum class Square {
+        GAP, TREE;
+        fun isTree() = this == TREE
+    }
+
+    data class Location(val x: Int, val y: Int) {
+        // This should really be in a "Mover" class, but do I really need to go that far... no.
+        fun move(delta: Delta, width: Int): Location {
+            return Location((x + delta.dx) % width, y + delta.dy)
         }
+    }
+
+    data class Delta(val dx: Int, val dy: Int)
 
     @JvmStatic
     fun main(args: Array<String>) {
