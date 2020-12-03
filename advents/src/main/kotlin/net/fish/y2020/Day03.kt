@@ -10,10 +10,10 @@ object Day03 : Day {
     val part1Runs = listOf(Pair(3, 1))
     val part2Runs = listOf(Pair(1, 1), Pair(3, 1), Pair(5, 1), Pair(7, 1), Pair(1, 2))
 
-    override fun part1() = traverseForrest(forestData, part1Runs)
-    override fun part2() = traverseForrest(forestData, part2Runs)
+    override fun part1() = traverseForest(forestData, part1Runs)
+    override fun part2() = traverseForest(forestData, part2Runs)
 
-    fun traverseForrest(forestData: List<String>, runs: List<Pair<Int, Int>>): Long {
+    fun traverseForest(forestData: List<String>, runs: List<Pair<Int, Int>>): Long {
         return runs
             .map { traverseSequence(forestData, it.first, it.second).filter { c -> c == '#' }.count() }
             .product()
@@ -26,7 +26,7 @@ object Day03 : Day {
     }
 
     fun traverseSequence(data: List<String>, x: Int, y: Int): Sequence<Char> {
-        val positions: Sequence<Pair<Int, Int>> = generateLocationSequence(x, y, data.first().length, data.size)
+        val positions = generateLocationSequence(x, y, data.first().length, data.size)
         return positions.map { data[it.second][it.first] }
     }
 

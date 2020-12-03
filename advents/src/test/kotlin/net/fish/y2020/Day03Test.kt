@@ -31,7 +31,7 @@ class Day03Test {
 
     @Test
     fun `test data results match`() {
-        assertThat(Day03.traverseForrest(forestData, Day03.part1Runs)).isEqualTo(7)
-        assertThat(Day03.traverseForrest(forestData, Day03.part2Runs)).isEqualTo(336L)
+        assertThat(Day03.traverseForest(forestData, Day03.part1Runs)).isEqualTo(7)
+        assertThat(Day03.traverseForest(forestData, Day03.part2Runs)).isEqualTo(336L)
     }
 }
