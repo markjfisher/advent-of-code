@@ -15,7 +15,6 @@ object Reflect {
 }
 
 fun main() {
-    val days = Reflect.getDays(2019)
-
+    val days = Reflect.getDays(2020)
     days.forEach { println(it.javaClass) }
 }

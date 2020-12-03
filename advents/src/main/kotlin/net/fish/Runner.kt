@@ -33,13 +33,13 @@ object Runner {
 
         val date = LocalDate.of(year, 12, dayName)
 
-        val start1 = System.currentTimeMillis()
+        val start1 = System.nanoTime()
         val p1 = day.part1()
-        val dur1 = System.currentTimeMillis() - start1
-        val start2 = System.currentTimeMillis()
+        val dur1 = System.nanoTime() - start1
+        val start2 = System.nanoTime()
         val p2 = day.part2()
-        val dur2 = System.currentTimeMillis() - start2
+        val dur2 = System.nanoTime() - start2
 
-        println(format.format("" + dayName + " " + date.format(dayOfWeek), p1, p2, formatDuration(System.currentTimeMillis() - start1), formatDuration(dur1), (formatDuration(dur2))))
+        println(format.format("" + dayName + " " + date.format(dayOfWeek), p1, p2, formatDuration(System.nanoTime() - start1), formatDuration(dur1), (formatDuration(dur2))))
     }
 }

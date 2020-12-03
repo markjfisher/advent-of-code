@@ -1,8 +1,8 @@
 package net.fish.y2020
 
+import com.marcinmoskala.math.product
 import net.fish.Day
 import net.fish.combinations
-import net.fish.product
 import net.fish.resourceLines
 
 object Day01 : Day {
@@ -15,14 +15,19 @@ object Day01 : Day {
         .first { e.contains(2020 - it) }
         .let { it * (2020 - it) }
 
-    fun doPart2(e: List<Int>): Int = e.combinations(2)
+    fun doPart2(e: List<Int>): Long = e.combinations(2)
         .first { e.contains(2020 - it.sum()) }
         .let { it.product() * (2020 - it.sum()) }
 
     @JvmStatic
     fun main(args: Array<String>) {
-        println(part1())
-        println(part2())
+        val start = System.nanoTime()
+        val p1Result = part1()
+        val p1EndTime = System.nanoTime()
+        val p2Result = part2()
+        val p2EndTime = System.nanoTime()
+        println(String.format("p1: %d, t: %d\n", p1Result, p1EndTime - start))
+        println(String.format("p2: %d, t: %d\n", p2Result, p2EndTime - p1EndTime))
     }
 }
 

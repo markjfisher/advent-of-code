@@ -30,13 +30,14 @@ fun resourcePath(path: String): List<String> {
 }
 
 
-fun formatDuration(ms: Long): String {
-    val d = Duration.ofMillis(ms)
+fun formatDuration(nanos: Long): String {
+    val d = Duration.ofNanos(nanos)
+    val ms = nanos / 1_000_000.0
     return when {
         ms > 60000 -> String.format("%s m %s s", d.toMinutes(), d.minusMinutes(d.toMinutes()).seconds)
         ms > 10000 -> String.format("%s s", d.seconds)
         ms > 1000 -> String.format("%.2f s", ms / 1000.0)
-        else -> String.format("%s ms", ms)
+        else -> String.format("%.2f ms", ms)
     }
 }
 
@@ -65,5 +66,3 @@ fun Collection<Point>.bounds() =
     }.let { (minX, minY, maxX, maxY) ->
         Point(minX, minY) to Point(maxX, maxY)
     }
-
-fun Iterable<Int>.product() = this.fold(1, Int::times)
