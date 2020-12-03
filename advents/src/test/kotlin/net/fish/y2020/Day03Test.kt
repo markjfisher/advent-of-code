@@ -9,8 +9,8 @@ class Day03Test {
 
     @Test
     fun `traversing forest gives expected sequence`() {
-        assertThat(Day03.traverseSequence(forestData, 3, 1).toList()).containsExactly('.', '.', '#', '.', '#', '#', '.', '#', '#', '#', '#')
-        assertThat(Day03.traverseSequence(forestData, 1, 2).toList()).containsExactly('.', '#', '.', '#', '.', '.')
+        assertThat(Day03.generateForestValueSequence(forestData, 3, 1).toList()).containsExactly('.', '.', '#', '.', '#', '#', '.', '#', '#', '#', '#')
+        assertThat(Day03.generateForestValueSequence(forestData, 1, 2).toList()).containsExactly('.', '#', '.', '#', '.', '.')
     }
 
     @Test

@@ -5,7 +5,7 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day03 : Day {
-    private val forestData = resourceLines(2020, 3).map { it }
+    private val forestData = resourceLines(2020, 3)
 
     val part1Runs = listOf(Pair(3, 1))
     val part2Runs = listOf(Pair(1, 1), Pair(3, 1), Pair(5, 1), Pair(7, 1), Pair(1, 2))
@@ -13,29 +13,24 @@ object Day03 : Day {
     override fun part1() = traverseForest(forestData, part1Runs)
     override fun part2() = traverseForest(forestData, part2Runs)
 
-    fun traverseForest(forestData: List<String>, runs: List<Pair<Int, Int>>): Long {
-        return runs
-            .map { traverseSequence(forestData, it.first, it.second).filter { c -> c == '#' }.count() }
-            .product()
-    }
+    fun traverseForest(forestData: List<String>, runs: List<Pair<Int, Int>>): Long = runs
+        .map { generateForestValueSequence(forestData, it.first, it.second).filter { c -> c == '#' }.count() }
+        .product()
+
+    fun generateForestValueSequence(data: List<String>, x: Int, y: Int): Sequence<Char> =
+        generateLocationSequence(x, y, data.first().length, data.size)
+            .map { data[it.second][it.first] }
+
+    fun generateLocationSequence(x: Int, y: Int, mod: Int, n: Int): Sequence<Pair<Int, Int>> =
+        generateSequence(Pair(0, 0)) { current ->
+            Pair((current.first + x) % mod, current.second + y).takeIf { it.second < n }
+        }
 
     @JvmStatic
     fun main(args: Array<String>) {
         println(part1())
         println(part2())
     }
-
-    fun traverseSequence(data: List<String>, x: Int, y: Int): Sequence<Char> {
-        val positions = generateLocationSequence(x, y, data.first().length, data.size)
-        return positions.map { data[it.second][it.first] }
-    }
-
-    fun generateLocationSequence(x: Int, y: Int, mod: Int, n: Int): Sequence<Pair<Int, Int>> {
-        return generateSequence(Pair(0, 0)) { current ->
-            Pair((current.first + x) % mod, current.second + y).takeIf { it.second < n }
-        }
-    }
-
 
 }
 
