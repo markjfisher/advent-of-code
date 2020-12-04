@@ -1,6 +1,5 @@
 package net.fish.y2019
 
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
