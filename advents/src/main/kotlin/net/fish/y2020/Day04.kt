@@ -16,7 +16,7 @@ object Day04 : Day {
     }
 
     fun toPassports(data: String): List<Passport> {
-        val kvExtractor = Regex("""([a-zA-Z0-9]+):([a-zA-Z0-9#]+)""")
+        val kvExtractor = Regex("""([\p{Alnum}]+):([\p{Alnum}#]+)""")
         return data
             .split("\n\n")
             .map { passportData ->
