@@ -16,15 +16,12 @@ object Day04 : Day {
     }
 
     fun toPassports(data: String): List<Passport> {
+        val kvExtractor = Regex("""([a-zA-Z0-9]+):([a-zA-Z0-9#]+)""")
         return data
             .split("\n\n")
-            .map { it.replace("\n", " ") }
-            .map { lineOfPasswordData ->
-                val kvs: Map<String, String> = lineOfPasswordData.split(" ").map { kv ->
-                    val kvList = kv.split(":")
-                    kvList[0] to kvList[1]
-                }.toMap()
-                Passport.from(kvs)
+            .map { passportData ->
+                val passportMap = kvExtractor.findAll(passportData).map { it.destructured.let { (k, v) -> k to v }}.toMap()
+                Passport.from(passportMap)
             }
     }
 
@@ -40,16 +37,16 @@ object Day04 : Day {
     ) {
         companion object {
             fun from(map: Map<String, String>): Passport {
-                val defaultMap = map.withDefault { null }
+                val dm = map.withDefault { null }
                 return object {
-                    val byr: String? by defaultMap
-                    val iyr: String? by defaultMap
-                    val eyr: String? by defaultMap
-                    val hgt: String? by defaultMap
-                    val hcl: String? by defaultMap
-                    val ecl: String? by defaultMap
-                    val pid: String? by defaultMap
-                    val cid: String? by defaultMap
+                    val byr: String? by dm
+                    val iyr: String? by dm
+                    val eyr: String? by dm
+                    val hgt: String? by dm
+                    val hcl: String? by dm
+                    val ecl: String? by dm
+                    val pid: String? by dm
+                    val cid: String? by dm
                     val passport = Passport(byr, iyr, eyr, hgt, hcl, ecl, pid, cid)
                 }.passport
             }

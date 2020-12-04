@@ -158,6 +158,6 @@ class Day04Test {
         assertThat(Day04.Passport(pid = "000000000").isValidPid()).isTrue
         assertThat(Day04.Passport(pid = "123456789").isValidPid()).isTrue
         assertThat(Day04.Passport(pid = "000123456").isValidPid()).isTrue
-
     }
+
 }
