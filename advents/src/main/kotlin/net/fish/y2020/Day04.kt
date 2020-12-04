@@ -56,58 +56,30 @@ object Day04 : Day {
         }
 
         fun isValidPart1() = byr != null && iyr != null && eyr != null && hgt != null && hcl != null && ecl != null && pid != null
+        fun isValidPart2() = isValidByr() && isValidIyr() && isValidEyr() && isValidHgt() && isValidHcl() && isValidEcl() && isValidPid()
 
-        fun isValidPart2(): Boolean {
-            return try {
-                isValidByr() &&
-                isValidIyr() &&
-                isValidEyr() &&
-                isValidHgt() &&
-                isValidHcl() &&
-                isValidEcl() &&
-                isValidPid()
-            } catch (t: Throwable) {
-                false
-            }
-        }
+        private fun between(field: String?, rangeLow: Int, rangeHigh: Int) = field != null && (field.toIntOrNull() ?: 0 in rangeLow..rangeHigh)
 
-        fun isValidByr(): Boolean {
-            return byr != null && (byr.toIntOrNull() ?: 0 in 1920..2002)
-        }
+        fun isValidByr() = between(byr, 1920, 2002)
+        fun isValidIyr() = between(iyr, 2010, 2020)
+        fun isValidEyr() = between(eyr, 2020, 2030)
 
-        fun isValidIyr(): Boolean {
-            return iyr != null && (iyr.toIntOrNull() ?: 0 in 2010..2020)
-        }
+        fun isValidHcl() = Regex("""^#[0-9a-f]{6}$""").matches(hcl ?: "")
+        fun isValidPid() = Regex("""^[0-9]{9}$""").matches(pid ?: "")
 
-        fun isValidEyr(): Boolean {
-            return eyr != null && (eyr.toIntOrNull() ?: 0 in 2020..2030)
-        }
+        fun isValidEcl() = setOf("amb", "blu", "brn", "gry", "grn", "hzl", "oth").contains(ecl)
 
         fun isValidHgt(): Boolean {
             if (hgt == null) return false
             val heightParser = Regex("""([0-9]+)(in|cm)""")
             val destructured = heightParser.find(hgt)?.destructured ?: return false
-            return destructured.let { (h, u) ->
-                when (u) {
-                    "cm" -> h.toIntOrNull() ?: 0 in 150..193
-                    "in" -> h.toIntOrNull() ?: 0 in 59..76
+            return destructured.let { (height, units) ->
+                when (units) {
+                    "cm" -> between(height, 150, 193)
+                    "in" -> between(height, 59, 76)
                     else -> false
                 }
             }
-        }
-
-        fun isValidHcl(): Boolean {
-            val hclParser = Regex("""^#[0-9a-f]{6}$""")
-            return hclParser.matches(hcl ?: "")
-        }
-
-        fun isValidEcl(): Boolean {
-            return setOf("amb", "blu", "brn", "gry", "grn", "hzl", "oth").contains(ecl)
-        }
-
-        fun isValidPid(): Boolean {
-            val pidParser = Regex("""^[0-9]{9}$""")
-            return pidParser.matches(pid ?: "")
         }
     }
 }
