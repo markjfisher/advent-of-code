@@ -107,6 +107,7 @@ class Day04Test {
         assertThat(Day04.Passport().isValidHgt()).isFalse
         assertThat(Day04.Passport(hgt = "").isValidHgt()).isFalse
         assertThat(Day04.Passport(hgt = "155").isValidHgt()).isFalse
+        assertThat(Day04.Passport(hgt = "foo 155cm bar").isValidHgt()).isFalse
 
         assertThat(Day04.Passport(hgt = "149cm").isValidHgt()).isFalse
         assertThat(Day04.Passport(hgt = "150cm").isValidHgt()).isTrue

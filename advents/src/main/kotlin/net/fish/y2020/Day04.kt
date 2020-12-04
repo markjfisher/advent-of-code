@@ -70,16 +70,14 @@ object Day04 : Day {
         fun isValidEcl() = setOf("amb", "blu", "brn", "gry", "grn", "hzl", "oth").contains(ecl)
 
         fun isValidHgt(): Boolean {
-            if (hgt == null) return false
-            val heightParser = Regex("""([0-9]+)(in|cm)""")
-            val destructured = heightParser.find(hgt)?.destructured ?: return false
-            return destructured.let { (height, units) ->
-                when (units) {
-                    "cm" -> between(height, 150, 193)
-                    "in" -> between(height, 59, 76)
-                    else -> false
+            return (Regex("""^([0-9]+)(in|cm)$""").find(hgt ?: "")?.destructured ?: return false)
+                .let { (height, units) ->
+                    when (units) {
+                        "cm" -> between(height, 150, 193)
+                        "in" -> between(height, 59, 76)
+                        else -> false
+                    }
                 }
-            }
         }
     }
 }
