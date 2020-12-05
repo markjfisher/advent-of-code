@@ -1,7 +1,6 @@
 package net.fish.y2020
 
 import net.fish.resourcePath
-import net.fish.y2020.Day05.changeToBinaryString
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

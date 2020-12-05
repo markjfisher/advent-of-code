@@ -6,31 +6,23 @@ import net.fish.resourceLines
 object Day05 : Day {
     private val data = resourceLines(2020, 5)
 
-    fun changeToBinaryString(v: String) = v.replace('F', '0').replace('B', '1').replace('L', '0').replace('R', '1')
+    override fun part1() = seatIds.maxOrNull() ?: 0
+    override fun part2() = findSeatId(seatIds)
+
+    private fun toBinary(v: String) = v.replace('F', '0').replace('B', '1').replace('L', '0').replace('R', '1').toInt(2)
     private val seatIds = data.map { decode(it).id() }
 
-    override fun part1() = seatIds.maxOrNull() ?: 0
-    override fun part2()= findSeatId(seatIds)
+    fun decode(pattern: String) = Seat(toBinary(pattern.substring(0, 7)), toBinary(pattern.substring(7)))
+    fun findSeatId(seatIds: List<Int>) = seatIds.sorted().windowed(2, 1).first { it[0] != it[1] - 1 }.first() + 1
 
-    fun findSeatId(seatIds: List<Int>) = seatIds.sorted().windowed(2, 1).first{it[0] != it[1] - 1}.first() + 1
+    data class Seat(val row: Int, val column: Int) {
+        fun id(): Int = row * 8 + column
+    }
 
     @JvmStatic
     fun main(args: Array<String>) {
         println(part1())
         println(part2())
-    }
-
-    fun decode(pattern: String): Seat {
-        val row = changeToBinaryString(pattern).substring(0, 7).toInt(2)
-        val column = changeToBinaryString(pattern).substring(7).toInt(2)
-        return Seat(row, column)
-    }
-
-    data class Seat(
-        val row: Int,
-        val column: Int
-    ) {
-        fun id(): Int = row * 8 + column
     }
 }
 
