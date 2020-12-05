@@ -7,9 +7,10 @@ object Day05 : Day {
     private val data = resourceLines(2020, 5)
 
     fun changeToBinaryString(v: String) = v.replace('F', '0').replace('B', '1').replace('L', '0').replace('R', '1')
+    private val seatIds = data.map { decode(it).id() }
 
-    override fun part1() = data.maxOfOrNull { decode(it).id() } ?: 0
-    override fun part2()= findSeatId(data.map { decode(it).id() })
+    override fun part1() = seatIds.maxOrNull() ?: 0
+    override fun part2()= findSeatId(seatIds)
 
     fun findSeatId(seatIds: List<Int>) = seatIds.sorted().windowed(2, 1).first{it[0] != it[1] - 1}.first() + 1
 
