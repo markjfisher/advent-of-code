@@ -4,21 +4,14 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day05 : Day {
-    private val data = resourceLines(2020, 5).map { changeToBinaryString(it) }
+    private val data = resourceLines(2020, 5)
 
     fun changeToBinaryString(v: String) = v.replace('F', '0').replace('B', '1').replace('L', '0').replace('R', '1')
 
     override fun part1() = data.maxOfOrNull { decode(it).id() } ?: 0
-    override fun part2(): Int = findSeatId(data.map { decode(it).id() })
+    override fun part2()= findSeatId(data.map { decode(it).id() })
 
-    fun findSeatId(seatIds: List<Int>): Int {
-        val remainingIds = mutableSetOf<Int>()
-            .also { set ->
-                set.addAll(0..1015)
-                set.removeAll(seatIds)
-            }.sorted()
-        return remainingIds.first { it > 0 && !remainingIds.contains(it + 1) && !remainingIds.contains(it - 1) }
-    }
+    fun findSeatId(seatIds: List<Int>) = seatIds.sorted().windowed(2, 1).first{it[0] != it[1] - 1}.first() + 1
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -27,8 +20,8 @@ object Day05 : Day {
     }
 
     fun decode(pattern: String): Seat {
-        val row = pattern.substring(0, 7).toInt(2)
-        val column = pattern.substring(7).toInt(2)
+        val row = changeToBinaryString(pattern).substring(0, 7).toInt(2)
+        val column = changeToBinaryString(pattern).substring(7).toInt(2)
         return Seat(row, column)
     }
 
