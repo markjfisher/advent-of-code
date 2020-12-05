@@ -4,7 +4,9 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day05 : Day {
-    private val data = resourceLines(2020, 5)
+    private val data = resourceLines(2020, 5).map { changeToBinaryString(it) }
+
+    fun changeToBinaryString(v: String) = v.replace('F', '0').replace('B', '1').replace('L', '0').replace('R', '1')
 
     override fun part1() = data.maxOfOrNull { decode(it).id() } ?: 0
     override fun part2(): Int = findSeatId(data.map { decode(it).id() })
@@ -25,22 +27,9 @@ object Day05 : Day {
     }
 
     fun decode(pattern: String): Seat {
-        val row = binaryDivideRow(0, 127, pattern.substring(0, 7))
-        val column = binaryDivideColumn(0, 7, pattern.substring(7))
+        val row = pattern.substring(0, 7).toInt(2)
+        val column = pattern.substring(7).toInt(2)
         return Seat(row, column)
-    }
-
-    private fun binaryDivideRow(start: Int, end: Int, pattern: String): Int = binaryDivide(start, end, pattern, 'F', 'B')
-    private fun binaryDivideColumn(start: Int, end: Int, pattern: String): Int = binaryDivide(start, end, pattern, 'L', 'R')
-
-    private fun binaryDivide(start: Int, end: Int, pattern: String, lower: Char, upper: Char): Int {
-        if (start == end) return start
-        val diff = (end - start - 1) / 2
-        return when (val p = pattern[0]) {
-            lower -> binaryDivide(start, start + diff, pattern.substring(1), lower, upper)
-            upper -> binaryDivide(end - diff, end, pattern.substring(1), lower, upper)
-            else -> throw Exception("Bad pattern: $p in $pattern")
-        }
     }
 
     data class Seat(

@@ -1,15 +1,16 @@
 package net.fish.y2020
 
 import net.fish.resourcePath
+import net.fish.y2020.Day05.changeToBinaryString
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class Day05Test {
-    private val seatPatterns = resourcePath("/2020/day05-test.txt")
+    private val seatPatterns = resourcePath("/2020/day05-test.txt").map { changeToBinaryString(it) }
 
     @Test
     fun `decoding patterns gives row and column`() {
-        assertThat(Day05.decode("BFFFBBFRRR")).isEqualTo(Day05.Seat(row = 70, column = 7))
+        assertThat(Day05.decode(changeToBinaryString("BFFFBBFRRR"))).isEqualTo(Day05.Seat(row = 70, column = 7))
     }
 
     @Test
