@@ -9,15 +9,11 @@ object Day06 : Day {
     override fun part1() = listOfUniqueAnswersByGroup(data).sum()
     override fun part2() = listOfCommonAnswersByGroup(data).sum()
 
-    fun listOfUniqueAnswersByGroup(data: String): List<Int> {
-        return data.split("\n\n")
-            .map { it.replace("\n", "").toSet().size }
-    }
+    fun listOfUniqueAnswersByGroup(data: String) = data.split("\n\n")
+        .map { it.replace("\n", "").toSet().size }
 
-    fun listOfCommonAnswersByGroup(data: String): List<Int> {
-        return data.split("\n\n")
-            .map { it.lines().map(String::toSet).reduce { acc, s -> acc.intersect(s) }.size }
-    }
+    fun listOfCommonAnswersByGroup(data: String) = data.split("\n\n")
+        .map { it.lines().map(String::toSet).reduce { acc, s -> acc.intersect(s) }.size }
 
     @JvmStatic
     fun main(args: Array<String>) {
