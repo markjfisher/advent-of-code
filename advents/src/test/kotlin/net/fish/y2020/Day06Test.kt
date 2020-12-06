@@ -14,7 +14,7 @@ class Day06Test {
 
     @Test
     fun `should count each groups common answers`() {
-        assertThat(Day06.listOfCountsOfCommonAnswersPerGroup(data)).containsExactly(3, 0, 1, 1, 1)
+        assertThat(Day06.listOfCommonAnswersByGroup(data)).containsExactly(3, 0, 1, 1, 1)
     }
 
 }

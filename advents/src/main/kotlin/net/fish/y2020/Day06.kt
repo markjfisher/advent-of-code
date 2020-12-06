@@ -7,16 +7,16 @@ object Day06 : Day {
     private val data = resourceString(2020, 6)
 
     override fun part1() = listOfUniqueAnswersByGroup(data).sum()
-    override fun part2() = listOfCountsOfCommonAnswersPerGroup(data).sum()
+    override fun part2() = listOfCommonAnswersByGroup(data).sum()
 
     fun listOfUniqueAnswersByGroup(data: String): List<Int> {
         return data.split("\n\n")
-            .map { it.replace("\n", "").toSet().count() }
+            .map { it.replace("\n", "").toSet().size }
     }
 
-    fun listOfCountsOfCommonAnswersPerGroup(data: String): List<Int> {
+    fun listOfCommonAnswersByGroup(data: String): List<Int> {
         return data.split("\n\n")
-            .map { it.lines().reduce { acc, s -> (acc.toList() intersect s.toList()).joinToString("") }.count() }
+            .map { it.lines().map(String::toSet).reduce { acc, s -> acc.intersect(s) }.size }
     }
 
     @JvmStatic
