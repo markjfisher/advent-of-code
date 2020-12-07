@@ -7,48 +7,34 @@ object Day07 : Day {
     private val data = resourceLines(2020, 7)
     private val rules = toRules(data)
 
+    override fun part1(): Int = doPart1("shiny gold", rules)
+    override fun part2(): Int = doPart2("shiny gold", rules)
+
     fun toRules(data: List<String>): List<Rule> {
         return data.map { bagRule ->
-            var words = bagRule.split(" ")
-            val currentBag = Bag(words.take(2).joinToString(" ")); words = words.drop(4)
-            val contains = mutableListOf<Contain>()
-            while (words.isNotEmpty()) {
-                val n = words.take(1).first(); words = words.drop(1)
-                val bagName = words.take(2).joinToString(" "); words = words.drop(2)
-                words = words.drop(1)
-                val contain: Contain? = when (n) {
-                    "no" -> null
-                    else -> Contain(num = n.toInt(), bag = Bag(bagName))
-                }
-                if (contain != null) contains.add(contain)
-            }
-            Rule(bag = currentBag, contains = contains)
+            // Note to future self: Split the rules up for parts you want to find, this wasn't doable in single regex and you lost 2 hours of your life trying.
+            val bagExtractor = Regex("""^([\p{Alpha} ]+) bags contain""")
+            val rulesExtractor = Regex("""([\d]+) ([\p{Alpha} ]+) bag""")
+
+            val bag = bagExtractor.find(bagRule)?.destructured!!.let { (n) -> Bag(name = n) }
+            val contains = rulesExtractor.findAll(bagRule).map { it.destructured.let { (num, bagName) -> Contain(num = num.toInt(), bag = Bag(bagName)) } }.toList()
+            Rule(bag = bag, contains = contains)
         }
     }
 
-    override fun part1(): Int = doPart1(rules, "shiny gold")
-    override fun part2(): Int = doPart2(rules, "shiny gold")
+    fun doPart1(bagName: String, rules: List<Rule>) = allBagsThatContain(Bag(bagName), rules).size
 
-
-    fun doPart1(rules: List<Rule>, bagName: String): Int {
-        val foundBags = mutableSetOf<Bag>()
-        collectBagsThatCanContain(rules, listOf(Bag(name = bagName)), foundBags)
-        return foundBags.size
+    private fun allBagsThatContain(bag: Bag, rules: List<Rule>): Set<Bag> {
+        val wrappingBags = rulesThatContainBag(bag, rules).map { it.bag }.toSet()
+        if (wrappingBags.isEmpty()) return emptySet()
+        return wrappingBags + wrappingBags.flatMap { allBagsThatContain(it, rules) }.toSet()
     }
 
-    private fun collectBagsThatCanContain(rules: List<Rule>, bags: List<Bag>, foundBags: MutableSet<Bag>) {
-        bags.forEach { bag ->
-            val bagsThatContainThis = rulesThatContainBag(rules, bag).map { it.bag }
-            foundBags.addAll(bagsThatContainThis)
-            collectBagsThatCanContain(rules, bagsThatContainThis, foundBags)
-        }
-    }
-
-    private fun rulesThatContainBag(rules: List<Rule>, bag: Bag): List<Rule> {
+    private fun rulesThatContainBag(bag: Bag, rules: List<Rule>): List<Rule> {
         return rules.filter { rule -> rule.contains.any { it.hasBag(bag) } }
     }
 
-    fun doPart2(rules: List<Rule>, bagName: String): Int = containedInBag(Bag(name = bagName), rules)
+    fun doPart2(bagName: String, rules: List<Rule>): Int = containedInBag(Bag(name = bagName), rules)
 
     private fun containedInBag(bag: Bag, rules: List<Rule>): Int {
         val rule = findRuleForBag(bag, rules)
@@ -58,29 +44,19 @@ object Day07 : Day {
         }
     }
 
+    private fun findRuleForBag(bag: Bag, rules: List<Rule>): Rule {
+        return rules.first { it.bag.name == bag.name }
+    }
+
     @JvmStatic
     fun main(args: Array<String>) {
         println(part1())
         println(part2())
     }
 
-    data class Bag(
-        val name: String
-    )
-
-    data class Rule(
-        val bag: Bag,
-        val contains: List<Contain>
-    )
-
-    private fun findRuleForBag(bag: Bag, rules: List<Rule>): Rule {
-        return rules.first { it.bag.name == bag.name }
-    }
-
-    data class Contain(
-        val num: Int,
-        val bag: Bag
-    ) {
+    data class Bag(val name: String)
+    data class Rule(val bag: Bag, val contains: List<Contain>)
+    data class Contain(val num: Int, val bag: Bag) {
         fun hasBag(bag: Bag) = this.bag == bag
     }
 }

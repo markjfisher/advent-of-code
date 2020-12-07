@@ -23,13 +23,13 @@ class Day07Test {
 
     @Test
     fun `should find bags that can contain us`() {
-        val foundBagsCount = Day07.doPart1(rules, "shiny gold")
+        val foundBagsCount = Day07.doPart1("shiny gold", rules)
         assertThat(foundBagsCount).isEqualTo(4)
     }
 
     @Test
     fun `should count how many contained in bag`() {
-        assertThat(Day07.doPart2(rules, "shiny gold")).isEqualTo(32)
+        assertThat(Day07.doPart2("shiny gold", rules)).isEqualTo(32)
     }
 
 }
