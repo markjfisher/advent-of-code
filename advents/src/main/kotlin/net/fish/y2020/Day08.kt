@@ -8,6 +8,7 @@ import java.lang.IllegalStateException
 
 object Day08 : Day {
     private val data = resourceLines(2020, 8)
+    val pcLocations = mutableListOf<Int>()
 
     override fun part1() = runPC1(data)
     override fun part2() = runPC2(data)
@@ -15,14 +16,16 @@ object Day08 : Day {
 
     fun runPC1(instructions: List<String>): Int {
         val cpu = CPU(instructions)
-        while(!cpu.hasRepeat() && cpu.running) cpu.next()
-        return cpu.previousState().acc
+        while(cpu.running) cpu.next()
+        // optimisation - save all the locations visited for part 2 as it has to be one of those that errored
+        pcLocations.addAll(cpu.history.map { it.pc })
+        return cpu.currentState.acc
     }
 
     fun runPC2(instructions: List<String>): Int {
         val fixedCPU = generatePrograms(instructions).map { CPU(it) }.first { cpu ->
-            while(!cpu.hasRepeat() && cpu.running) cpu.next()
-            !cpu.running
+            while(cpu.running) cpu.next()
+            !cpu.looped
         }
         return fixedCPU.currentState.acc
     }
@@ -34,22 +37,19 @@ object Day08 : Day {
     }
 
     fun generatePrograms(instructions: List<String>): Sequence<List<String>> {
+        if (pcLocations.isEmpty()) pcLocations.addAll(instructions.indices)
+        val potentialErrorInstructions = pcLocations.filterNot { instructions[it].startsWith("acc") }
         var currentPC = 0
         return generateSequence {
             when {
-                currentPC < instructions.size -> {
+                currentPC < potentialErrorInstructions.size -> {
                     val alteredInstructions = mutableListOf<String>().also { it.addAll(instructions) }
-                    var programLine = alteredInstructions[currentPC]
-                    var instruction = Instruction.from(programLine)
-                    while (instruction.op == OP.ACC) {
-                        currentPC++
-                        programLine = alteredInstructions[currentPC]
-                        instruction = Instruction.from(programLine)
-                    }
-                    alteredInstructions[currentPC] = instruction.flip().toString()
+                    val programLine = alteredInstructions[potentialErrorInstructions[currentPC]]
+                    val instruction = Instruction.from(programLine)
+                    alteredInstructions[potentialErrorInstructions[currentPC]] = instruction.flip().toString()
                     currentPC++
 
-                    alteredInstructions.takeIf { currentPC < instructions.size + 1 }
+                    alteredInstructions.takeIf { currentPC < potentialErrorInstructions.size + 1 }
                 }
                 else -> null
             }
@@ -58,7 +58,8 @@ object Day08 : Day {
 
     data class CPU(
         var program: List<String>,
-        var running: Boolean = true
+        var running: Boolean = true,
+        var looped: Boolean = false
     ) {
         var currentState: ComputerState = ComputerState(0, 0)
         var history = mutableListOf<ComputerState>().also { it.add(currentState) }
@@ -74,16 +75,17 @@ object Day08 : Day {
                 OP.JMP -> ComputerState(acc = currentState.acc, pc = currentState.pc + instruction.offset)
                 OP.NOP -> ComputerState(acc = currentState.acc, pc = currentState.pc + 1)
             }
+            if (beenAt(newState.pc)) {
+                running = false
+                looped = true
+                return this
+            }
             currentState = newState
             history.add(currentState)
             return this
         }
 
-        fun hasRepeat(): Boolean {
-            return history.map { it.pc }.groupingBy {it}.eachCount().any { it.value > 1 }
-        }
-
-        fun previousState() = history[history.size - 2]
+        private fun beenAt(pc: Int): Boolean = history.any { it.pc == pc }
     }
 
     data class ComputerState(

@@ -2,10 +2,16 @@ package net.fish.y2020
 
 import net.fish.resourcePath
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class Day08Test {
     private val instructions = resourcePath("/2020/day08-test.txt")
+
+    @BeforeEach
+    fun clear() {
+        Day08.pcLocations.clear()
+    }
 
     @Test
     fun `should stop itself looping and return accumulator instead of infinitely looping`() {
