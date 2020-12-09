@@ -41,7 +41,7 @@ object Day09 : Day {
         var currentIndex = 0
         return generateSequence {
             when {
-                currentIndex < fullList.size - windowSize - 2 -> {
+                currentIndex < fullList.size - windowSize -> {
                     val window = fullList.subList(currentIndex, currentIndex + windowSize)
                     val nextValue = fullList[currentIndex + windowSize]
                     currentIndex++
