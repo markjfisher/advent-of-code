@@ -17,21 +17,24 @@ object Day09 : Day {
         return part1Result
     }
 
-    // Yuck - needs refactoring
+    // Yuck - needs refactoring. It's pretty quick though, 5ms
     fun doPart2(fullList: List<Long>, contiguousSum: Long): Long {
-        var answer: Long = 0
         main@ for(currentIndex in 0..(fullList.size - 2)) {
-            inner@ for(endIndex in (currentIndex + 1) until fullList.size) {
-                val range = fullList.subList(currentIndex, endIndex + 1)
-                val rangeSum = range.sum()
-                if (rangeSum == contiguousSum) {
-                    answer = (range.minOrNull() ?: 0) + (range.maxOrNull() ?: 0)
-                    break@main
-                }
-                if (rangeSum > contiguousSum) break@inner
+            var sublistTotal = 0L
+            var sublistMin = 0L
+            var sublistMax = 0L
+            var currentRangeIndex = 0
+            while(sublistTotal < contiguousSum) {
+                val nextItem = fullList[currentIndex + currentRangeIndex]
+                sublistTotal += nextItem
+                if (sublistMax < nextItem) sublistMax = nextItem
+                if (sublistMin > nextItem || sublistMin == 0L) sublistMin = nextItem
+                currentRangeIndex++
             }
+            if (sublistTotal == contiguousSum) return sublistMin + sublistMax
+
         }
-        return answer
+        return 0
     }
 
     fun inputSequences(fullList: List<Long>, windowSize: Int): Sequence<Pair<List<Long>, Long>> {
