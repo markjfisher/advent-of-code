@@ -53,7 +53,7 @@ object Day09 : Day {
     }
 
     fun hasSummingValue(data: List<Long>, value: Long): Boolean {
-        return data.any { data.contains(value - it) }
+        return data.any { data.contains(value - it) && it != (value - it) }
     }
 
     @JvmStatic

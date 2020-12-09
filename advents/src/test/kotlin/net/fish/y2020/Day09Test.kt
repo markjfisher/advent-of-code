@@ -8,6 +8,17 @@ class Day09Test {
     private val data = resourcePath("/2020/day09-test.txt").map { it.toLong() }
 
     @Test
+    fun `can find a pair that add up to given sum`() {
+        assertThat(Day09.hasSummingValue(listOf(1, 2, 3, 4, 5), 3)).isTrue
+        assertThat(Day09.hasSummingValue(listOf(1, 2, 3, 4, 5), 6)).isTrue
+        assertThat(Day09.hasSummingValue(listOf(1, 2, 3, 4, 5), 7)).isTrue
+        // must have 2 numbers summing to value
+        assertThat(Day09.hasSummingValue(listOf(1, 2, 3, 4, 5), 1)).isFalse
+        // can't use same number twice
+        assertThat(Day09.hasSummingValue(listOf(1, 2, 3, 4, 5), 10)).isFalse
+    }
+
+    @Test
     fun `window over test data finds solution for part1`() {
         assertThat(Day09.doPart1(data, 5)).isEqualTo(127)
     }
