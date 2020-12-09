@@ -19,16 +19,16 @@ object Day09 : Day {
 
     // Yuck - needs refactoring. It's pretty quick though, 5ms
     fun doPart2(fullList: List<Long>, contiguousSum: Long): Long {
-        main@ for(currentIndex in 0..(fullList.size - 2)) {
+        for(currentIndex in 0..(fullList.size - 2)) {
             var sublistTotal = 0L
-            var sublistMin = 0L
-            var sublistMax = 0L
+            var sublistMin = Long.MAX_VALUE
+            var sublistMax = Long.MIN_VALUE
             var currentRangeIndex = 0
             while(sublistTotal < contiguousSum) {
                 val nextItem = fullList[currentIndex + currentRangeIndex]
                 sublistTotal += nextItem
                 if (sublistMax < nextItem) sublistMax = nextItem
-                if (sublistMin > nextItem || sublistMin == 0L) sublistMin = nextItem
+                if (sublistMin > nextItem) sublistMin = nextItem
                 currentRangeIndex++
             }
             if (sublistTotal == contiguousSum) return sublistMin + sublistMax
