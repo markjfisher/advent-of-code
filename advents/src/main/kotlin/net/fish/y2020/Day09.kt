@@ -7,7 +7,7 @@ object Day09 : Day {
     private val data = resourceLines(2020, 9).map { it.toLong() }
     private var part1Result: Long = 0L
 
-    override fun part1(): Long = doPart1(data, 25)
+    override fun part1() = doPart1(data, 25)
     override fun part2() = doPart2(data, part1Result)
 
     fun doPart1(fullList: List<Long>, windowSize: Int): Long {
@@ -17,24 +17,26 @@ object Day09 : Day {
         return part1Result
     }
 
-    // Yuck - needs refactoring. It's pretty quick though, 5ms
     fun doPart2(fullList: List<Long>, contiguousSum: Long): Long {
-        for(currentIndex in 0..(fullList.size - 2)) {
-            var sublistTotal = 0L
-            var sublistMin = Long.MAX_VALUE
-            var sublistMax = Long.MIN_VALUE
-            var currentRangeIndex = 0
-            while(sublistTotal < contiguousSum) {
-                val nextItem = fullList[currentIndex + currentRangeIndex]
-                sublistTotal += nextItem
-                if (sublistMax < nextItem) sublistMax = nextItem
-                if (sublistMin > nextItem) sublistMin = nextItem
-                currentRangeIndex++
-            }
-            if (sublistTotal == contiguousSum) return sublistMin + sublistMax
+        // we know there's a window somewhere that sums up to given value.
+        // start at 0 and look for values up to it.
+        // If we overshoot, raise the lower index, remove the old lower index from the sum, and add another value.
+        // Eventually should hit it, and minimise the number of times we repeatedly add up the same values.
 
+        var lowerIndex = 0
+        var upperIndex = 1
+        var lowerValue = fullList[lowerIndex]
+        var sumOfCurrentRange = lowerValue + fullList[upperIndex]
+        while(true) {
+            while (sumOfCurrentRange < contiguousSum) {
+                sumOfCurrentRange += fullList[++upperIndex]
+            }
+            if (sumOfCurrentRange == contiguousSum) {
+                return fullList.subList(lowerIndex, upperIndex + 1).let { it.minOrNull()!! + it.maxOrNull()!! }
+            }
+            sumOfCurrentRange -= lowerValue
+            lowerValue = fullList[++lowerIndex]
         }
-        return 0
     }
 
     fun inputSequences(fullList: List<Long>, windowSize: Int): Sequence<Pair<List<Long>, Long>> {
