@@ -14,7 +14,6 @@ val archiveBaseName = "advent-20XX"
 
 val mathsToolKitVersion: String by project
 val reflectionsVersion: String by project
-val lwjglVersion: String by project
 
 val kotlinLoggingVersion: String by project
 val logbackClassicVersion: String by project
@@ -24,6 +23,9 @@ val assertJVersion: String by project
 val mockkVersion: String by project
 val junitJupiterEngineVersion: String by project
 
+
+val lwjglVersion: String by project
+val glnVersion: String by project
 val lwjglNatives = "natives-linux"
 
 dependencies {
@@ -50,27 +52,34 @@ dependencies {
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
 
     implementation("org.lwjgl", "lwjgl")
-    implementation("org.lwjgl", "lwjgl-assimp")
-    implementation("org.lwjgl", "lwjgl-bgfx")
+//    implementation("org.lwjgl", "lwjgl-assimp")
+//    implementation("org.lwjgl", "lwjgl-bgfx")
     implementation("org.lwjgl", "lwjgl-glfw")
-    implementation("org.lwjgl", "lwjgl-nanovg")
-    implementation("org.lwjgl", "lwjgl-nuklear")
-    implementation("org.lwjgl", "lwjgl-openal")
+//    implementation("org.lwjgl", "lwjgl-nanovg")
+//    implementation("org.lwjgl", "lwjgl-nuklear")
+//    implementation("org.lwjgl", "lwjgl-openal")
     implementation("org.lwjgl", "lwjgl-opengl")
     implementation("org.lwjgl", "lwjgl-par")
     implementation("org.lwjgl", "lwjgl-stb")
-    implementation("org.lwjgl", "lwjgl-vulkan")
+    implementation("org.lwjgl", "lwjgl-jemalloc")
+//    implementation("org.lwjgl", "lwjgl-vulkan")
     runtimeOnly("org.lwjgl", "lwjgl", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-assimp", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-bgfx", classifier = lwjglNatives)
+//    runtimeOnly("org.lwjgl", "lwjgl-assimp", classifier = lwjglNatives)
+//    runtimeOnly("org.lwjgl", "lwjgl-bgfx", classifier = lwjglNatives)
     runtimeOnly("org.lwjgl", "lwjgl-glfw", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-nanovg", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-nuklear", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-openal", classifier = lwjglNatives)
+//    runtimeOnly("org.lwjgl", "lwjgl-nanovg", classifier = lwjglNatives)
+//    runtimeOnly("org.lwjgl", "lwjgl-nuklear", classifier = lwjglNatives)
+//    runtimeOnly("org.lwjgl", "lwjgl-openal", classifier = lwjglNatives)
     runtimeOnly("org.lwjgl", "lwjgl-opengl", classifier = lwjglNatives)
     runtimeOnly("org.lwjgl", "lwjgl-par", classifier = lwjglNatives)
     runtimeOnly("org.lwjgl", "lwjgl-stb", classifier = lwjglNatives)
+    runtimeOnly("org.lwjgl", "lwjgl-jemalloc", classifier = lwjglNatives)
 
+    implementation("com.github.kotlin-graphics.imgui:core:-SNAPSHOT")
+    implementation("com.github.kotlin-graphics.imgui:gl:-SNAPSHOT")
+    implementation("com.github.kotlin-graphics.imgui:glfw:-SNAPSHOT")
+    // additional libs
+    implementation("com.github.kotlin-graphics:gln:$glnVersion")
 }
 
 tasks {
@@ -90,15 +99,16 @@ tasks {
 
     named<KotlinCompile>("compileKotlin") {
         kotlinOptions {
-            jvmTarget = "1.8"
+            jvmTarget = "11"
             javaParameters = true
         }
     }
 
     named<KotlinCompile>("compileTestKotlin") {
         kotlinOptions {
-            jvmTarget = "1.8"
+            jvmTarget = "11"
             javaParameters = true
+            freeCompilerArgs += listOf("-Xinline-classes", "-Xopt-in=kotlin.RequiresOptIn")
         }
     }
 

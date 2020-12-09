@@ -15,3 +15,6 @@ dist
 .attach_pid*
 .DS_Store
 
+hs_err_pid*.log
+imgui.log
+

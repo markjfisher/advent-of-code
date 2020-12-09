@@ -40,7 +40,7 @@ import java.nio.IntBuffer
 
 // Example LWJGL application from https://www.lwjgl.org/guide
 
-class HelloWorld {
+class HelloWorldGLFW {
     // The window handle
     private var window: Long = 0
     fun run() {
@@ -131,7 +131,7 @@ class HelloWorld {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            HelloWorld().run()
+            HelloWorldGLFW().run()
         }
     }
 }
