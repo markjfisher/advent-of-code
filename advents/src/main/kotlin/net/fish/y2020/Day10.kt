@@ -29,15 +29,16 @@ object Day10 : Day {
     fun doPart2(joltages: List<Int>): Long {
         // every jolt must come from either jolt-1, -2, or -3, so simply sum them up as you go through them
         // e.g. 0, 1, 4, 5, 6
-        // path to 5 can come from only 4, but path to 6 comes from 4 or 5.
+        // path to 5 can come from only 4, but path to 6 comes from 4 or 5. so paths to 5 is 1, 6 is 2
         // at the end of every path we finish with the final adapter, so how many paths to that is total lines through paths.
-        val p2j = mutableMapOf(0 to 1L)
         val adapter = joltages.maxOrNull()!! + 3
-        val all = toSortedMutableWithEnds(joltages).drop(1).fold(p2j) { m: MutableMap<Int, Long>, jolt: Int ->
+
+        // Start with map of starting device having 1 route to it, then fold over sorted list.
+        val pathCountsByJolt = toSortedMutableWithEnds(joltages).drop(1).fold(mutableMapOf(0 to 1L)) { m: MutableMap<Int, Long>, jolt: Int ->
             m[jolt] = m.getOrDefault(jolt - 1, 0) + m.getOrDefault(jolt - 2, 0) + m.getOrDefault(jolt - 3, 0)
             m
         }
-        return all[adapter]!!
+        return pathCountsByJolt[adapter]!!
     }
 
     @JvmStatic
