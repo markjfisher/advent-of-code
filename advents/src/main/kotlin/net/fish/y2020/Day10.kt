@@ -15,26 +15,27 @@ object Day10 : Day {
     }
 
     fun differences(joltages: List<Int>): List<Int> {
-        return toSortedMutableWithEnds(joltages)
+        return joltagesWithEnds(joltages)
             .windowed(2,1)
             .map { it[1] - it[0] }
             .toList()
     }
 
-    private fun toSortedMutableWithEnds(joltages: List<Int>) = joltages
+    private fun joltagesWithEnds(joltages: List<Int>) = joltages
         .toMutableList()
         .let { it.addAll(listOf(0, joltages.maxOrNull()!! + 3)); it }
         .sorted()
 
     fun doPart2(joltages: List<Int>): Long {
         // every jolt must come from either jolt-1, -2, or -3, so simply sum them up as you go through them
-        // e.g. 0, 1, 4, 5, 6
+        // e.g. 0, 1, 4, 5, 6, 9
         // path to 5 can come from only 4, but path to 6 comes from 4 or 5. so paths to 5 is 1, 6 is 2
         // at the end of every path we finish with the final adapter, so how many paths to that is total lines through paths.
-        val adapter = joltages.maxOrNull()!! + 3
+        val joltagesWithEnds = joltagesWithEnds(joltages)
+        val adapter = joltagesWithEnds.last()
 
-        // Start with map of starting device having 1 route to it, then fold over sorted list.
-        val pathCountsByJolt = toSortedMutableWithEnds(joltages).drop(1).fold(mutableMapOf(0 to 1L)) { m: MutableMap<Int, Long>, jolt: Int ->
+        // Start with map of starting device having 1 route to it, then fold over rest list.
+        val pathCountsByJolt = joltagesWithEnds.drop(1).fold(mutableMapOf(0 to 1L)) { m, jolt ->
             m[jolt] = m.getOrDefault(jolt - 1, 0) + m.getOrDefault(jolt - 2, 0) + m.getOrDefault(jolt - 3, 0)
             m
         }

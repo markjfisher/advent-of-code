@@ -17,7 +17,7 @@ import uno.glfw.GlfwWindow
 import uno.glfw.VSync
 import uno.glfw.glfw
 
-class Test01 {
+class ShowDemo {
     lateinit var window: GlfwWindow
     lateinit var ctx: Context
     lateinit var implGlfw: ImplGlfw
@@ -112,7 +112,7 @@ class Test01 {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            Test01().run()
+            ShowDemo().run()
         }
     }
 
