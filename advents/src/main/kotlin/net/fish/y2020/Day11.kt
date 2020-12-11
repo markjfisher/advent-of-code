@@ -31,10 +31,13 @@ object Day11 : Day {
 
     fun simulatePeopleP1(seatPlan: SeatPlan<Location>): SeatPlan<Location> {
         var newPlan: SeatPlan<Location> = seatPlan.copyPlan()
+        var iterations = 0
         do {
             val oldPlan = newPlan.copyPlan()
             newPlan = processPlanP1(newPlan)
+            iterations++
         } while (!newPlan.identical(oldPlan))
+        // println("p1: $iterations")
         return newPlan
     }
 
@@ -57,10 +60,13 @@ object Day11 : Day {
 
     fun simulatePeopleP2(seatPlan: SeatPlan<Location>): SeatPlan<Location> {
         var newPlan: SeatPlan<Location> = seatPlan.copyPlan()
+        var iterations = 0
         do {
             val oldPlan = newPlan.copyPlan()
             newPlan = processPlanP2(newPlan)
+            iterations++
         } while (!newPlan.identical(oldPlan))
+        // println("p2: $iterations")
         return newPlan
     }
 
@@ -160,23 +166,32 @@ object Day11 : Day {
         var hasSeenD5 = false
         var hasSeenD6 = false
         var hasSeenD7 = false
+        var inD0: Location = FLOOR
+        var inD1: Location = FLOOR
+        var inD2: Location = FLOOR
+        var inD3: Location = FLOOR
+        var inD4: Location = FLOOR
+        var inD5: Location = FLOOR
+        var inD6: Location = FLOOR
+        var inD7: Location = FLOOR
         for (delta in 1 until max(seatPlan.columns(), seatPlan.rows())) {
-            val inD0 = locationAt(x      , y-delta, seatPlan)
-            val inD1 = locationAt(x+delta, y-delta, seatPlan)
-            val inD2 = locationAt(x+delta, y      , seatPlan)
-            val inD3 = locationAt(x+delta, y+delta, seatPlan)
-            val inD4 = locationAt(x      , y+delta, seatPlan)
-            val inD5 = locationAt(x-delta, y+delta, seatPlan)
-            val inD6 = locationAt(x-delta, y      , seatPlan)
-            val inD7 = locationAt(x-delta, y-delta, seatPlan)
-            if (!hasSeenD0 && inD0 != FLOOR && inD0 != OUTSIDE) { locations.add(inD0); hasSeenD0 = true }
-            if (!hasSeenD1 && inD1 != FLOOR && inD1 != OUTSIDE) { locations.add(inD1); hasSeenD1 = true }
-            if (!hasSeenD2 && inD2 != FLOOR && inD2 != OUTSIDE) { locations.add(inD2); hasSeenD2 = true }
-            if (!hasSeenD3 && inD3 != FLOOR && inD3 != OUTSIDE) { locations.add(inD3); hasSeenD3 = true }
-            if (!hasSeenD4 && inD4 != FLOOR && inD4 != OUTSIDE) { locations.add(inD4); hasSeenD4 = true }
-            if (!hasSeenD5 && inD5 != FLOOR && inD5 != OUTSIDE) { locations.add(inD5); hasSeenD5 = true }
-            if (!hasSeenD6 && inD6 != FLOOR && inD6 != OUTSIDE) { locations.add(inD6); hasSeenD6 = true }
-            if (!hasSeenD7 && inD7 != FLOOR && inD7 != OUTSIDE) { locations.add(inD7); hasSeenD7 = true }
+            if (!hasSeenD0) inD0 = locationAt(x      , y-delta, seatPlan)
+            if (!hasSeenD1) inD1 = locationAt(x+delta, y-delta, seatPlan)
+            if (!hasSeenD2) inD2 = locationAt(x+delta, y      , seatPlan)
+            if (!hasSeenD3) inD3 = locationAt(x+delta, y+delta, seatPlan)
+            if (!hasSeenD4) inD4 = locationAt(x      , y+delta, seatPlan)
+            if (!hasSeenD5) inD5 = locationAt(x-delta, y+delta, seatPlan)
+            if (!hasSeenD6) inD6 = locationAt(x-delta, y      , seatPlan)
+            if (!hasSeenD7) inD7 = locationAt(x-delta, y-delta, seatPlan)
+            if (!hasSeenD0 && inD0 != FLOOR) { if (inD0 != OUTSIDE) locations.add(inD0); hasSeenD0 = true }
+            if (!hasSeenD1 && inD1 != FLOOR) { if (inD1 != OUTSIDE) locations.add(inD1); hasSeenD1 = true }
+            if (!hasSeenD2 && inD2 != FLOOR) { if (inD2 != OUTSIDE) locations.add(inD2); hasSeenD2 = true }
+            if (!hasSeenD3 && inD3 != FLOOR) { if (inD3 != OUTSIDE) locations.add(inD3); hasSeenD3 = true }
+            if (!hasSeenD4 && inD4 != FLOOR) { if (inD4 != OUTSIDE) locations.add(inD4); hasSeenD4 = true }
+            if (!hasSeenD5 && inD5 != FLOOR) { if (inD5 != OUTSIDE) locations.add(inD5); hasSeenD5 = true }
+            if (!hasSeenD6 && inD6 != FLOOR) { if (inD6 != OUTSIDE) locations.add(inD6); hasSeenD6 = true }
+            if (!hasSeenD7 && inD7 != FLOOR) { if (inD7 != OUTSIDE) locations.add(inD7); hasSeenD7 = true }
+            if (hasSeenD0 && hasSeenD1 && hasSeenD2 && hasSeenD3 && hasSeenD4 && hasSeenD5 && hasSeenD6  && hasSeenD7) break
         }
 
         return locations
