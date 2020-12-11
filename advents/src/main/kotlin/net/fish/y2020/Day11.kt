@@ -2,6 +2,7 @@ package net.fish.y2020
 
 import net.fish.Day
 import net.fish.resourceLines
+import net.fish.y2020.Day11.Location
 import net.fish.y2020.Day11.Location.EMPTY
 import net.fish.y2020.Day11.Location.FLOOR
 import net.fish.y2020.Day11.Location.OCCUPIED
@@ -14,8 +15,8 @@ typealias SeatPlan<T> = Array<Array<T>>
 object Day11 : Day {
     private val seatPlan = toSeatPlan(resourceLines(2020, 11))
 
-    override fun part1() = simulatePeopleP1(seatPlan).countOccupied()
-    override fun part2() = simulatePeopleP2(seatPlan).countOccupied()
+    override fun part1() = simulatePassengers(seatPlan, 4, ::around).countOccupied()
+    override fun part2() = simulatePassengers(seatPlan, 5, ::canSee).countOccupied()
 
     fun toSeatPlan(rawData: List<String>): SeatPlan<Location> {
         val columns = rawData[0].length
@@ -29,57 +30,28 @@ object Day11 : Day {
         return locations
     }
 
-    fun simulatePeopleP1(seatPlan: SeatPlan<Location>): SeatPlan<Location> {
+    fun simulatePassengers(seatPlan: SeatPlan<Location>, tollerance: Int, los: (Int, Int, SeatPlan<Location>) -> List<Location>): SeatPlan<Location> {
         var newPlan: SeatPlan<Location> = seatPlan.copyPlan()
         var iterations = 0
         do {
             val oldPlan = newPlan.copyPlan()
-            newPlan = processPlanP1(newPlan)
-            iterations++
-        } while (!newPlan.identical(oldPlan))
-        // println("p1: $iterations")
-        return newPlan
-    }
-
-    fun processPlanP1(seatPlan: SeatPlan<Location>): SeatPlan<Location> {
-        val newPlan = createEmptyPlanFrom(seatPlan)
-        lr@ for(row in 0 until seatPlan.rows()) {
-            lc@ for (column in 0 until seatPlan.columns()) {
-                val currentLocation = locationAt(column, row, seatPlan)
-                if (currentLocation == FLOOR) continue@lc
-                val around = around(column, row, seatPlan)
-                newPlan[row][column] = when {
-                    (currentLocation == EMPTY) && (around.count { it == OCCUPIED } == 0) -> OCCUPIED
-                    (currentLocation == OCCUPIED) && (around.count { it == OCCUPIED } >= 4) -> EMPTY
-                    else -> currentLocation
-                }
-            }
-        }
-        return newPlan
-    }
-
-    fun simulatePeopleP2(seatPlan: SeatPlan<Location>): SeatPlan<Location> {
-        var newPlan: SeatPlan<Location> = seatPlan.copyPlan()
-        var iterations = 0
-        do {
-            val oldPlan = newPlan.copyPlan()
-            newPlan = processPlanP2(newPlan)
+            newPlan = iteratePlan(newPlan, tollerance, los)
             iterations++
         } while (!newPlan.identical(oldPlan))
         // println("p2: $iterations")
         return newPlan
     }
 
-    fun processPlanP2(seatPlan: SeatPlan<Location>): SeatPlan<Location> {
+    fun iteratePlan(seatPlan: SeatPlan<Location>, tollerance: Int, los: (Int, Int, SeatPlan<Location>) -> List<Location>): SeatPlan<Location> {
         val newPlan = createEmptyPlanFrom(seatPlan)
         lr@ for(row in 0 until seatPlan.rows()) {
             lc@ for (column in 0 until seatPlan.columns()) {
-                val currentLocation = locationAt(column, row, seatPlan)
+                val currentLocation = seatPlan.locationAt(column, row)
                 if (currentLocation == FLOOR) continue@lc
-                val around = canSee(column, row, seatPlan)
+                val seenLocations = los(column, row, seatPlan)
                 newPlan[row][column] = when {
-                    (currentLocation == EMPTY) && (around.count { it == OCCUPIED } == 0) -> OCCUPIED
-                    (currentLocation == OCCUPIED) && (around.count { it == OCCUPIED } >= 5) -> EMPTY
+                    (currentLocation == EMPTY) && (seenLocations.count { it == OCCUPIED } == 0) -> OCCUPIED
+                    (currentLocation == OCCUPIED) && (seenLocations.count { it == OCCUPIED } >= tollerance) -> EMPTY
                     else -> currentLocation
                 }
             }
@@ -87,72 +59,21 @@ object Day11 : Day {
         return newPlan
     }
 
-    fun SeatPlan<Location>.rows() = this.size
-    fun SeatPlan<Location>.columns() = this[0].size
-    fun SeatPlan<Location>.toGrid() {
-        for(row in 0 until this.rows()) {
-            for(column in 0 until this.columns()) {
-                print(locationAt(column, row, this).value)
-            }
-            println()
-        }
-        println()
-    }
-
-    fun SeatPlan<Location>.copyPlan(): SeatPlan<Location> {
-        val newPlan = createEmptyPlanFrom(this)
-        for(row in 0 until this.rows()) {
-            for(column in 0 until this.columns()) {
-                newPlan[row][column] = locationAt(column, row, this)
-            }
-        }
-        return newPlan
-    }
-
-    fun SeatPlan<Location>.identical(other: SeatPlan<Location>): Boolean {
-        for(row in 0 until this.rows()) {
-            for(column in 0 until this.columns()) {
-                if (locationAt(column, row, this) != locationAt(column, row, other)) {
-                    return false
-                }
-            }
-        }
-        return true
-    }
-
-    fun SeatPlan<Location>.countOccupied(): Int {
-        var count = 0
-        for(row in 0 until this.rows()) {
-            for(column in 0 until this.columns()) {
-                if (locationAt(column, row, this) == OCCUPIED) count++
-            }
-        }
-        return count
-    }
-
     fun createEmptyPlanFrom(seatPlan: SeatPlan<Location>): SeatPlan<Location> {
         return Pair(seatPlan.rows(), seatPlan.columns()).createArray(FLOOR)
     }
 
-    fun locationAt(x: Int, y: Int, plan: SeatPlan<Location>): Location {
-        return when {
-            x >= plan[0].size || x < 0 -> OUTSIDE
-            y >= plan.size || y < 0 -> OUTSIDE
-            else -> plan[y][x]
-        }
-    }
-
     fun around(x: Int, y: Int, seatPlan: SeatPlan<Location>): List<Location> {
         return listOf(
-            locationAt(x-1, y-1, seatPlan),
-            locationAt(x  , y-1, seatPlan),
-            locationAt(x+1, y-1, seatPlan),
-            locationAt(x-1, y  , seatPlan),
+            seatPlan.locationAt(x-1, y-1),
+            seatPlan.locationAt(x, y-1),
+            seatPlan.locationAt(x+1, y-1),
+            seatPlan.locationAt(x-1, y),
             // locationAt(x-0, y  , seatPlan),
-            locationAt(x+1, y  , seatPlan),
-            locationAt(x-1, y+1, seatPlan),
-            locationAt(x  , y+1, seatPlan),
-            locationAt(x+1, y+1, seatPlan),
+            seatPlan.locationAt(x+1, y),
+            seatPlan.locationAt(x-1, y+1),
+            seatPlan.locationAt(x, y+1),
+            seatPlan.locationAt(x+1, y+1),
         )
     }
 
@@ -175,14 +96,14 @@ object Day11 : Day {
         var inD6: Location = FLOOR
         var inD7: Location = FLOOR
         for (delta in 1 until max(seatPlan.columns(), seatPlan.rows())) {
-            if (!hasSeenD0) inD0 = locationAt(x      , y-delta, seatPlan)
-            if (!hasSeenD1) inD1 = locationAt(x+delta, y-delta, seatPlan)
-            if (!hasSeenD2) inD2 = locationAt(x+delta, y      , seatPlan)
-            if (!hasSeenD3) inD3 = locationAt(x+delta, y+delta, seatPlan)
-            if (!hasSeenD4) inD4 = locationAt(x      , y+delta, seatPlan)
-            if (!hasSeenD5) inD5 = locationAt(x-delta, y+delta, seatPlan)
-            if (!hasSeenD6) inD6 = locationAt(x-delta, y      , seatPlan)
-            if (!hasSeenD7) inD7 = locationAt(x-delta, y-delta, seatPlan)
+            if (!hasSeenD0) inD0 = seatPlan.locationAt(x, y-delta)
+            if (!hasSeenD1) inD1 = seatPlan.locationAt(x+delta, y-delta)
+            if (!hasSeenD2) inD2 = seatPlan.locationAt(x+delta, y)
+            if (!hasSeenD3) inD3 = seatPlan.locationAt(x+delta, y+delta)
+            if (!hasSeenD4) inD4 = seatPlan.locationAt(x, y+delta)
+            if (!hasSeenD5) inD5 = seatPlan.locationAt(x-delta, y+delta)
+            if (!hasSeenD6) inD6 = seatPlan.locationAt(x-delta, y)
+            if (!hasSeenD7) inD7 = seatPlan.locationAt(x-delta, y-delta)
             if (!hasSeenD0 && inD0 != FLOOR) { if (inD0 != OUTSIDE) locations.add(inD0); hasSeenD0 = true }
             if (!hasSeenD1 && inD1 != FLOOR) { if (inD1 != OUTSIDE) locations.add(inD1); hasSeenD1 = true }
             if (!hasSeenD2 && inD2 != FLOOR) { if (inD2 != OUTSIDE) locations.add(inD2); hasSeenD2 = true }
@@ -214,6 +135,88 @@ object Day11 : Day {
 }
 
 inline fun<reified T> Pair<Int,Int>.createArray(initialValue:T) = Array(this.first){ Array(this.second){initialValue}}
+
+fun SeatPlan<Location>.rows() = this.size
+fun SeatPlan<Location>.columns() = this[0].size
+
+fun SeatPlan<Location>.locationAt(x: Int, y: Int): Location {
+    return when {
+        x >= this[0].size || x < 0 -> OUTSIDE
+        y >= size || y < 0 -> OUTSIDE
+        else -> this[y][x]
+    }
+}
+
+fun SeatPlan<Location>.printPlan() {
+    for(row in 0 until this.rows()) {
+        for(column in 0 until this.columns()) {
+            print(this.locationAt(column, row).value)
+        }
+        println()
+    }
+    println()
+}
+
+fun SeatPlan<Location>.copyPlan(): SeatPlan<Location> {
+    val newPlan = Day11.createEmptyPlanFrom(this)
+
+    this.forEachIndexed { x, y, location ->
+        newPlan[y][x] = location
+    }
+
+    return newPlan
+}
+
+fun SeatPlan<Location>.identical(other: SeatPlan<Location>): Boolean {
+    for(row in 0 until this.rows()) {
+        for(column in 0 until this.columns()) {
+            if (this.locationAt(column, row) != other.locationAt(column, row)) {
+                return false
+            }
+        }
+    }
+    return true
+}
+
+fun SeatPlan<Location>.countOccupied(): Int {
+    var count = 0
+    for(row in 0 until this.rows()) {
+        for(column in 0 until this.columns()) {
+            if (this.locationAt(column, row) == OCCUPIED) count++
+        }
+    }
+    return count
+}
+
+inline fun <reified T> SeatPlan<T>.forEach2D(action: (T) -> Unit) {
+    for (array in this) for (element in array) action(element)
+}
+
+inline fun <Location, R> SeatPlan<Location>.map(action: (Location) -> R): List<R> {
+    val rs = mutableListOf<R>()
+    for (array in this) for (element in array) {
+        rs.add(action(element))
+    }
+    return rs
+}
+
+inline fun <R> SeatPlan<Location>.mapIndexed(action: (Int, Int, Location) -> R): List<R> {
+    val rs = mutableListOf<R>()
+    for(row in 0 until this.rows()) {
+        for (column in 0 until this.columns()) {
+            rs.add(action(column, row, this.locationAt(column, row)))
+        }
+    }
+    return rs
+}
+
+inline fun <R> SeatPlan<Location>.forEachIndexed(action: (Int, Int, Location) -> R) {
+    for(row in 0 until this.rows()) {
+        for (column in 0 until this.columns()) {
+            action(column, row, this.locationAt(column, row))
+        }
+    }
+}
 
 /*
 

@@ -32,6 +32,11 @@ object Runner {
         val dayName = day.javaClass.simpleName.replace("Day", "").toInt()
 
         val date = LocalDate.of(year, 12, dayName)
+        // warm up the tests and the JIT compiler. This speeds the final run up massively
+        repeat((0 until 5).count()) {
+            day.part1()
+            day.part2()
+        }
 
         val start1 = System.nanoTime()
         val p1 = day.part1()
