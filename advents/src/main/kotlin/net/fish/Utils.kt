@@ -1,9 +1,5 @@
 package net.fish
 
-import net.fish.Direction.EAST
-import net.fish.Direction.NORTH
-import net.fish.Direction.SOUTH
-import net.fish.Direction.WEST
 import java.io.InputStream
 import java.time.Duration
 import java.util.stream.Collectors
@@ -81,45 +77,13 @@ fun wireManhattanDistance(path1: PathPositions, path2: PathPositions): Int {
 
 fun manhattenDistance(coordinates: Pair<Int, Int>): Int = abs(coordinates.first) + abs(coordinates.second)
 
-fun convertWirePathsToCoordinates(directions: List<String>): PathPositions {
-    // Starting at 0,0 accumulate the coordinates that the directions touch in an infinite grid
-    val coordinates = mutableListOf<Pair<Int, Int>>()
-    var currentPosition = Pair(0, 0)
-    directions.forEach { direction ->
-        val count = direction.substring(1).toInt()
-        currentPosition = when (direction[0]) {
-            'D' -> addDown(currentPosition, coordinates, count)
-            'U' -> addUp(currentPosition, coordinates, count)
-            'L' -> addLeft(currentPosition, coordinates, count)
-            'R' -> addRight(currentPosition, coordinates, count)
-            else -> throw Exception("Unknown direction: $direction")
-        }
+fun move(from: Pair<Int, Int>, times: Int, direction: Pair<Int, Int>, history: MutableList<Pair<Int, Int>>): Pair<Int, Int> {
+    var tracking = from
+    (0 until times).forEach {
+        tracking = Pair(tracking.first + direction.first, tracking.second + direction.second)
+        history.add(tracking)
     }
-    return coordinates.toList()
-}
-
-fun addUp(from: Pair<Int, Int>, coordinates: MutableList<Pair<Int, Int>>, length: Int): Pair<Int, Int> {
-    val range = (from.second + 1) until (from.second + length + 1)
-    range.forEach { coordinates.add(Pair(from.first, it)) }
-    return Pair(from.first, from.second + length)
-}
-
-fun addDown(from: Pair<Int, Int>, coordinates: MutableList<Pair<Int, Int>>, length: Int): Pair<Int, Int> {
-    val progression = (from.second - 1) downTo (from.second - length)
-    progression.forEach { coordinates.add(Pair(from.first, it)) }
-    return Pair(from.first, from.second - length)
-}
-
-fun addRight(from: Pair<Int, Int>, coordinates: MutableList<Pair<Int, Int>>, length: Int): Pair<Int, Int> {
-    val range = (from.first + 1)..(from.first + length)
-    range.forEach { coordinates.add(Pair(it, from.second)) }
-    return Pair(from.first + length, from.second)
-}
-
-fun addLeft(from: Pair<Int, Int>, coordinates: MutableList<Pair<Int, Int>>, length: Int): Pair<Int, Int> {
-    val range = (from.first - 1) downTo from.first - length
-    range.forEach { coordinates.add(Pair(it, from.second)) }
-    return Pair(from.first - length, from.second)
+    return history.last()
 }
 
 fun stepsTo(intersection: Pair<Int, Int>, points: PathPositions): Int {

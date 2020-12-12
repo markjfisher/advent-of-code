@@ -32,7 +32,6 @@ enum class Direction {
 
     fun turnL(degrees: Int) = turnR(360 - degrees)
 
-
     companion object {
         fun from(s: String) : Direction = from(s.first())
         fun from(char: Char) : Direction = when(char.toUpperCase()) {
@@ -41,11 +40,16 @@ enum class Direction {
             'E' -> EAST
             'W' -> WEST
 
-            'R' -> EAST
-            'L' -> WEST
-            'U' -> NORTH
-            'D' -> SOUTH
+//            'R' -> EAST
+//            'L' -> WEST
+//            'U' -> NORTH
+//            'D' -> SOUTH
             else -> throw IllegalArgumentException("Can't map $char to Direction")
+        }
+
+        fun from(c: Char, heading: Direction): Direction {
+            val dir = c.toUpperCase()
+            return if (dir == 'F') return heading else this.from(dir)
         }
     }
 }

@@ -2,98 +2,129 @@ package net.fish.y2020
 
 import net.fish.Day
 import net.fish.Direction
+import net.fish.Direction.EAST
+import net.fish.Direction.NORTH
+import net.fish.Direction.SOUTH
+import net.fish.Direction.WEST
 import net.fish.PathPositions
-import net.fish.addDown
-import net.fish.addLeft
-import net.fish.addRight
-import net.fish.addUp
 import net.fish.manhattenDistance
+import net.fish.move
 import net.fish.resourceLines
 
 object Day12 : Day {
     private val instructions = resourceLines(2020, 12)
 
-    override fun part1() = manhattenDistance(convertInstructionsToPathP1(instructions).last())
-    override fun part2() = manhattenDistance(convertInstructionsToPathP2(instructions).last())
+    override fun part1() = manhattenDistance(toPathP1(instructions).last())
+    override fun part2() = manhattenDistance(toPathP2(instructions).last())
 
-    fun convertInstructionsToPathP1(directions: List<String>, initialHeading: Direction = Direction.EAST): PathPositions {
-        // Starting at 0,0 accumulate the coordinates that the directions touch in an infinite grid
-        var currentHeading = initialHeading
-        var currentPosition = Pair(0, 0)
-        val coordinates = mutableListOf<Pair<Int, Int>>()
-        coordinates.add(currentPosition)
-        directions.forEach { direction ->
-            val count = direction.substring(1).toInt()
-            currentPosition = when (direction[0]) {
-                'N' -> addUp(currentPosition, coordinates, count)
-                'E' -> addRight(currentPosition, coordinates, count)
-                'S' -> addDown(currentPosition, coordinates, count)
-                'W' -> addLeft(currentPosition, coordinates, count)
-                'L' -> {
-                    currentHeading = currentHeading.turnL(count)
-                    currentPosition
-                }
-                'R' -> {
-                    currentHeading = currentHeading.turnR(count)
-                    currentPosition
-                }
-                'F' -> {
-                    when (currentHeading) {
-                        Direction.NORTH -> addUp(currentPosition, coordinates, count)
-                        Direction.EAST -> addRight(currentPosition, coordinates, count)
-                        Direction.SOUTH -> addDown(currentPosition, coordinates, count)
-                        Direction.WEST -> addLeft(currentPosition, coordinates, count)
-                    }
-                }
-                else -> throw Exception("Unknown direction: $direction")
-            }
-        }
-        return coordinates.toList()
+    fun toPathP1(directions: List<String>, initialHeading: Direction = EAST): PathPositions {
+        val ferry = FerryP1(Pair(0, 0), initialHeading, mutableListOf(Pair(0, 0)))
+        return directions.fold(ferry, FerryP1::transform).locationHistory.toList()
     }
 
-    fun convertInstructionsToPathP2(directions: List<String>, initialWayPoint: Pair<Int, Int> = Pair(10, 1)): PathPositions {
-        var wayPoint = initialWayPoint
-        var currentPosition = Pair(0, 0)
-        val coordinates = mutableListOf<Pair<Int, Int>>()
-        coordinates.add(currentPosition)
-        directions.forEach { direction ->
-            val count = direction.substring(1).toInt()
-            when (direction[0]) {
-                'N' -> wayPoint = Pair(wayPoint.first, wayPoint.second + count)
-                'E' -> wayPoint = Pair(wayPoint.first + count, wayPoint.second)
-                'S' -> wayPoint = Pair(wayPoint.first, wayPoint.second - count)
-                'W' -> wayPoint = Pair(wayPoint.first - count, wayPoint.second)
-                'L' -> wayPoint = rotateWaypoint(count, wayPoint)
-                'R' -> wayPoint = rotateWaypoint(360 - count, wayPoint)
-                'F' -> currentPosition = move(count, currentPosition, wayPoint, coordinates)
-                else -> throw Exception("Unknown direction: $direction")
-            }
-        }
-        return coordinates.toList()
+    fun toPathP2(directions: List<String>, initialWayPoint: Pair<Int, Int> = Pair(10, 1)): PathPositions {
+        val ferry = FerryP2(Pair(0, 0), initialWayPoint, mutableListOf(Pair(0, 0)))
+        return directions.fold(ferry, FerryP2::transform).locationHistory.toList()
     }
-
-    private fun move(length: Int, currentPosition: Pair<Int, Int>, wayPoint: Pair<Int, Int>, coordinates: MutableList<Pair<Int, Int>>): Pair<Int, Int> {
-        var movingLocation = currentPosition
-        (0 until length).forEach {
-            movingLocation = Pair(movingLocation.first + wayPoint.first, movingLocation.second + wayPoint.second)
-            coordinates.add(movingLocation)
-        }
-        return movingLocation
-    }
-
-    private fun rotateWaypoint(degrees: Int, wayPoint: Pair<Int, Int>) = when (degrees) {
-        90 -> Pair(-wayPoint.second, wayPoint.first)
-        180 -> Pair(-wayPoint.first, -wayPoint.second)
-        270 -> Pair(wayPoint.second, -wayPoint.first)
-        else -> throw Exception("Unknown angle $degrees")
-    }
-
 
     @JvmStatic
     fun main(args: Array<String>) {
         println(part1())
         println(part2())
     }
+}
+
+data class FerryP1(
+    val position: Pair<Int, Int>,
+    val heading: Direction,
+    val locationHistory: List<Pair<Int, Int>>
+) {
+    fun transform(instruction: String): FerryP1 {
+        var dc = instruction[0]
+        if (dc == 'F') dc = heading.name.first()
+        val count = instruction.substring(1).toInt()
+        return when (dc) {
+            'N' -> moveFerry(count, NORTH)
+            'E' -> moveFerry(count, EAST)
+            'S' -> moveFerry(count, SOUTH)
+            'W' -> moveFerry(count, WEST)
+            'R' -> changeHeading(count)
+            'L' -> changeHeading(360-count)
+            else -> throw Exception("Unknown direction instruction: $instruction")
+        }
+    }
+
+    private fun moveFerry(count: Int, direction: Direction): FerryP1 {
+        val newHistory = locationHistory.toMutableList()
+        val newPosition = when(direction) {
+            NORTH -> move(position, count, Pair(0, 1), newHistory)
+            EAST -> move(position, count, Pair(1, 0), newHistory)
+            SOUTH -> move(position, count, Pair(0, -1), newHistory)
+            WEST -> move(position, count, Pair(-1, 0), newHistory)
+        }
+        return FerryP1(newPosition, heading, newHistory.toList())
+    }
+
+    private fun changeHeading(degrees: Int): FerryP1 {
+        val newHeading = when(degrees) {
+            90 -> heading.cw()
+            180 -> heading.cw().cw()
+            270 -> heading.ccw()
+            else -> throw Exception("Unknown angle $degrees")
+        }
+        return FerryP1(position, newHeading, locationHistory)
+    }
+}
+
+data class FerryP2(
+    val position: Pair<Int, Int>,
+    val wayPoint: Pair<Int, Int>,
+    val locationHistory: List<Pair<Int, Int>>
+) {
+    fun transform(instruction: String): FerryP2 {
+        val count = instruction.substring(1).toInt()
+        return when (instruction[0]) {
+            'N' -> moveWaypoint(count, NORTH)
+            'E' -> moveWaypoint(count, EAST)
+            'S' -> moveWaypoint(count, SOUTH)
+            'W' -> moveWaypoint(count, WEST)
+            'L' -> rotateWaypoint(count)
+            'R' -> rotateWaypoint(360 - count)
+            'F' -> forward(count)
+            else -> throw Exception("Unknown instruction: $instruction")
+        }
+    }
+
+    private fun forward(count: Int): FerryP2 {
+        var movingLocation = position
+        val newHistory = locationHistory.toMutableList()
+        (0 until count).forEach {
+            movingLocation = Pair(movingLocation.first + wayPoint.first, movingLocation.second + wayPoint.second)
+            newHistory.add(movingLocation)
+        }
+        return FerryP2(movingLocation, wayPoint, newHistory)
+    }
+
+    private fun moveWaypoint(count: Int, direction: Direction): FerryP2 {
+        val newWaypoint = when (direction) {
+            NORTH -> Pair(wayPoint.first, wayPoint.second + count)
+            EAST  -> Pair(wayPoint.first + count, wayPoint.second)
+            SOUTH -> Pair(wayPoint.first, wayPoint.second - count)
+            WEST -> Pair(wayPoint.first - count, wayPoint.second)
+        }
+        return FerryP2(position, newWaypoint, locationHistory)
+    }
+
+    private fun rotateWaypoint(degrees: Int): FerryP2 {
+        val newWaypoint = when (degrees) {
+            90 -> Pair(-wayPoint.second, wayPoint.first)
+            180 -> Pair(-wayPoint.first, -wayPoint.second)
+            270 -> Pair(wayPoint.second, -wayPoint.first)
+            else -> throw Exception("Unknown angle $degrees")
+        }
+        return FerryP2(position, newWaypoint, locationHistory)
+    }
+
 }
 
 /*

@@ -1,13 +1,10 @@
 package net.fish.y2019
 
-import net.fish.addDown
-import net.fish.addLeft
-import net.fish.addRight
-import net.fish.addUp
-import net.fish.convertWirePathsToCoordinates
 import net.fish.findIntersections
-import net.fish.wireManhattanDistance
+import net.fish.move
 import net.fish.stepsTo
+import net.fish.wireManhattanDistance
+import net.fish.y2019.Day03.convertWirePathsToCoordinates
 import net.fish.y2019.Day03.minimumSignalDelay
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -24,28 +21,28 @@ class Day03Test {
     @Test
     fun `adding up coordinates`() {
         val coordinates = mutableListOf<Pair<Int, Int>>()
-        assertThat(addUp(Pair(0, 0), coordinates, 5)).isEqualTo(Pair(0, 5))
+        assertThat(move(Pair(0, 0), 5, Pair(0, 1), coordinates)).isEqualTo(Pair(0, 5))
         assertThat(coordinates).containsExactly(Pair(0, 1), Pair(0, 2), Pair(0, 3), Pair(0, 4), Pair(0, 5))
     }
 
     @Test
     fun `adding down coordinates`() {
         val coordinates = mutableListOf<Pair<Int, Int>>()
-        assertThat(addDown(Pair(10, 10), coordinates, 5)).isEqualTo(Pair(10, 5))
+        assertThat(move(Pair(10, 10), 5, Pair(0, -1), coordinates)).isEqualTo(Pair(10, 5))
         assertThat(coordinates).containsExactly(Pair(10, 9), Pair(10, 8), Pair(10, 7), Pair(10, 6), Pair(10, 5))
     }
 
     @Test
     fun `adding right coordinates`() {
         val coordinates = mutableListOf<Pair<Int, Int>>()
-        assertThat(addRight(Pair(10, 10), coordinates, 5)).isEqualTo(Pair(15, 10))
+        assertThat(move(Pair(10, 10), 5, Pair(1, 0), coordinates)).isEqualTo(Pair(15, 10))
         assertThat(coordinates).containsExactly(Pair(11, 10), Pair(12, 10), Pair(13, 10), Pair(14, 10), Pair(15, 10))
     }
 
     @Test
     fun `adding left coordinates`() {
         val coordinates = mutableListOf<Pair<Int, Int>>()
-        assertThat(addLeft(Pair(10, 10), coordinates, 5)).isEqualTo(Pair(5, 10))
+        assertThat(move(Pair(10, 10), 5, Pair(-1, 0), coordinates)).isEqualTo(Pair(5, 10))
         assertThat(coordinates).containsExactly(Pair(9, 10), Pair(8, 10), Pair(7, 10), Pair(6, 10), Pair(5, 10))
     }
 

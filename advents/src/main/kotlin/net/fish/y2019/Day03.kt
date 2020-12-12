@@ -2,11 +2,11 @@ package net.fish.y2019
 
 import net.fish.Day
 import net.fish.PathPositions
-import net.fish.convertWirePathsToCoordinates
 import net.fish.findIntersections
-import net.fish.wireManhattanDistance
+import net.fish.move
 import net.fish.resourceLines
 import net.fish.stepsTo
+import net.fish.wireManhattanDistance
 
 object Day03 : Day {
     private val wireData = resourceLines(2019, 3)
@@ -19,6 +19,24 @@ object Day03 : Day {
 
     override fun part1()= wireManhattanDistance(wireData[0], wireData[1])
     override fun part2()= minimumSignalDelay(wireData[0], wireData[1])
+
+    fun convertWirePathsToCoordinates(directions: List<String>): PathPositions {
+        // Starting at 0,0 accumulate the coordinates that the directions touch in an infinite grid
+        val coordinates = mutableListOf<Pair<Int, Int>>()
+        var currentPosition = Pair(0, 0)
+        directions.forEach { direction ->
+            val count = direction.substring(1).toInt()
+            currentPosition = when (direction[0]) {
+                'D' -> move(currentPosition, count, Pair(0, -1), coordinates)
+                'U' -> move(currentPosition, count, Pair(0, 1), coordinates)
+                'L' -> move(currentPosition, count, Pair(-1, 0), coordinates)
+                'R' -> move(currentPosition, count, Pair(1, 0), coordinates)
+                else -> throw Exception("Unknown direction: $direction")
+            }
+        }
+        return coordinates.toList()
+    }
+
 
     fun minimumSignalDelay(path1: PathPositions, path2: PathPositions): Int {
         return findIntersections(path1, path2)
