@@ -82,35 +82,35 @@ data class FerryP2(
     val locationHistory: List<Pair<Int, Int>>
 ) {
     fun transform(instruction: String): FerryP2 {
-        val count = instruction.substring(1).toInt()
+        val value = instruction.substring(1).toInt()
         return when (instruction[0]) {
-            'N' -> moveWaypoint(count, NORTH)
-            'E' -> moveWaypoint(count, EAST)
-            'S' -> moveWaypoint(count, SOUTH)
-            'W' -> moveWaypoint(count, WEST)
-            'L' -> rotateWaypoint(count)
-            'R' -> rotateWaypoint(360 - count)
-            'F' -> forward(count)
+            'N' -> moveWaypoint(value, NORTH)
+            'E' -> moveWaypoint(value, EAST)
+            'S' -> moveWaypoint(value, SOUTH)
+            'W' -> moveWaypoint(value, WEST)
+            'L' -> rotateWaypoint(value)
+            'R' -> rotateWaypoint(360 - value)
+            'F' -> forward(value)
             else -> throw Exception("Unknown instruction: $instruction")
         }
     }
 
-    private fun forward(count: Int): FerryP2 {
+    private fun forward(value: Int): FerryP2 {
         var movingLocation = position
         val newHistory = locationHistory.toMutableList()
-        (0 until count).forEach {
+        (0 until value).forEach {
             movingLocation = Pair(movingLocation.first + wayPoint.first, movingLocation.second + wayPoint.second)
             newHistory.add(movingLocation)
         }
-        return FerryP2(movingLocation, wayPoint, newHistory)
+        return FerryP2(movingLocation, wayPoint, newHistory.toList())
     }
 
-    private fun moveWaypoint(count: Int, direction: Direction): FerryP2 {
+    private fun moveWaypoint(value: Int, direction: Direction): FerryP2 {
         val newWaypoint = when (direction) {
-            NORTH -> Pair(wayPoint.first, wayPoint.second + count)
-            EAST  -> Pair(wayPoint.first + count, wayPoint.second)
-            SOUTH -> Pair(wayPoint.first, wayPoint.second - count)
-            WEST -> Pair(wayPoint.first - count, wayPoint.second)
+            NORTH -> Pair(wayPoint.first, wayPoint.second + value)
+            EAST  -> Pair(wayPoint.first + value, wayPoint.second)
+            SOUTH -> Pair(wayPoint.first, wayPoint.second - value)
+            WEST -> Pair(wayPoint.first - value, wayPoint.second)
         }
         return FerryP2(position, newWaypoint, locationHistory)
     }
