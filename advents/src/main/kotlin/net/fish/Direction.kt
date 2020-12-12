@@ -1,5 +1,6 @@
 package net.fish
 
+import java.lang.Exception
 import java.lang.IllegalArgumentException
 
 enum class Direction {
@@ -21,6 +22,16 @@ enum class Direction {
         SOUTH -> EAST
         EAST -> NORTH
     }
+
+    fun turnR(degrees: Int) = when (degrees) {
+        90 -> this.cw()
+        180 -> this.cw().cw()
+        270 -> this.ccw()
+        else -> throw Exception("Unknown angle: $degrees")
+    }
+
+    fun turnL(degrees: Int) = turnR(360 - degrees)
+
 
     companion object {
         fun from(s: String) : Direction = from(s.first())

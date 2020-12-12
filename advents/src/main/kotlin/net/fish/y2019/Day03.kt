@@ -1,9 +1,12 @@
 package net.fish.y2019
 
 import net.fish.Day
-import net.fish.PathsType
+import net.fish.PathPositions
+import net.fish.convertWirePathsToCoordinates
+import net.fish.findIntersections
+import net.fish.wireManhattanDistance
 import net.fish.resourceLines
-import kotlin.math.abs
+import net.fish.stepsTo
 
 object Day03 : Day {
     private val wireData = resourceLines(2019, 3)
@@ -14,69 +17,13 @@ object Day03 : Day {
         if (wireData.size != 2) throw Exception("Bad wire data")
     }
 
-    override fun part1()= manhattanDistance(wireData[0], wireData[1])
+    override fun part1()= wireManhattanDistance(wireData[0], wireData[1])
     override fun part2()= minimumSignalDelay(wireData[0], wireData[1])
 
-    fun manhattanDistance(path1: PathsType, path2: PathsType): Int {
-        return findIntersections(path1, path2)
-            .map { abs(it.first) + abs(it.second) }
-            .filter { it > 0 }
-            .minOrNull() ?: 0
-    }
-
-    fun minimumSignalDelay(path1: PathsType, path2: PathsType): Int {
+    fun minimumSignalDelay(path1: PathPositions, path2: PathPositions): Int {
         return findIntersections(path1, path2)
             .map { intersection -> stepsTo(intersection, path1) + stepsTo(intersection, path2) }
             .minOrNull() ?: 0
-    }
-
-    fun stepsTo(intersection: Pair<Int, Int>, points: PathsType): Int {
-        return points.indexOfFirst { it == intersection } + 1
-    }
-
-    fun findIntersections(points1: PathsType, points2: PathsType): Set<Pair<Int, Int>> {
-        return points1.intersect(points2)
-    }
-
-    fun convertWirePathsToCoordinates(directions: List<String>): PathsType {
-        // Starting at 0,0 accumulate the coordinates that the directions touch in an infinite grid
-        val coordinates = mutableListOf<Pair<Int, Int>>()
-        var currentPosition = Pair(0, 0)
-        directions.forEach { direction ->
-            val count = direction.substring(1).toInt()
-            currentPosition = when (direction[0]) {
-                'D' -> addDown(currentPosition, coordinates, count)
-                'U' -> addUp(currentPosition, coordinates, count)
-                'L' -> addLeft(currentPosition, coordinates, count)
-                'R' -> addRight(currentPosition, coordinates, count)
-                else -> throw Exception("Unknown direction: $direction")
-            }
-        }
-        return coordinates.toList()
-    }
-
-    fun addUp(from: Pair<Int, Int>, coordinates: MutableList<Pair<Int, Int>>, length: Int): Pair<Int, Int> {
-        val range = (from.second + 1) until (from.second + length + 1)
-        range.forEach { coordinates.add(Pair(from.first, it)) }
-        return Pair(from.first, from.second + length)
-    }
-
-    fun addDown(from: Pair<Int, Int>, coordinates: MutableList<Pair<Int, Int>>, length: Int): Pair<Int, Int> {
-        val progression = (from.second - 1) downTo (from.second - length)
-        progression.forEach { coordinates.add(Pair(from.first, it)) }
-        return Pair(from.first, from.second - length)
-    }
-
-    fun addRight(from: Pair<Int, Int>, coordinates: MutableList<Pair<Int, Int>>, length: Int): Pair<Int, Int> {
-        val range = (from.first + 1)..(from.first + length)
-        range.forEach { coordinates.add(Pair(it, from.second)) }
-        return Pair(from.first + length, from.second)
-    }
-
-    fun addLeft(from: Pair<Int, Int>, coordinates: MutableList<Pair<Int, Int>>, length: Int): Pair<Int, Int> {
-        val range = (from.first - 1) downTo from.first - length
-        range.forEach { coordinates.add(Pair(it, from.second)) }
-        return Pair(from.first - length, from.second)
     }
 
 }
