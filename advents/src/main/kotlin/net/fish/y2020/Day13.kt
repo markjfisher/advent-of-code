@@ -40,9 +40,8 @@ object Day13 : Day {
 
     fun nextMultipleWithOffsetSteppingBy(frequency: Int, startingAt: BigInteger, offset: Int, step: BigInteger): BigInteger {
         return generateSequence(startingAt) { it + step }
-            .dropWhile {
-                (it + offset.toBigInteger()) % frequency.toBigInteger() != BigInteger.ZERO
-            }.first()
+            .dropWhile { (it + offset.toBigInteger()) % frequency.toBigInteger() != BigInteger.ZERO }
+            .first()
     }
 
     fun generateInput(entries: Int, numPrimes: Int): String {
