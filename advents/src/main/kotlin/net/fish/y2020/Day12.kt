@@ -27,10 +27,27 @@ object Day12 : Day {
         return directions.fold(ferry, FerryP2::transform).locationHistory.toList()
     }
 
+    fun printLocations(paths: PathPositions) {
+        val minX = paths.minByOrNull { it.first }!!
+        val minY = paths.minByOrNull { it.second }!!
+        val maxX = paths.maxByOrNull { it.first }!!
+        val maxY = paths.maxByOrNull { it.second }!!
+        println("min/max: minX = $minX, minY = $minY, maxX = $maxX, maxY = $maxY")
+        println("range: ${maxX.first - minX.first}, ${maxY.second - minY.second}")
+        println("visited: ${paths.count()}")
+        println("end: ${paths.last()}")
+    }
+
+    fun doViz() {
+        val viz = Vis12(toPathP1(instructions))
+        viz.run()
+    }
+
     @JvmStatic
     fun main(args: Array<String>) {
         println(part1())
         println(part2())
+        doViz()
     }
 }
 

@@ -23,7 +23,6 @@ import org.lwjgl.system.MemoryStack
 import uno.glfw.GlfwWindow
 import uno.glfw.VSync
 import uno.glfw.glfw
-import kotlin.reflect.KMutableProperty0
 
 class BasicTest {
     lateinit var window: GlfwWindow

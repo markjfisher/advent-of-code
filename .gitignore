@@ -17,4 +17,5 @@ dist
 
 hs_err_pid*.log
 imgui.log
+imgui.log.lck
 
