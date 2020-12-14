@@ -108,6 +108,4 @@ class Day14Test {
         assertThat(computer.mask.bits).containsAllEntriesOf(mapOf(0 to Bit.X, 1 to Bit.X, 3 to Bit.X))
         assertThat(computer.pc).isEqualTo(4)
     }
-
-
 }

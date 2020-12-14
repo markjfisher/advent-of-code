@@ -14,14 +14,12 @@ object Day14 : Day {
     fun doPart1(program: List<String>): Long {
         val computer = DockingComputer(program)
         computer.run(computer::changeValues)
-        println("p1 memory addresses: ${computer.mem.memory.keys.count()}")
         return computer.mem.memory.values.sum()
     }
 
     fun doPart2(program: List<String>): Long {
         val computer = DockingComputer(program)
         computer.run(computer::changeAddresses)
-        println("p2 memory addresses: ${computer.mem.memory.keys.count()}")
         return computer.mem.memory.values.sum()
     }
 
