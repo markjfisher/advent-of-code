@@ -86,7 +86,11 @@ fun main() {
     println("In theory, the sum of numbers 0..${n - 1} is ${n * (n - 1) / 2}.")
     println("Which is consistent with a practical result of $sumNumbers.\n")
 
+    println("binary bits 5, sum = 2")
     BinaryBits(5).asSequence().filter {it.sum() == 2}.take(5).forEach { println(it) }
+
+    println("binary bits 2")
+    BinaryBits(2).toList().forEach { println(it) }
 
     println("\npermutations of 3 elements:")
     for(configuration in Permutations(3)) {
