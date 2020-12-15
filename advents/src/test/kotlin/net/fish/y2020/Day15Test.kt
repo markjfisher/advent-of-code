@@ -9,31 +9,26 @@ class Day15Test {
         val game = Day15.SequenceGame()
         game.add(0).add(3).add(6)
         assertThat(game.heard).containsAllEntriesOf(mapOf(0 to 1, 3 to 2, 6 to 3))
-        assertThat(game.isFirst).isTrue
         assertThat(game.round).isEqualTo(3)
         assertThat(game.lastSpokenAt).isEqualTo(0)
 
         game.step()
         assertThat(game.heard).containsAllEntriesOf(mapOf(0 to 4, 3 to 2, 6 to 3))
-        assertThat(game.isFirst).isFalse
         assertThat(game.round).isEqualTo(4)
         assertThat(game.lastSpokenAt).isEqualTo(1)
 
         game.step()
         assertThat(game.heard).containsAllEntriesOf(mapOf(0 to 4, 3 to 5, 6 to 3))
-        assertThat(game.isFirst).isFalse
         assertThat(game.round).isEqualTo(5)
         assertThat(game.lastSpokenAt).isEqualTo(2)
 
         game.step()
         assertThat(game.heard).containsAllEntriesOf(mapOf(0 to 4, 3 to 6, 6 to 3))
-        assertThat(game.isFirst).isFalse
         assertThat(game.round).isEqualTo(6)
         assertThat(game.lastSpokenAt).isEqualTo(5)
 
         game.step()
         assertThat(game.heard).containsAllEntriesOf(mapOf(0 to 4, 3 to 6, 6 to 3, 1 to 7))
-        assertThat(game.isFirst).isTrue
         assertThat(game.round).isEqualTo(7)
         assertThat(game.lastSpokenAt).isEqualTo(0)
     }

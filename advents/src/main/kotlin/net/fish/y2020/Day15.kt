@@ -20,28 +20,19 @@ object Day15 : Day {
         var heard: MutableMap<Int, Int> = mutableMapOf(),
         var lastSpokenAt: Int = -1,
         var round: Int = 0,
-        var isFirst: Boolean = true,
         var current: Int = 0
     ) {
         fun add(n: Int): SequenceGame {
             round++
             heard[n] = round
             lastSpokenAt = 0
-            isFirst = true
             return this
         }
 
         fun step() {
-            round++
-            val newValue = when(isFirst) {
-                true -> 0
-                else -> {
-                    round - lastSpokenAt - 1
-                }
-            }
-            isFirst = !heard.containsKey(newValue)
+            val newValue = if (lastSpokenAt == 0) 0 else round - lastSpokenAt
             lastSpokenAt = heard[newValue] ?: 0
-            heard[newValue] = round
+            heard[newValue] = ++round
             current = newValue
         }
 
