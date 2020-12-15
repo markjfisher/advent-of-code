@@ -76,11 +76,11 @@ data class DockingComputer(
     fun changeAddresses(instruction: String) {
         instructionExtractor.find(instruction)?.destructured!!.let { (l, r) ->
             val addressAsBits = Bit.toBits(Integer.toBinaryString(l.toInt())).toMutableMap()
-            val value = r.toInt()
+            val value = r.toLong()
             addressAsBits.putAll(mask.bits.filterNot { it.value == Bit.OFF })
             val addresses = Bit.toLongs(addressAsBits)
             addresses.forEach { address ->
-                mem.set(address, value.toLong())
+                mem.set(address, value)
             }
         }
     }
