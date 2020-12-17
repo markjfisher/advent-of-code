@@ -2,7 +2,6 @@ package net.fish
 
 // Useful combinations/permutations implementations from
 // https://medium.com/@voddan/a-handful-of-kotlin-permutations-7659c555d421
-// However, non of it is used, but the more efficient functions at the end...
 
 import java.util.*
 
