@@ -30,12 +30,11 @@ object Day16 : Day {
         val validOtherTickets = otherTickets.filter { validIds.containsAll(it) }
 
         // convert rows into columns, this way we have all the ids that must match a rule
-        val columns = (0 until rules.count()).map { i -> validOtherTickets.map { it[i] }.toMutableList() }
+        val columns = (0 until rules.count()).map { i -> validOtherTickets.map { it[i] } }
 
         // check each column to see which rules are valid for it
         val mapColumnNumberToRules = columns.mapIndexed { index, column ->
-            val matching = rules.filter { it.matches(column) }
-            index to matching
+            index to rules.filter { it.matches(column) }
         }.toMap()
 
         // we have a map of <column, list(rules)>, so iterate them assigning a rule to a column, sorting on list size, which increases from 1..n

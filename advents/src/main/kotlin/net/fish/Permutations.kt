@@ -31,10 +31,10 @@ interface Circular<T> : Iterable<T> {
     }
 }
 
-class Ring(val size: Int) : Circular<Int> {
+class Ring(val size: Int, private val offset: Int = 0) : Circular<Int> {
     private var state = 0
 
-    override fun state() = state
+    override fun state() = state + offset
     override fun inc() {state = (1 + state) % size}
     override fun isZero() = (state == 0)
     override fun hasNext() = (state != size - 1)
@@ -65,6 +65,11 @@ class BinaryBits(N: Int) : IntCombinations(N) {
     override fun state() = state.map {it.state()}.reversed()
 }
 
+class AroundSpace(N: Int) : IntCombinations(N) {
+    override val state = Array(N) { Ring(3, -1) }.toList()
+    override fun state() = state.map {it.state()}.reversed()
+}
+
 class Permutations(N: Int) : IntCombinations(N) {
     override val state = mutableListOf<Ring>()
 
@@ -91,6 +96,12 @@ fun main() {
 
     println("binary bits 2")
     BinaryBits(2).toList().forEach { println(it) }
+
+    println("around 3d")
+    AroundSpace(3).toList().forEach { println(it) }
+
+    println("around 4d")
+    AroundSpace(4).toList().forEach { println(it) }
 
     println("\npermutations of 3 elements:")
     for(configuration in Permutations(3)) {
