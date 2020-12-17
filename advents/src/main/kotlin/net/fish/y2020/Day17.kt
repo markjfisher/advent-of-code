@@ -38,7 +38,7 @@ object Day17 : Day {
 }
 
 data class ConwayCube(
-    // This contains only locations of "ON" values
+    // This contains only locations of active values
     var grid: MutableSet<CCLocation> = mutableSetOf(),
     val dimensions: Int = 3
 ) {
@@ -46,24 +46,25 @@ data class ConwayCube(
     // e.g. [-1, -1, -1], [-1, -1, 0], ... in 3 dimensions
     private val neighbourRelativeLocations = AroundSpace(dimensions).map { CCLocation(it) }
 
-    fun add(loc: CCLocation) = grid.add(loc)
-    fun at(loc: CCLocation) = grid.contains(loc)
-
+    // return a list of all locations around the given point
     fun locationsAround(loc: CCLocation) = neighbourRelativeLocations.map { loc.add(it) }
 
+    fun add(loc: CCLocation) = grid.add(loc)
+    fun isActive(loc: CCLocation) = grid.contains(loc)
+
     fun step() {
-        // find anything that is near any point that is ON
+        // find all locations touching anything active. we don't need to consider anything further than 1 position away
         val allTouchingLocations = grid.flatMap { locationsAround(it) }.toSet()
 
         // recalculate the grid
         grid = allTouchingLocations.fold(mutableSetOf()) { g, location ->
             val neighboursCount = locationsAround(location)
-                .filter { it != location && allTouchingLocations.contains(it) && at(it) }
+                .filter { it != location && isActive(it) }
                 .count()
 
             when {
-                (neighboursCount == 2 || neighboursCount == 3) && at(location) -> g.add(location)
-                (neighboursCount == 3) && !at(location) -> g.add(location)
+                (neighboursCount == 2 || neighboursCount == 3) && isActive(location) -> g.add(location)
+                (neighboursCount == 3) && !isActive(location) -> g.add(location)
             }
             g
         }

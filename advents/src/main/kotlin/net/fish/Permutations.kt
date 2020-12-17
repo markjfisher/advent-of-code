@@ -8,20 +8,15 @@ import java.util.*
 interface Circular<T> : Iterable<T> {
     fun state(): T
     fun inc()
-    fun isZero(): Boolean   // `true` in exactly one state
-    fun hasNext(): Boolean  // `false` if the next state `isZero()`
+    fun isZero(): Boolean   // this is true when at the initial state, e.g. 0 in 0..n-1
+    fun hasNext(): Boolean  // this is false if the next state is back to the beginning, e.g. n-1 in 0..n-1
 
-    override fun iterator() : Iterator<T> {
+    override fun iterator(): Iterator<T> {
         return object : Iterator<T> {
             var started = false
 
             override fun next(): T {
-                if(started) {
-                    inc()
-                } else {
-                    started = true
-                }
-
+                if (started) inc() else started = true
                 return state()
             }
 
@@ -33,54 +28,54 @@ interface Circular<T> : Iterable<T> {
 class Ring(val size: Int, private val offset: Int = 0) : Circular<Int> {
     private var state = 0
 
+    // offset allows change of usual "0..n-1" to "offset .. (n-1) + offset"
+    // eg. ranges from "-1 to 1" instead of "0 to 2"
     override fun state() = state + offset
-    override fun inc() {state = (1 + state) % size}
+    override fun inc() {
+        state = (1 + state) % size
+    }
+
     override fun isZero() = (state == 0)
     override fun hasNext() = (state != size - 1)
 
-    init {
-        assert(size > 0)
-    }
+    // check user isn't insane
+    init { assert(size > 0) }
 }
 
-abstract class CircularList<E, H: Circular<E>>(val size: Int) : Circular<List<E>> {
-    protected abstract val state: List<H>  // state.size == size
+abstract class CircularList<E, H : Circular<E>>(val size: Int) : Circular<List<E>> {
+    protected abstract val state: List<H>
 
     override fun inc() {
         state.forEach {
             it.inc()
-            if(! it.isZero()) return
+            if (!it.isZero()) return
         }
     }
 
-    override fun isZero() = state.all {it.isZero()}
-    override fun hasNext() = state.any {it.hasNext()}
+    override fun isZero() = state.all { it.isZero() }
+    override fun hasNext() = state.any { it.hasNext() }
 }
 
 abstract class IntCombinations(size: Int) : CircularList<Int, Ring>(size)
 
 class BinaryBits(N: Int) : IntCombinations(N) {
     override val state = Array(N) { Ring(2) }.toList()
-    override fun state() = state.map {it.state()}.reversed()
+    override fun state() = state.map { it.state() }.reversed()
 }
 
 class AroundSpace(N: Int) : IntCombinations(N) {
     override val state = Array(N) { Ring(3, -1) }.toList()
-    override fun state() = state.map {it.state()}.reversed()
+    override fun state() = state.map { it.state() }.reversed()
 }
 
 class Permutations(N: Int) : IntCombinations(N) {
     override val state = mutableListOf<Ring>()
 
-    init {
-        for(i in N downTo 1) {
-            state += Ring(i)
-        }
-    }
+    init { for (i in N downTo 1) state += Ring(i) }
 
     override fun state(): List<Int> {
         val items = (0 until size).toCollection(LinkedList())
-        return state.map {ring -> items.removeAt(ring.state())}
+        return state.map { ring -> items.removeAt(ring.state()) }
     }
 }
 
@@ -91,7 +86,7 @@ fun main() {
     println("Which is consistent with a practical result of $sumNumbers.\n")
 
     println("binary bits 5, sum = 2")
-    BinaryBits(5).asSequence().filter {it.sum() == 2}.take(5).forEach { println(it) }
+    BinaryBits(5).asSequence().filter { it.sum() == 2 }.take(5).forEach { println(it) }
 
     println("binary bits 2")
     BinaryBits(2).toList().forEach { println(it) }
@@ -103,46 +98,48 @@ fun main() {
     AroundSpace(4).toList().forEach { println(it) }
 
     println("\npermutations of 3 elements:")
-    for(configuration in Permutations(3)) {
+    for (configuration in Permutations(3)) {
         println(configuration)
     }
 }
 
+// Faster iterations.
 fun <T> Iterable<T>.combinations(length: Int): Sequence<List<T>> =
     sequence {
         val pool = this@combinations as? List<T> ?: toList()
         val n = pool.size
-        if(length > n) return@sequence
+        if (length > n) return@sequence
         val indices = IntArray(length) { it }
-        while(true) {
+        while (true) {
             yield(indices.map { pool[it] })
             var i = length
             do {
                 i--
-                if(i == -1) return@sequence
-            } while(indices[i] == i + n - length)
+                if (i == -1) return@sequence
+            } while (indices[i] == i + n - length)
             indices[i]++
-            for(j in i+1 until length) indices[j] = indices[j - 1] + 1
+            for (j in i + 1 until length) indices[j] = indices[j - 1] + 1
         }
     }
 
+// Faster permutations.
 fun <T> Iterable<T>.permutations(length: Int? = null): Sequence<List<T>> =
     sequence {
         val pool = this@permutations as? List<T> ?: toList()
         val n = pool.size
         val r = length ?: n
-        if(r > n) return@sequence
+        if (r > n) return@sequence
         val indices = IntArray(n) { it }
         val cycles = IntArray(r) { n - it }
         yield(List(r) { pool[indices[it]] })
-        if(n == 0) return@sequence
-        cyc@ while(true) {
-            for(i in r-1 downTo 0) {
+        if (n == 0) return@sequence
+        cyc@ while (true) {
+            for (i in r - 1 downTo 0) {
                 cycles[i]--
-                if(cycles[i] == 0) {
+                if (cycles[i] == 0) {
                     val temp = indices[i]
-                    for(j in i until n-1) indices[j] = indices[j+1]
-                    indices[n-1] = temp
+                    for (j in i until n - 1) indices[j] = indices[j + 1]
+                    indices[n - 1] = temp
                     cycles[i] = n - i
                 } else {
                     val j = n - cycles[i]

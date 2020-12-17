@@ -13,9 +13,9 @@ internal class Day17Test {
     @Test
     fun `fill cube and find values`() {
         val cube = ConwayCube(grid = mutableSetOf(loc1, loc2))
-        assertThat(cube.at(CCLocation(listOf(0, 0, 0)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(1, 0, 0)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(0, 1, 0)))).isFalse
+        assertThat(cube.isActive(CCLocation(listOf(0, 0, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(1, 0, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(0, 1, 0)))).isFalse
     }
 
     @Test
@@ -24,9 +24,9 @@ internal class Day17Test {
         cube.add(loc1)
         cube.add(loc2)
         assertThat(cube.grid).hasSize(2)
-        assertThat(cube.at(CCLocation(listOf(0, 0, 0)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(1, 0, 0)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(0, 1, 0)))).isFalse
+        assertThat(cube.isActive(CCLocation(listOf(0, 0, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(1, 0, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(0, 1, 0)))).isFalse
     }
 
     @Test
@@ -37,17 +37,17 @@ internal class Day17Test {
         // .#.
         // ..#
         // ###
-        assertThat(cube.at(CCLocation(listOf(0, 0, 0)))).isFalse
-        assertThat(cube.at(CCLocation(listOf(1, 0, 0)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(2, 0, 0)))).isFalse
+        assertThat(cube.isActive(CCLocation(listOf(0, 0, 0)))).isFalse
+        assertThat(cube.isActive(CCLocation(listOf(1, 0, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(2, 0, 0)))).isFalse
 
-        assertThat(cube.at(CCLocation(listOf(0, 1, 0)))).isFalse
-        assertThat(cube.at(CCLocation(listOf(1, 1, 0)))).isFalse
-        assertThat(cube.at(CCLocation(listOf(2, 1, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(0, 1, 0)))).isFalse
+        assertThat(cube.isActive(CCLocation(listOf(1, 1, 0)))).isFalse
+        assertThat(cube.isActive(CCLocation(listOf(2, 1, 0)))).isTrue
 
-        assertThat(cube.at(CCLocation(listOf(0, 2, 0)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(1, 2, 0)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(2, 2, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(0, 2, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(1, 2, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(2, 2, 0)))).isTrue
     }
 
     @Test
@@ -72,19 +72,19 @@ internal class Day17Test {
         //..#
         //.#.
         assertThat(cube.grid).hasSize(11)
-        assertThat(cube.at(CCLocation(listOf(0, 1, -1)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(1, 3, -1)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(2, 2, -1)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(0, 1, -1)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(1, 3, -1)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(2, 2, -1)))).isTrue
 
-        assertThat(cube.at(CCLocation(listOf(0, 1, 0)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(1, 2, 0)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(1, 3, 0)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(2, 1, 0)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(2, 2, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(0, 1, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(1, 2, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(1, 3, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(2, 1, 0)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(2, 2, 0)))).isTrue
 
-        assertThat(cube.at(CCLocation(listOf(0, 1, 1)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(1, 3, 1)))).isTrue
-        assertThat(cube.at(CCLocation(listOf(2, 2, 1)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(0, 1, 1)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(1, 3, 1)))).isTrue
+        assertThat(cube.isActive(CCLocation(listOf(2, 2, 1)))).isTrue
     }
 
     @Test
