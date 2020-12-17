@@ -9,10 +9,17 @@ object Day17 : Day {
 
     fun toCube(data: List<String>, dimensions: Int): ConwayCube {
         val cube = ConwayCube(dimensions = dimensions)
+
         // Assume first position is 0, 0 and grid is x,y, with z = 0
         data.forEachIndexed { y, line ->
             line.forEachIndexed { x, v ->
-                if (v == '#') cube.add(CCLocation(x, y))
+                if (v == '#') {
+                    // fill in coordinates as 0 for all dimensions, then set x/y value
+                    val coordinates = generateSequence { 0 }.take(dimensions).toMutableList()
+                    coordinates[0] = x
+                    coordinates[1] = y
+                    cube.add(CCLocation(coordinates))
+                }
             }
         }
         return cube
@@ -39,24 +46,14 @@ data class ConwayCube(
     var grid: MutableList<CCLocation> = mutableListOf(),
     val dimensions: Int = 3
 ) {
-    private val spaceDeltas = AroundSpace(dimensions).map {
-        when (it.size) {
-            3 -> CCLocation(it[0], it[1], it[2])
-            4 -> CCLocation(it[0], it[1], it[2], it[3])
-            else -> throw UnsupportedOperationException("She canne handle ${it.size} dimensions captain!")
-        }
-    }
+    // this generates a list of CCLocations at all coordinates around the origin for any dimension
+    // e.g. [-1, -1, -1], [-1, -1, 0], ... in 3 dimensions
+    private val neighbourRelativeLocations = AroundSpace(dimensions).map { CCLocation(it) }
 
     fun add(loc: CCLocation) = grid.add(loc)
     fun at(loc: CCLocation) = grid.firstOrNull { it == loc } != null
 
-    fun neighbours(loc: CCLocation): List<CCLocation> {
-        return locationsAround(loc).filter { at(it) && it != loc }
-    }
-
-    private fun locationsAround(loc: CCLocation): List<CCLocation> {
-        return spaceDeltas.map { loc.add(it) }
-    }
+    fun locationsAround(loc: CCLocation) = neighbourRelativeLocations.map { loc.add(it) }
 
     fun step() {
         val allTouchingLocations = grid.flatMap { locationsAround(it) }.toSet()
@@ -66,8 +63,8 @@ data class ConwayCube(
         // recalculate the grid
         grid = allTouchingLocations.fold(mutableListOf()) { g, location ->
             val neighboursCount = locationsAround(location)
-                .filter { it != location && allTouchingLocations.contains(it) }
-                .sumBy { if (locationToCubeValue.getOrDefault(it, false)) 1 else 0 }
+                .filter { it != location && allTouchingLocations.contains(it) && locationToCubeValue.getOrDefault(it, false) }
+                .count()
 
             val currentLocationSet = locationToCubeValue.getOrDefault(location, false)
             when {
@@ -83,37 +80,14 @@ data class ConwayCube(
             step()
         }
     }
-
-    fun outputCube() {
-        // just 3d version for now
-        val xMin = grid.minByOrNull { it.x }?.x ?: 0
-        val xMax = grid.maxByOrNull { it.x }?.x ?: 0
-        val yMin = grid.minByOrNull { it.y }?.y ?: 0
-        val yMax = grid.maxByOrNull { it.y }?.y ?: 0
-        val zMin = grid.minByOrNull { it.z }?.z ?: 0
-        val zMax = grid.maxByOrNull { it.z }?.z ?: 0
-        println("min/max X/Y/Z: $xMin/$xMax, $yMin/$yMax, $zMin/$zMax")
-        for (z in IntRange(zMin, zMax)) {
-            println("z: $z")
-            for (y in IntRange(yMin, yMax)) {
-                for (x in IntRange(xMin, xMax)) {
-                    val v = if (at(CCLocation(x, y, z))) "#" else "."
-                    print(v)
-                }
-                println()
-            }
-            println()
-        }
-    }
 }
 
 data class CCLocation(
-    val x: Int,
-    val y: Int,
-    val z: Int = 0,
-    val w: Int = 0
+    val coordinates: List<Int>
 ) {
-    fun add(loc: CCLocation) = CCLocation(x + loc.x, y + loc.y, z + loc.z, w + loc.w)
+    fun add(loc: CCLocation) : CCLocation {
+        return CCLocation(coordinates.zip(loc.coordinates).map { it.first + it.second })
+    }
 }
 
 /*
