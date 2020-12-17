@@ -12,7 +12,7 @@ internal class Day17Test {
 
     @Test
     fun `fill cube and find values`() {
-        val cube = ConwayCube(grid = mutableListOf(loc1, loc2))
+        val cube = ConwayCube(grid = mutableSetOf(loc1, loc2))
         assertThat(cube.at(CCLocation(listOf(0, 0, 0)))).isTrue
         assertThat(cube.at(CCLocation(listOf(1, 0, 0)))).isTrue
         assertThat(cube.at(CCLocation(listOf(0, 1, 0)))).isFalse
@@ -91,7 +91,7 @@ internal class Day17Test {
     fun `run puzzles`() {
         assertThat(Day17.runPuzzle(data, 3)).isEqualTo(112)
         assertThat(Day17.runPuzzle(data, 4)).isEqualTo(848)
-        // this takes about 40s to run:
+        // this takes about 13s to run:
         // assertThat(Day17.runPuzzle(data, 5)).isEqualTo(5760)
     }
 }

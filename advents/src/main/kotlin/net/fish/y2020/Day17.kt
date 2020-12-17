@@ -9,15 +9,10 @@ object Day17 : Day {
 
     fun toCube(data: List<String>, dimensions: Int): ConwayCube {
         val cube = ConwayCube(dimensions = dimensions)
-
-        // Assume first position is 0, 0 and grid is x,y, with z = 0
         data.forEachIndexed { y, line ->
             line.forEachIndexed { x, v ->
                 if (v == '#') {
-                    // fill in coordinates as 0 for all dimensions, then set x/y value
-                    val coordinates = generateSequence { 0 }.take(dimensions).toMutableList()
-                    coordinates[0] = x
-                    coordinates[1] = y
+                    val coordinates = generateSequence { 0 }.take(dimensions).toMutableList().also { it[0] = x; it[1] = y }
                     cube.add(CCLocation(coordinates))
                 }
             }
@@ -43,6 +38,7 @@ object Day17 : Day {
 }
 
 data class ConwayCube(
+    // This contains only locations of "ON" values
     var grid: MutableSet<CCLocation> = mutableSetOf(),
     val dimensions: Int = 3
 ) {
@@ -56,20 +52,18 @@ data class ConwayCube(
     fun locationsAround(loc: CCLocation) = neighbourRelativeLocations.map { loc.add(it) }
 
     fun step() {
+        // find anything that is near any point that is ON
         val allTouchingLocations = grid.flatMap { locationsAround(it) }.toSet()
-        // store the value of each location in a map for all the touching points, this reduces the need to continuously search a list
-        val locationToCubeValue = allTouchingLocations.map { it to at(it) }.toMap()
 
         // recalculate the grid
         grid = allTouchingLocations.fold(mutableSetOf()) { g, location ->
             val neighboursCount = locationsAround(location)
-                .filter { it != location && allTouchingLocations.contains(it) && locationToCubeValue.getOrDefault(it, false) }
+                .filter { it != location && allTouchingLocations.contains(it) && at(it) }
                 .count()
 
-            val currentLocationSet = locationToCubeValue.getOrDefault(location, false)
             when {
-                (neighboursCount == 2 || neighboursCount == 3) && currentLocationSet -> g.add(location)
-                (neighboursCount == 3) && !currentLocationSet -> g.add(location)
+                (neighboursCount == 2 || neighboursCount == 3) && at(location) -> g.add(location)
+                (neighboursCount == 3) && !at(location) -> g.add(location)
             }
             g
         }
