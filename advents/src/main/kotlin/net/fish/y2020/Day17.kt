@@ -43,7 +43,7 @@ object Day17 : Day {
 }
 
 data class ConwayCube(
-    var grid: MutableList<CCLocation> = mutableListOf(),
+    var grid: MutableSet<CCLocation> = mutableSetOf(),
     val dimensions: Int = 3
 ) {
     // this generates a list of CCLocations at all coordinates around the origin for any dimension
@@ -51,7 +51,7 @@ data class ConwayCube(
     private val neighbourRelativeLocations = AroundSpace(dimensions).map { CCLocation(it) }
 
     fun add(loc: CCLocation) = grid.add(loc)
-    fun at(loc: CCLocation) = grid.firstOrNull { it == loc } != null
+    fun at(loc: CCLocation) = grid.contains(loc)
 
     fun locationsAround(loc: CCLocation) = neighbourRelativeLocations.map { loc.add(it) }
 
@@ -61,7 +61,7 @@ data class ConwayCube(
         val locationToCubeValue = allTouchingLocations.map { it to at(it) }.toMap()
 
         // recalculate the grid
-        grid = allTouchingLocations.fold(mutableListOf()) { g, location ->
+        grid = allTouchingLocations.fold(mutableSetOf()) { g, location ->
             val neighboursCount = locationsAround(location)
                 .filter { it != location && allTouchingLocations.contains(it) && locationToCubeValue.getOrDefault(it, false) }
                 .count()
