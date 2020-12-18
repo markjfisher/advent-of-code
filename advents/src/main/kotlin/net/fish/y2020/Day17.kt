@@ -81,7 +81,7 @@ data class CCLocation(
     val coordinates: List<Int>
 ) {
     fun add(loc: CCLocation) : CCLocation {
-        return CCLocation(coordinates.zip(loc.coordinates).map { it.first + it.second })
+        return CCLocation(loc.coordinates.mapIndexed { i, value -> value + coordinates[i] })
     }
 }
 

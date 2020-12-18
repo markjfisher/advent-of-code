@@ -4,6 +4,7 @@ import net.fish.Day
 import net.fish.resourceString
 
 object Day15 : Day {
+    override val warmUps: Int = 1
     private val gameValues = resourceString(2020, 15).split(",").map { it.toInt() }
 
     override fun part1() = runGame(gameValues, 2020)
