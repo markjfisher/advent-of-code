@@ -20,6 +20,11 @@ object Day19 : Day {
     override fun part2() = runPuzzle(rulesP2, lines)
 
     fun runPuzzle(rules: Map<Int, String>, lines: List<String>): Int {
+        logger.debug { "Rules:" }
+        rules.keys.sorted().forEach {
+            logger.debug { String.format("%-3d: %s", it, rules[it]) }
+        }
+
         return lines.count { line ->
             logger.debug { "------------ $line" }
             matches(rules, line, listOf(0))

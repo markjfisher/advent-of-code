@@ -92,10 +92,22 @@ fun main() {
     BinaryBits(2).toList().forEach { println(it) }
 
     println("around 3d")
-    AroundSpace(3).toList().forEach { println(it) }
+    val as3 = AroundSpace(3).toList()
+    println("as3 size: ${as3.size}")
+    as3.forEach { println(it) }
 
     println("around 4d")
-    AroundSpace(4).toList().forEach { println(it) }
+    val as4 = AroundSpace(4).toList()
+    println("as4 size: ${as4.size}")
+    as4.forEach { println(it) }
+
+    println("around 5d")
+    val as5 = AroundSpace(5).toList()
+    println("as5 size: ${as5.size}")
+
+    println("around 6d")
+    val as6 = AroundSpace(6).toList()
+    println("as6 size: ${as6.size}")
 
     println("\npermutations of 3 elements:")
     for (configuration in Permutations(3)) {

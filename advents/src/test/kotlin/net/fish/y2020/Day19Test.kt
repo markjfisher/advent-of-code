@@ -99,6 +99,26 @@ class Day19Test {
     }
 
     @Test
+    fun `should match recursion of rule at end in left part`() {
+        val t1Data = """
+            0: 1 | 2
+            1: 3 1 | 3
+            2: a
+            3: b
+        """.trimIndent()
+        val r = Day19.toRulesMap(t1Data)
+        assertThat(r).containsExactlyEntriesOf(mapOf(0 to "1 | 2", 1 to "3 1 | 3", 2 to "a", 3 to "b"))
+
+        val lines = listOf(
+            "a",     // matches 0 -> 2 -> a
+            "b",     // matches 0 -> 1 -> 3
+            "bb",    // matches 0 -> 1 -> 3 1 -> b 3 -> b b
+            "bbb",   // matches 0 -> 1 -> 3 1 -> b 3 1 -> b b 3 -> b b b
+        )
+        assertThat(Day19.runPuzzle(r, lines)).isEqualTo(4)
+    }
+
+    @Test
     fun `should match recursion of rule in middle`() {
         val t1Data = """
             0: 1 | 2
@@ -109,6 +129,27 @@ class Day19Test {
         """.trimIndent()
         val r = Day19.toRulesMap(t1Data)
         assertThat(r).containsExactlyEntriesOf(mapOf(0 to "1 | 2", 1 to "3 4 | 3 1 4", 2 to "4", 3 to "a", 4 to "b"))
+
+        val lines = listOf(
+            "b",      // matches 0 -> 2 -> 4 -> b
+            "ab",     // matches 0 -> 1 -> 3 4 -> a b
+            "aabb",   // matches 0 -> 1 -> 3 1 4 -> a 1 4 -> a 3 4 4 -> a a b b
+            "aaabbb", // matches 0 -> 1 -> 3 1 4 -> a 1 4 -> a 3 1 4 4 -> a a 1 4 4 -> a a 3 4 4 4 -> a a a b b b
+        )
+        assertThat(Day19.runPuzzle(r, lines)).isEqualTo(4)
+    }
+
+    @Test
+    fun `matches recursion of rule in middle when on left`() {
+        val t1Data = """
+            0: 1 | 2
+            1: 3 1 4 | 3 4
+            2: 4
+            3: a
+            4: b
+        """.trimIndent()
+        val r = Day19.toRulesMap(t1Data)
+        assertThat(r).containsExactlyEntriesOf(mapOf(0 to "1 | 2", 1 to "3 1 4 | 3 4", 2 to "4", 3 to "a", 4 to "b"))
 
         val lines = listOf(
             "b",      // matches 0 -> 2 -> 4 -> b
