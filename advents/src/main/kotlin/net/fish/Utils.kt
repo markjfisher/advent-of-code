@@ -26,6 +26,9 @@ fun resourceString(year: Int, day: Int): String {
     return resource(year, day).bufferedReader().use { it.readText() }
 }
 
+fun resourceStrings(year: Int, day: Int, delimiter: String = "\n\n"): List<String> = resourceString(year, day).split(delimiter).map { it.trim() }
+fun resourceStrings(path: String, delimiter: String = "\n\n"): List<String> = resourceStream(path).bufferedReader().use { it.readText() }.split(delimiter).map { it.trim() }
+
 fun resourcePath(path: String): List<String> {
     return resourceStream(path).bufferedReader().lines().collect(Collectors.toList())
 }
