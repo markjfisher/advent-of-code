@@ -1,6 +1,7 @@
 package net.fish.y2020
 
 import net.fish.Day
+import net.fish.createArray
 import net.fish.resourceLines
 import net.fish.y2020.Day11.Location
 import net.fish.y2020.Day11.Location.EMPTY
@@ -134,8 +135,6 @@ object Day11 : Day {
 
 }
 
-inline fun<reified T> Pair<Int,Int>.createArray(initialValue:T) = Array(this.first){ Array(this.second){initialValue}}
-
 fun SeatPlan<Location>.rows() = this.size
 fun SeatPlan<Location>.columns() = this[0].size
 
@@ -186,28 +185,6 @@ fun SeatPlan<Location>.countOccupied(): Int {
         }
     }
     return count
-}
-
-inline fun <reified T> SeatPlan<T>.forEach2D(action: (T) -> Unit) {
-    for (array in this) for (element in array) action(element)
-}
-
-inline fun <Location, R> SeatPlan<Location>.map(action: (Location) -> R): List<R> {
-    val rs = mutableListOf<R>()
-    for (array in this) for (element in array) {
-        rs.add(action(element))
-    }
-    return rs
-}
-
-inline fun <R> SeatPlan<Location>.mapIndexed(action: (Int, Int, Location) -> R): List<R> {
-    val rs = mutableListOf<R>()
-    for(row in 0 until this.rows()) {
-        for (column in 0 until this.columns()) {
-            rs.add(action(column, row, this.locationAt(column, row)))
-        }
-    }
-    return rs
 }
 
 inline fun <R> SeatPlan<Location>.forEachIndexed(action: (Int, Int, Location) -> R) {
