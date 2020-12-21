@@ -12,6 +12,8 @@ group = "net.markjfisher"
 version = "1.0.0"
 val archiveBaseName = "advent-20XX"
 
+val kotlinxCoroutineVersion: String by project
+
 val mathsToolKitVersion: String by project
 val reflectionsVersion: String by project
 
@@ -23,7 +25,6 @@ val assertJVersion: String by project
 val mockkVersion: String by project
 val junitJupiterEngineVersion: String by project
 
-
 val lwjglVersion: String by project
 val glnVersion: String by project
 val lwjglNatives = "natives-linux"
@@ -33,6 +34,8 @@ dependencies {
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinxCoroutineVersion")
+
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
 
     implementation("com.marcinmoskala:DiscreteMathToolkit:$mathsToolKitVersion")

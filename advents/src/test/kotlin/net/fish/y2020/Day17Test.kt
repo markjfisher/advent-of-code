@@ -89,9 +89,15 @@ internal class Day17Test {
 
     @Test
     fun `run puzzles`() {
-        assertThat(Day17.runPuzzle(data, 3)).isEqualTo(112)
-        assertThat(Day17.runPuzzle(data, 4)).isEqualTo(848)
-        // this takes about 13s to run:
-        // assertThat(Day17.runPuzzle(data, 5)).isEqualTo(5760)
+         assertThat(Day17.runPuzzle(data, 3)).isEqualTo(112)
+         assertThat(Day17.runPuzzle(data, 4)).isEqualTo(848)
+        // this takes about 6s to run using chunks, 12s to run when not:
+        // It takes about 2s when parallelised
+         assertThat(Day17.runPuzzle(data, 5)).isEqualTo(5760)
+        // this takes about 4m42s to run with chunk(10)
+        // and about 1m9s tu run with 2 parallel threads for calculating new locations, 12 threads for calculating grid
+        // assertThat(Day17.runPuzzle(data, 6)).isEqualTo(35936)
+        // Does 7D work? NO!
+        // assertThat(Day17.runPuzzle(data, 7)).isEqualTo(0)
     }
 }

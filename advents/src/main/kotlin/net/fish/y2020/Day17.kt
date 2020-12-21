@@ -1,8 +1,16 @@
 package net.fish.y2020
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import mu.KotlinLogging
 import net.fish.AroundSpace
 import net.fish.Day
 import net.fish.resourceLines
+
+private val logger = KotlinLogging.logger { }
 
 object Day17 : Day {
     private val data = resourceLines(2020, 17)
@@ -54,10 +62,61 @@ data class ConwayCube(
 
     fun step() {
         // find all locations touching anything active. we don't need to consider anything further than 1 position away
-        val allTouchingLocations = grid.flatMap { locationsAround(it) }.toSet()
+        logger.debug { "creating all touching points" }
+        val allTouchingLocations = mutableSetOf<CCLocation>()
+
+        if (grid.size < 20) {
+            allTouchingLocations.addAll(grid.flatMap { locationsAround(it) })
+        } else {
+            val gridChunkedSize = grid.size / 2
+            val gridChunked = grid.chunked(gridChunkedSize)
+            runBlocking {
+                val defs = gridChunked.map { touching ->
+                    async(Dispatchers.Default) { touchingLocations(touching) }
+                }
+                defs.awaitAll().map { locs ->
+                    allTouchingLocations.addAll(locs)
+                }
+            }
+        }
+        logger.debug { "finished, touching count = ${allTouchingLocations.count()}, recalculating grid..." }
 
         // recalculate the grid
-        grid = allTouchingLocations.fold(mutableSetOf()) { g, location ->
+        if (allTouchingLocations.size < 200) {
+            grid = calculateGridForLocations(allTouchingLocations.toList())
+        } else {
+            val touchingChunkSize = allTouchingLocations.size / 12
+            val locs = allTouchingLocations.chunked(touchingChunkSize)
+            runBlocking {
+                val defs = locs.map { loc ->
+                    async(Dispatchers.Default) { calculateSubListAsync(loc) }
+                }
+                grid = mutableSetOf<CCLocation>().also { set ->
+                    defs.awaitAll().map { locs ->
+                        set.addAll(locs)
+                    }
+                }
+            }
+        }
+
+        logger.debug { "grid calculated. size: ${grid.size}" }
+    }
+
+    suspend fun touchingLocations(locations: List<CCLocation>): Set<CCLocation> = withContext(Dispatchers.Default) {
+        // chunk the blocks into small bites so we don't run out of memory
+        val touching = mutableSetOf<CCLocation>()
+        locations.chunked(2).forEach { chunk ->
+            touching.addAll(chunk.flatMap { locationsAround(it) })
+        }
+        touching
+    }
+
+    suspend fun calculateSubListAsync(locations: List<CCLocation>): Set<CCLocation> = withContext(Dispatchers.Default) {
+        calculateGridForLocations(locations)
+    }
+
+    private fun calculateGridForLocations(locations: List<CCLocation>): MutableSet<CCLocation> {
+        return locations.fold(mutableSetOf()) { g, location ->
             val neighboursCount = locationsAround(location)
                 .filter { it != location && isActive(it) }
                 .count()
@@ -70,6 +129,7 @@ data class ConwayCube(
         }
     }
 
+
     fun run(iterations: Int) {
         (0 until iterations).forEach {
             step()
@@ -80,7 +140,7 @@ data class ConwayCube(
 data class CCLocation(
     val coordinates: List<Int>
 ) {
-    fun add(loc: CCLocation) : CCLocation {
+    fun add(loc: CCLocation): CCLocation {
         return CCLocation(loc.coordinates.mapIndexed { i, value -> value + coordinates[i] })
     }
 }
