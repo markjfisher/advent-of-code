@@ -70,7 +70,6 @@ object Day21 : Day {
 
     fun findCommonIngredients(recipe: Recipe, recipes: List<Recipe>): List<String> {
         return recipe.ingredients.filter { ingredient ->
-            // recipes.filter { r -> r.ingredients.contains(ingredient) }.count() == recipes.count()
             recipes.all { r -> r.ingredients.contains(ingredient) }
         }
     }
