@@ -26,14 +26,16 @@ object Day22 : Day {
 
     fun doPart2(game: Game): Long {
         val result = game.playRecursed()
-        logger.debug { """
+        logger.debug {
+            """
             The winner of game ${result.gameNumber} is player ${result.winner}!
 
 
             == Post-game results ==
             Player 1's deck: ${result.player1.joinToString(", ")}
             Player 2's deck: ${result.player2.joinToString(", ")}
-        """.trimIndent() }
+        """.trimIndent()
+        }
         return result.score()
     }
 
@@ -100,14 +102,16 @@ data class Game(
         val p1 = player1.first()
         val p2 = player2.first()
 
-        logger.debug { """
+        logger.debug {
+            """
 
             -- Round $round (Game $gameNumber) --
             Player 1's deck: ${player1.joinToString(", ")}
             Player 2's deck: ${player2.joinToString(", ")}
             Player 1 plays: $p1
             Player 2 plays: $p2
-            """.trimIndent() }
+            """.trimIndent()
+        }
 
         return if (((player1.count() - 1) >= p1) && ((player2.count() - 1) >= p2)) {
             logger.debug { "Playing a sub-game to determine the winner...\n" }
@@ -116,21 +120,25 @@ data class Game(
 
             when (subGame.winner) {
                 1 -> {
-                    logger.debug {"""
-                                The winner of game ${subGame.gameNumber} is player 1!
+                    logger.debug {
+                        """
+                        The winner of game ${subGame.gameNumber} is player 1!
 
-                                ...anyway, back to game $gameNumber.
-                            """.trimIndent()}
-                    logger.debug { "Player 1 wins round $round of game $gameNumber!" }
+                        ...anyway, back to game $gameNumber.
+                        Player 1 wins round $round of game $gameNumber!
+                        """.trimIndent()
+                    }
                     competeRecursed(player1 = player1.drop(1) + listOf(p1, p2), player2 = player2.drop(1), round = round + 1, history1 = history1, history2 = history2)
                 }
                 else -> {
-                    logger.debug { """
+                    logger.debug {
+                        """
                         The winner of game ${subGame.gameNumber} is player 2!
 
                         ...anyway, back to game $gameNumber.
                         Player 2 wins round $round of game $gameNumber!
-                        """.trimIndent() }
+                        """.trimIndent()
+                    }
                     competeRecursed(player1 = player1.drop(1), player2 = player2.drop(1) + listOf(p2, p1), round = round + 1, history1 = history1, history2 = history2)
                 }
             }
