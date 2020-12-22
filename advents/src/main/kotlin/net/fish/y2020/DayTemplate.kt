@@ -1,7 +1,10 @@
 package net.fish.y2020
 
+import mu.KotlinLogging
 import net.fish.Day
 import net.fish.resourceLines
+
+private val logger = KotlinLogging.logger {}
 
 object DayTemplate : Day {
     private val data = resourceLines(2020, 0)

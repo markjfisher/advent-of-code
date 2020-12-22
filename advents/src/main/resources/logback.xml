@@ -16,12 +16,13 @@
         <immediateFlush>true</immediateFlush>
         <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
         <encoder>
-            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+<!--            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>-->
+            <pattern>%msg%n</pattern>
         </encoder>
     </appender>
 
     <!-- change level to debug to get debug going to file /tmp/advent-test.log -->
-    <root level="info">
+    <root level="debug">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </root>
