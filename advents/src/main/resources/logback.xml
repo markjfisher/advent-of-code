@@ -22,7 +22,7 @@
     </appender>
 
     <!-- change level to debug to get debug going to file /tmp/advent-test.log -->
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </root>
