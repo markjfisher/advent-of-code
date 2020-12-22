@@ -36,6 +36,7 @@ object Day22 : Day {
             Player 2's deck: ${result.player2.joinToString(", ")}
         """.trimIndent()
         }
+        logger.debug { "max round: ${Game.maxRound}, max games: ${Game.totalGames}" }
         return result.score()
     }
 
@@ -56,6 +57,7 @@ data class Game(
 ) {
     companion object {
         var totalGames = 1
+        var maxRound = 0
     }
 
     fun playEasy(): Game {
@@ -96,6 +98,8 @@ data class Game(
             return Game(player1 = player1, player2 = player2, gameNumber = gameNumber, parentGame = parentGame, winner = if (player1.isNotEmpty()) 1 else 2)
         }
 
+        if (round > maxRound) maxRound = round
+
         history1.add(player1)
         history2.add(player2)
 
@@ -116,13 +120,20 @@ data class Game(
         return if (((player1.count() - 1) >= p1) && ((player2.count() - 1) >= p2)) {
             logger.debug { "Playing a sub-game to determine the winner...\n" }
             totalGames++
-            val subGame = Game(player1 = player1.drop(1).take(p1), player2 = player2.drop(1).take(p2), gameNumber = totalGames, parentGame = gameNumber).playRecursed()
+            val newP1Cards = player1.drop(1).take(p1)
+            val newP2Cards = player2.drop(1).take(p2)
 
-            when (subGame.winner) {
+            val subGameNumber = totalGames
+            val winner = when {
+                // P1 can't lose if he holds the highest card of the 2 decks.
+                newP1Cards.max()!! > newP2Cards.max()!! -> 1
+                else -> Game(player1 = newP1Cards, player2 = newP2Cards, gameNumber = totalGames, parentGame = gameNumber).playRecursed().winner
+            }
+            when (winner) {
                 1 -> {
                     logger.debug {
                         """
-                        The winner of game ${subGame.gameNumber} is player 1!
+                        The winner of game $subGameNumber is player 1!
 
                         ...anyway, back to game $gameNumber.
                         Player 1 wins round $round of game $gameNumber!
@@ -133,7 +144,7 @@ data class Game(
                 else -> {
                     logger.debug {
                         """
-                        The winner of game ${subGame.gameNumber} is player 2!
+                        The winner of game $subGameNumber is player 2!
 
                         ...anyway, back to game $gameNumber.
                         Player 2 wins round $round of game $gameNumber!
