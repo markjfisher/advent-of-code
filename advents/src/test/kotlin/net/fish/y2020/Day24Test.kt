@@ -1,7 +1,6 @@
 package net.fish.y2020
 
 import net.fish.resourcePath
-import net.fish.resourceStrings
 import net.fish.y2020.HEX_DIRECTION.E
 import net.fish.y2020.HEX_DIRECTION.NE
 import net.fish.y2020.HEX_DIRECTION.NW
@@ -21,12 +20,17 @@ class Day24Test {
 
     @Test
     fun `hex walk in locations`() {
-        assertThat(Day24.toHexWalks(listOf("esenee")).first()).containsExactly(Pair(0, 0), Pair(2, 0), Pair(3, -1), Pair(4, 0), Pair(6, 0))
-        assertThat(Day24.toHexWalks(listOf("nwwswee")).first()).containsExactly(Pair(0, 0), Pair(-1, 1), Pair(-3, 1), Pair(-4, 0), Pair(-2, 0), Pair(0, 0))
+        assertThat(Day24.walk(listOf("esenee")).first()).isEqualTo(Pair(6, 0))
+        assertThat(Day24.walk(listOf("nwwswee")).first()).isEqualTo(Pair(0, 0))
     }
 
     @Test
     fun `part 1 test data`() {
         assertThat(Day24.doPart1(data)).isEqualTo(10)
+    }
+
+    @Test
+    fun `part 2 test data`() {
+        assertThat(Day24.doPart2(data)).isEqualTo(2208)
     }
 }

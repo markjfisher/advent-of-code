@@ -5,9 +5,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import mu.KotlinLogging
 import net.fish.Day
-import net.fish.move
 import net.fish.resourceLines
 import net.fish.y2020.HEX_DIRECTION.E
 import net.fish.y2020.HEX_DIRECTION.NE
@@ -17,17 +15,15 @@ import net.fish.y2020.HEX_DIRECTION.SW
 import net.fish.y2020.HEX_DIRECTION.W
 
 object Day24 : Day {
-    override val warmUps = 1
     private val data = resourceLines(2020, 24)
-    private val logger = KotlinLogging.logger { }
 
-    var blackTiles: MutableSet<Pair<Int, Int>> = mutableSetOf()
+    private var blackTiles: MutableSet<Pair<Int, Int>> = mutableSetOf()
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)
 
     fun doPart1(data: List<String>): Int {
-        val ends = endPointsOfWalk(toHexWalks(data))
+        val ends = walk(data)
         blackTiles = ends.fold(mutableSetOf()) { acc, end ->
             if (acc.contains(end)) acc.remove(end) else acc.add(end)
             acc
@@ -37,11 +33,11 @@ object Day24 : Day {
 
     fun doPart2(data: List<String>): Int {
         if (blackTiles.isEmpty()) doPart1(data)
-        (0 until 100).forEach { conwayHexStep() }
+        repeat(100) { conwayHexStep() }
         return blackTiles.count()
     }
 
-    fun conwayHexStep() {
+    private fun conwayHexStep() {
         val allTouchingPositions = mutableSetOf<Pair<Int, Int>>()
         blackTiles.chunked(5).forEach { chunk ->
             allTouchingPositions.addAll(chunk.flatMap { neighbourPositions(it) })
@@ -62,7 +58,7 @@ object Day24 : Day {
 
     }
 
-    suspend fun calculateAsync(locs: List<Pair<Int, Int>>): Set<Pair<Int, Int>> = withContext(Dispatchers.Default) {
+    private suspend fun calculateAsync(locs: List<Pair<Int, Int>>): Set<Pair<Int, Int>> = withContext(Dispatchers.Default) {
         calculate(locs)
     }
 
@@ -81,7 +77,7 @@ object Day24 : Day {
         }
     }
 
-    fun neighbourPositions(point: Pair<Int, Int>): Set<Pair<Int, Int>> {
+    private fun neighbourPositions(point: Pair<Int, Int>): Set<Pair<Int, Int>> {
         return setOf(
             Pair(point.first - 1, point.second - 1),
             Pair(point.first - 1, point.second + 1),
@@ -92,33 +88,31 @@ object Day24 : Day {
         )
     }
 
-    fun neighbourCount(point: Pair<Int, Int>): Int {
-        return blackTiles.intersect(neighbourPositions(point)).count()
+    private fun neighbourCount(point: Pair<Int, Int>): Int {
+        return neighbourPositions(point).intersect(blackTiles).count()
     }
 
-    fun endPointsOfWalk(paths: List<List<Pair<Int, Int>>>): List<Pair<Int, Int>> {
-        return paths.map { it.last() }
-    }
-
-    fun toHexWalks(data: List<String>): List<List<Pair<Int, Int>>> {
+    fun walk(data: List<String>): List<Pair<Int, Int>> {
         // each line represents a walk without delimiters, so break the instruction up
         return data.map { line ->
-            val path = mutableListOf<Pair<Int, Int>>()
             val hexDirections: List<HEX_DIRECTION> = toHexDirections(line, emptyList())
             var currentPosition = Pair(0, 0)
-            path.add(currentPosition)
             hexDirections.forEach { direction ->
                 currentPosition = when (direction) {
-                    NW -> move(currentPosition, 1, Pair(-1, 1), path)
-                    NE -> move(currentPosition, 1, Pair(1, 1), path)
-                    E -> move(currentPosition, 1, Pair(2, 0), path)
-                    SE -> move(currentPosition, 1, Pair(1, -1), path)
-                    SW -> move(currentPosition, 1, Pair(-1, -1), path)
-                    W -> move(currentPosition, 1, Pair(-2, 0), path)
+                    NW -> move(currentPosition, Pair(-1, 1))
+                    NE -> move(currentPosition, Pair(1, 1))
+                    E -> move(currentPosition, Pair(2, 0))
+                    SE -> move(currentPosition, Pair(1, -1))
+                    SW -> move(currentPosition, Pair(-1, -1))
+                    W -> move(currentPosition, Pair(-2, 0))
                 }
             }
-            path.toList()
+            currentPosition
         }
+    }
+
+    private fun move(position: Pair<Int, Int>, by: Pair<Int, Int>): Pair<Int, Int> {
+        return Pair(position.first + by.first, position.second + by.second)
     }
 
     tailrec fun toHexDirections(line: String, builtDirections: List<HEX_DIRECTION> = emptyList()): List<HEX_DIRECTION> {
