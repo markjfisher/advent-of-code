@@ -37,7 +37,7 @@ object Day24 : Day {
         return blackTiles.count()
     }
 
-    private fun conwayHexStep() {
+    fun conwayHexStep() {
         val allTouchingPositions = mutableSetOf<Pair<Int, Int>>()
         blackTiles.chunked(5).forEach { chunk ->
             allTouchingPositions.addAll(chunk.flatMap { neighbourPositions(it) })
@@ -62,7 +62,7 @@ object Day24 : Day {
         calculate(locs)
     }
 
-    fun calculate(locs: List<Pair<Int, Int>>): Set<Pair<Int, Int>> {
+    fun calculate(locs: Iterable<Pair<Int, Int>>): MutableSet<Pair<Int, Int>> {
         return locs.fold(mutableSetOf()) { newFlipped, location ->
             val neighbourCount = neighbourCount(location)
             val isBlack = blackTiles.contains(location)
