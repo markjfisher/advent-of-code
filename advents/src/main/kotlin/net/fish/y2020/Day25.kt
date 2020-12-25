@@ -2,43 +2,84 @@ package net.fish.y2020
 
 import net.fish.Day
 import net.fish.resourceLines
-import java.util.Date
+import java.math.BigInteger
 
 object Day25 : Day {
-    override val warmUps = 1
-    private val publicKeys = resourceLines(2020, 25).map { it.toLong() }
+    override val warmUps = 2
+    private val publicKeys = resourceLines(2020, 25).map { it.toInt() }
 
-    override fun part1() = doPart1(publicKeys)
+    // override fun part1() = doPart1(publicKeys)
+    // override fun part1() = doPart1WithBigIntegers(publicKeys) // takes about
+    override fun part1() = doPart1WithSequence(publicKeys) // takes about
     override fun part2() = "WIN!"
 
-    private val handshakesMap = mutableMapOf<Long, Long>()
+    private val handshakesMap = mutableMapOf<Int, Int>()
 
-    fun doPart1(keys: List<Long>): Long {
+    fun doPart1(keys: List<Int>): Int {
         // createHandshakeMap(20201227) // should use this
         createHandshakeMap(5163355) // cheating by knowing the result of the lowest private key...
         val cardLoopNumber = findLoopNumber(keys[0])
-        // val doorLoopNumber = findLoopNumber(keys[1])
 
-        val enc1 = transform(keys[1], cardLoopNumber)
-        return enc1
+        return transform(keys[1], cardLoopNumber)
     }
 
-    fun createHandshakeMap(max: Long) {
-        (1L until max).fold(1L) { acc, i ->
+    fun doPart1WithBigIntegers(keys: List<Int>): Int {
+        val cardPublic = BigInteger.valueOf(keys[0].toLong())
+        val doorPublic = BigInteger.valueOf(keys[1].toLong())
+        val prime = BigInteger.valueOf(20201227)
+        val seven = BigInteger.valueOf(7)
+        var foundCardPrivate = false
+        var foundDoorPrivate = false
+
+        var private = BigInteger.ZERO
+        do {
+            private++
+            val calculated = seven.modPow(private, prime)
+            if (calculated == cardPublic) foundCardPrivate = true
+            if (calculated == doorPublic) foundDoorPrivate = true
+        } while (!foundCardPrivate || !foundDoorPrivate)
+
+        return transform(keys[if (foundCardPrivate) 0 else 1], private.toInt())
+    }
+
+    fun createHandshakeMap(max: Int) {
+        (1 until max).fold(1) { acc, i ->
             val v = (acc * 7) % 20201227
             handshakesMap[v] = i
             v
         }
     }
 
-    fun findLoopNumber(public: Long): Long {
+    fun doPart1WithSequence(keys: List<Int>): Int {
+        val cardPublic = keys[0]
+        val doorPublic = keys[1]
+        val asSet = setOf(cardPublic, doorPublic)
+
+        val resultPair = sequenceOfHandshakes().dropWhile { !asSet.contains(it.first) }.first()
+        return transform(keys[if (resultPair.first == cardPublic) 1 else 0], resultPair.second)
+    }
+
+    fun sequenceOfHandshakes(): Sequence<Pair<Int, Int>> {
+        var loopNumber = 0
+        var currentValue = 1
+        return sequence {
+            while(true) {
+                loopNumber++
+                currentValue = (currentValue * 7) % 20201227
+                yield(Pair(currentValue, loopNumber))
+            }
+        }
+    }
+
+    fun findLoopNumber(public: Int): Int {
         return handshakesMap.getOrDefault(public, 0)
     }
 
-    fun transform(subject: Long, loopNumber: Long): Long {
-        return (0 until loopNumber).fold(1) { acc, _ ->
-            (acc * subject) % 20201227
+    fun transform(subject: Int, loopNumber: Int): Int {
+        val asLong = (0L until loopNumber.toLong()).fold(1L) { acc, _ ->
+            (acc * subject.toLong()) % 20201227
         }
+        return asLong.toInt()
     }
 
     @JvmStatic
