@@ -1,4 +1,4 @@
-package net.fish.gfx
+package noodle
 
 import glm_.vec4.Vec4
 import gln.glClearColor
@@ -57,7 +57,7 @@ class ShowDemo {
         with(ImGui) {
             sysDefault = io.fonts.addFontDefault()
             ubuntuFont = io.fonts.addFontFromFileTTF("fonts/UbuntuMono-R.ttf", 18.0f) ?: sysDefault
-            println("got font: $ubuntuFont")
+            println("got font: ${ubuntuFont.isLoaded}")
         }
     }
 
@@ -85,6 +85,7 @@ class ShowDemo {
                 text("Application average %.3f ms/frame (%.1f FPS)", 1_000f / io.framerate, io.framerate)
                 end()
             }
+            popFont()
         }
 
         ImGui.render()

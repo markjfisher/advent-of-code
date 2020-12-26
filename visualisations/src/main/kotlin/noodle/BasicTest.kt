@@ -1,4 +1,4 @@
-package net.fish.gfx
+package noodle
 
 import glm_.has
 import glm_.vec2.Vec2
@@ -125,7 +125,7 @@ class BasicTest {
                     if ((show::overlay)() && menuItem("Close")) (show::overlay).set(false)
                 }
             }
-
+            popFont()
         }
 
         ImGui.render()

@@ -38,16 +38,11 @@ object Day12 : Day {
         println("end: ${paths.last()}")
     }
 
-    fun doViz() {
-        val viz = Vis12(toPathP1(instructions))
-        viz.run()
-    }
-
     @JvmStatic
     fun main(args: Array<String>) {
         println(part1())
         println(part2())
-        doViz()
+        // doViz()
     }
 }
 

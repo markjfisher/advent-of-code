@@ -1,4 +1,4 @@
-package net.fish.gfx
+package noodle
 
 import org.lwjgl.Version
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks

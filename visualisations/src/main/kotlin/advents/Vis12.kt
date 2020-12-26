@@ -1,4 +1,4 @@
-package net.fish.y2020
+package advents
 
 import glm_.vec2.Vec2
 import glm_.vec2.Vec2i
@@ -11,6 +11,8 @@ import imgui.classes.Context
 import imgui.demo.ShowDemoWindowWidgets
 import imgui.impl.gl.ImplGL3
 import imgui.impl.glfw.ImplGlfw
+import net.fish.resourceLines
+import net.fish.y2020.Day12
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT
 import org.lwjgl.opengl.GL11.glClear
@@ -153,6 +155,14 @@ class Vis12(val ferryPositions: List<Pair<Int, Int>>) {
         ctx.destroy()
         window.destroy()
         glfw.terminate()
+    }
+
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val viz = Vis12(Day12.toPathP1(resourceLines(2020, 12)))
+            viz.run()
+        }
     }
 
 }
