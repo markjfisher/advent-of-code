@@ -1,5 +1,7 @@
-package net.fish
+package net.fish.geometry
 
+import net.fish.geometry.OffsetCoord.Companion.EVEN
+import net.fish.geometry.OffsetCoord.Companion.ODD
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -67,11 +69,11 @@ class HexTest {
     @Test
     fun `layout setup`() {
         val h = Hex(3, 4, -7)
-        val flat = Layout(Layout.flat, Point2D(10.0, 15.0), Point2D(35.0, 71.0))
-        assertThat(flat.pixelToHex(flat.hexToPixel(h)).hexRound()).isEqualTo(h)
+        val flatLayout = Layout(Orientation.flat, Point2D(10.0, 15.0), Point2D(35.0, 71.0))
+        assertThat(flatLayout.pixelToHex(flatLayout.hexToPixel(h)).hexRound()).isEqualTo(h)
 
-        val pointy = Layout(Layout.pointy, Point2D(10.0, 15.0), Point2D(35.0, 71.0))
-        assertThat(pointy.pixelToHex(pointy.hexToPixel(h)).hexRound()).isEqualTo(h)
+        val pointyLayout = Layout(Orientation.pointy, Point2D(10.0, 15.0), Point2D(35.0, 71.0))
+        assertThat(pointyLayout.pixelToHex(pointyLayout.hexToPixel(h)).hexRound()).isEqualTo(h)
     }
 
     @Test
@@ -100,25 +102,26 @@ class HexTest {
         val a = Hex(3, 4, -7)
         val b = OffsetCoord(1, -3)
 
-        assertThat(OffsetCoord.qoffsetToCube(OffsetCoord.EVEN, OffsetCoord.qoffsetFromCube(OffsetCoord.EVEN, a))).isEqualTo(a)
-        assertThat(OffsetCoord.qoffsetFromCube(OffsetCoord.EVEN, OffsetCoord.qoffsetToCube(OffsetCoord.EVEN, b))).isEqualTo(b)
+        assertThat(OffsetCoord.qoffsetToCube(EVEN, OffsetCoord.qoffsetFromCube(EVEN, a))).isEqualTo(a)
+        assertThat(OffsetCoord.qoffsetFromCube(EVEN, OffsetCoord.qoffsetToCube(EVEN, b))).isEqualTo(b)
 
-        assertThat(OffsetCoord.qoffsetToCube(OffsetCoord.ODD, OffsetCoord.qoffsetFromCube(OffsetCoord.ODD, a))).isEqualTo(a)
-        assertThat(OffsetCoord.qoffsetFromCube(OffsetCoord.ODD, OffsetCoord.qoffsetToCube(OffsetCoord.ODD, b))).isEqualTo(b)
+        assertThat(OffsetCoord.qoffsetToCube(ODD, OffsetCoord.qoffsetFromCube(ODD, a))).isEqualTo(a)
+        assertThat(OffsetCoord.qoffsetFromCube(ODD, OffsetCoord.qoffsetToCube(ODD, b))).isEqualTo(b)
 
-        assertThat(OffsetCoord.roffsetToCube(OffsetCoord.EVEN, OffsetCoord.roffsetFromCube(OffsetCoord.EVEN, a))).isEqualTo(a)
-        assertThat(OffsetCoord.roffsetFromCube(OffsetCoord.EVEN, OffsetCoord.roffsetToCube(OffsetCoord.EVEN, b))).isEqualTo(b)
+        assertThat(OffsetCoord.roffsetToCube(EVEN, OffsetCoord.roffsetFromCube(EVEN, a))).isEqualTo(a)
+        assertThat(OffsetCoord.roffsetFromCube(EVEN, OffsetCoord.roffsetToCube(EVEN, b))).isEqualTo(b)
 
-        assertThat(OffsetCoord.roffsetToCube(OffsetCoord.ODD, OffsetCoord.roffsetFromCube(OffsetCoord.ODD, a))).isEqualTo(a)
-        assertThat(OffsetCoord.roffsetFromCube(OffsetCoord.ODD, OffsetCoord.roffsetToCube(OffsetCoord.ODD, b))).isEqualTo(b)
+        assertThat(OffsetCoord.roffsetToCube(ODD, OffsetCoord.roffsetFromCube(ODD, a))).isEqualTo(a)
+        assertThat(OffsetCoord.roffsetFromCube(ODD, OffsetCoord.roffsetToCube(ODD, b))).isEqualTo(b)
     }
 
     @Test
     fun `offset to and from cube`() {
-        assertThat(OffsetCoord.qoffsetFromCube(OffsetCoord.EVEN, Hex(1, 2, -3))).isEqualTo(OffsetCoord(1, 3))
-        assertThat(OffsetCoord.qoffsetFromCube(OffsetCoord.ODD, Hex(1, 2, -3))).isEqualTo(OffsetCoord(1, 2))
+        assertThat(OffsetCoord.qoffsetFromCube(EVEN, Hex(1, 2, -3))).isEqualTo(OffsetCoord(1, 3))
+        assertThat(OffsetCoord.qoffsetFromCube(ODD, Hex(1, 2, -3))).isEqualTo(OffsetCoord(1, 2))
 
-        assertThat(OffsetCoord.qoffsetToCube(OffsetCoord.EVEN, OffsetCoord(1, 3))).isEqualTo(Hex(1, 2, -3))
-        assertThat(OffsetCoord.qoffsetToCube(OffsetCoord.ODD, OffsetCoord(1, 2))).isEqualTo(Hex(1, 2, -3))
+        assertThat(OffsetCoord.qoffsetToCube(EVEN, OffsetCoord(1, 3))).isEqualTo(Hex(1, 2, -3))
+        assertThat(OffsetCoord.qoffsetToCube(ODD, OffsetCoord(1, 2))).isEqualTo(Hex(1, 2, -3))
     }
+
 }
