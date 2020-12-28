@@ -100,4 +100,34 @@ class WrappingHexGridTest {
             Hex(1, -1, 0), Hex(0, -2, 2), Hex(6, -5, -1), Hex(5, -3, -2), Hex(6, -6, 0), Hex(0, -3, 3)
         )
     }
+
+    @Test
+    fun `pointy rotation about a point`() {
+        // Simple
+        assertThat(pointyGrid.rotateLeft(Hex(1, -1, 0), Hex(2, -1, -1))).isEqualTo(Hex(2, -3, 1))
+        assertThat(pointyGrid.rotateRight(Hex(1, -1, 0), Hex(2, -1, -1))).isEqualTo(Hex(2, 0, -2))
+
+        // Boundary
+        assertThat(pointyGrid.rotateLeft(Hex(7, 0, -7), Hex(2, -1, -1))).isEqualTo(Hex(8, -2, -6))
+        assertThat(pointyGrid.rotateRight(Hex(7, 0, -7), Hex(2, -1, -1))).isEqualTo(Hex(2, -3, 1))
+
+        // Long
+        assertThat(pointyGrid.rotateLeft(Hex(0, 0, 0), Hex(9, -3, -6))).isEqualTo(Hex(2, -1, -1))
+        assertThat(pointyGrid.rotateRight(Hex(0, 0, 0), Hex(9, -3, -6))).isEqualTo(Hex(7, -2, -5))
+    }
+
+    @Test
+    fun `flat rotation about a point`() {
+        // Simple
+        assertThat(flatGrid.rotateLeft(Hex(1, -1, 0), Hex(2, -1, -1))).isEqualTo(Hex(2, -3, 1))
+        assertThat(flatGrid.rotateRight(Hex(1, -1, 0), Hex(2, -1, -1))).isEqualTo(Hex(2, -4, 2))
+
+        // Boundary
+        assertThat(flatGrid.rotateLeft(Hex(7, -4, -3), Hex(2, -1, -1))).isEqualTo(Hex(0, -2, 2))
+        assertThat(flatGrid.rotateRight(Hex(7, -4, -3), Hex(2, -1, -1))).isEqualTo(Hex(0, -3, 3))
+
+        // Long
+        assertThat(flatGrid.rotateLeft(Hex(0, 0, 0), Hex(7, -7, 0))).isEqualTo(Hex(0, -3, 3))
+        assertThat(flatGrid.rotateRight(Hex(0, 0, 0), Hex(7, -7, 0))).isEqualTo(Hex(7, -4, -3))
+    }
 }

@@ -60,7 +60,7 @@ object Day23 : Day {
 
     fun solve(head: SimpleLinkedNode, cupsCount: Int, cups: Map<Int, SimpleLinkedNode>, iterations: Int): Map<Int, SimpleLinkedNode> {
         var current = head
-        repeat(iterations) { iteration ->
+        repeat(iterations) {
             val removed = current.next!!
             current.next = current.next!!.next!!.next!!.next
             var destination = if (current.value == 1) cupsCount else current.value - 1

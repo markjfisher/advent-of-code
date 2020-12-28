@@ -126,7 +126,7 @@ data class Game(
             val subGameNumber = totalGames
             val winner = when {
                 // P1 can't lose if he holds the highest card of the 2 decks.
-                newP1Cards.max()!! > newP2Cards.max()!! -> 1
+                newP1Cards.maxOrNull()!! > newP2Cards.maxOrNull()!! -> 1
                 else -> Game(player1 = newP1Cards, player2 = newP2Cards, gameNumber = totalGames, parentGame = gameNumber).playRecursed().winner
             }
             when (winner) {

@@ -61,4 +61,6 @@ data class WrappingHexGrid(
 
     fun neighbours(hex: Hex): List<Hex> = Hex.directions.map { constrainToGrid(it + hex) }
     fun diagonals(hex: Hex): List<Hex> = Hex.diagonals.map{ constrainToGrid(it + hex) }
+    fun rotateLeft(centre: Hex, vector: Hex) = constrainToGrid(centre + vector.rotateLeft())
+    fun rotateRight(centre: Hex, vector: Hex) = constrainToGrid(centre + vector.rotateRight())
 }

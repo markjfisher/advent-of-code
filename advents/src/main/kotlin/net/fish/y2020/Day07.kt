@@ -14,7 +14,7 @@ object Day07 : Day {
         return data.map { bagRule ->
             // Note to future self: Split the rules up for parts you want to find, this wasn't doable in single regex and you lost 2 hours of your life trying.
             // EDIT: this rule would work, but using 2 is easier to process.
-            val fullExtractor = Regex("""([\p{Alpha} ]+) bags contain|(\d+) ([\p{Alpha} ]+) bag""")
+            // val fullExtractor = Regex("""([\p{Alpha} ]+) bags contain|(\d+) ([\p{Alpha} ]+) bag""")
             val bagExtractor = Regex("""^([\p{Alpha} ]+) bags contain""")
             val rulesExtractor = Regex("""([\d]+) ([\p{Alpha} ]+) bag""")
 
