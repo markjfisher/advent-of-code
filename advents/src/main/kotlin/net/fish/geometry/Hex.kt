@@ -10,7 +10,8 @@ import kotlin.math.roundToLong
 data class Hex(
     val q: Int,
     val r: Int,
-    val s: Int
+    val s: Int,
+    val constrainer: HexConstrainer = DefaultHexConstrainer()
 ) {
     init {
         require(q + r + s == 0) { "q + r + s must be 0" }
@@ -20,15 +21,37 @@ data class Hex(
     operator fun minus(other: Hex) = subtract(other)
     operator fun times(k: Int) = scale(k)
 
-    fun add(other: Hex): Hex = Hex(q + other.q, r + other.r, s + other.s)
-    fun subtract(other: Hex): Hex = Hex(q - other.q, r - other.r, s - other.s)
-    fun scale(k: Int): Hex = Hex(q * k, r * k, s * k)
+    // we need to implement this to ignore the constrainer
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other?.javaClass != javaClass) return false
+        other as Hex
+        return (this.q == other.q && this.r == other.r && this.s == other.s)
+    }
+
+    fun add(other: Hex): Hex = constrainer.constrain(Hex(q + other.q, r + other.r, s + other.s, constrainer))
+    fun subtract(other: Hex): Hex = constrainer.constrain(Hex(q - other.q, r - other.r, s - other.s, constrainer))
+    fun scale(k: Int): Hex = constrainer.constrain(Hex(q * k, r * k, s * k, constrainer))
     fun rotateLeft(): Hex = Hex(-s, -q, -r)
     fun rotateRight(): Hex = Hex(-r, -s, -q)
-    fun neighbour(d: Int) = this + direction(d)
-    fun diagonalNeighbour(d: Int) = this + diagonalDirection(d)
+    fun neighbour(d: Int) = constrainer.constrain(this + direction(d))
+    fun diagonalNeighbour(d: Int) = constrainer.constrain(this + diagonalDirection(d))
     fun length(): Int = (abs(q) + abs(r) + abs(s)) / 2
-    fun distance(other: Hex) = (this - other).length()
+    fun distance(other: Hex) = (this - other).length() // TODO: this is wrong in wrapped context
+
+    fun neighbours(): List<Hex> = directions.map { this + it }
+    fun diagonals(): List<Hex> = diagonals.map { this + it }
+
+    fun rotateLeft(vector: Hex) = this + vector.rotateLeft()
+    fun rotateRight(vector: Hex) = this + vector.rotateRight()
+
+    override fun hashCode(): Int {
+        var result = q
+        result = 31 * result + r
+        result = 31 * result + s
+        result = 31 * result + constrainer.hashCode()
+        return result
+    }
 
     companion object {
         val directions = listOf(Hex(1, 0, -1), Hex(1, -1, 0), Hex(0, -1, 1), Hex(-1, 0, 1), Hex(-1, 1, 0), Hex(0, 1, -1))
