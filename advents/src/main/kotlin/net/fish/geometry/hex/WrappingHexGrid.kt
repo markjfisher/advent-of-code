@@ -2,6 +2,9 @@ package net.fish.geometry.hex
 
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 /*
  This is a rectangular grid of Hex objects, whose ends wrap around.
@@ -11,16 +14,29 @@ import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 data class WrappingHexGrid(
     val m: Int,
     val n: Int,
-    val orientation: Orientation.ORIENTATION
+    val layout: Layout,
+    val r1: Double = 10.0, // The radius of the minor circle, thinking of a doughnut, this is the smaller of the 2 circles
+    val r2: Double = 50.0  // The radius of the major circle, the one which sweeps around dictating centre of minor circle
 ): HexConstrainer {
     init {
-        require(if (orientation == POINTY) n % 2 == 0 else true) {
+        require(if (layout.orientation == POINTY) n % 2 == 0 else true) {
             "Invalid dimensions for pointy orientation, n must be even. Given: $n"
         }
 
-        require(if (orientation == FLAT) m % 2 == 0 else true) {
+        require(if (layout.orientation == FLAT) m % 2 == 0 else true) {
             "Invalid dimensions for flat orientation, m must be even. Given: $m"
         }
+    }
+
+    // This is in terms of m/n, and needs to be multiplied by the layout's hex size to get an actual width/height
+    fun width(): Double = when (layout.orientation) {
+        POINTY -> m * layout.orientation.o.f0 // f0 = sqrt(3)
+        FLAT -> 1.5 * m
+    }
+
+    fun height(): Double = when(layout.orientation) {
+        POINTY -> 1.5 * n
+        FLAT -> n * layout.orientation.o.f3 // f3 = sqrt(3)
     }
 
     // Magic constants for constraining to pointy grid
@@ -42,7 +58,7 @@ data class WrappingHexGrid(
     fun hex(q: Int, r: Int, s: Int): Hex = constrain(Hex(q, r, s, this))
 
     override tailrec fun constrain(hex: Hex): Hex {
-        val adjust = when (orientation) {
+        val adjust = when (layout.orientation) {
             POINTY -> adjust(hex.r, minPointyR, maxPointyR, pointyROffset, hex.q, hex.s, minPointyQminusS, maxPointyQminusS, pointyQSOffset)
             FLAT -> adjust(hex.q, minFlatQ, maxFlatQ, flatQOffset, hex.r, hex.s, minFlatRminusS, maxFlatRminusS, flatRSOffset)
         }
@@ -61,4 +77,18 @@ data class WrappingHexGrid(
         return adjust
     }
 
+    // return the coordinates of the hex corners on the torus described by the layout
+    fun toroidCoordinates(hex: Hex): List<Point3D> {
+        // See https://gamedev.stackexchange.com/questions/16845/how-do-i-generate-a-torus-mesh
+        fun w(theta: Double): Point3D = Point3D(cos(theta), sin(theta), 0.0)
+        fun q(theta: Double, phi: Double): Point3D = w(theta) * r2 + w(theta) * cos(phi) * r1 + Point3D(0.0, 0.0, r1 * sin(phi))
+
+        return layout.polygonCorners(hex).map {
+            println("doing hex corner at $it")
+            val theta = 2.0 * PI * (1.0 - it.x / width())
+            val phi = 2.0 * PI * it.y / height()
+
+            q(theta, phi)
+        }
+    }
 }

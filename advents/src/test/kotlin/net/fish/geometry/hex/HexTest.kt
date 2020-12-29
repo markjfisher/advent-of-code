@@ -8,6 +8,8 @@ import net.fish.geometry.hex.OffsetCoord
 import net.fish.geometry.hex.OffsetCoord.Companion.EVEN
 import net.fish.geometry.hex.OffsetCoord.Companion.ODD
 import net.fish.geometry.hex.Orientation
+import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
+import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.Point2D
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -76,10 +78,10 @@ class HexTest {
     @Test
     fun `layout setup`() {
         val h = Hex(3, 4, -7)
-        val flatLayout = Layout(Orientation.flat, Point2D(10.0, 15.0), Point2D(35.0, 71.0))
+        val flatLayout = Layout(FLAT, Point2D(10.0, 15.0), Point2D(35.0, 71.0))
         assertThat(flatLayout.pixelToHex(flatLayout.hexToPixel(h)).hexRound()).isEqualTo(h)
 
-        val pointyLayout = Layout(Orientation.pointy, Point2D(10.0, 15.0), Point2D(35.0, 71.0))
+        val pointyLayout = Layout(POINTY, Point2D(10.0, 15.0), Point2D(35.0, 71.0))
         assertThat(pointyLayout.pixelToHex(pointyLayout.hexToPixel(h)).hexRound()).isEqualTo(h)
     }
 

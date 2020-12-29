@@ -1,5 +1,7 @@
 package net.fish.function
 
+// Taken from https://gist.github.com/ramseyboy/91bcc85cb5f28e47c9b5464c1501a983
+
 typealias Predicate<T> = Function1<T, Boolean>
 
 infix fun <T> Predicate<T>.and(other: Predicate<in T>): Predicate<T> = {

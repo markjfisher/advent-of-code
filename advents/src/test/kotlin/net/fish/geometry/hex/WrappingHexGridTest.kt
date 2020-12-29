@@ -4,10 +4,14 @@ import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.math.abs
+import kotlin.math.sqrt
 
 class WrappingHexGridTest {
-    private val pointyGrid = WrappingHexGrid(8, 4, POINTY)
-    private val flatGrid = WrappingHexGrid(8, 4, FLAT)
+    private val pointyLayout = Layout(POINTY)
+    private val flatLayout = Layout(FLAT)
+    private val pointyGrid = WrappingHexGrid(8, 4, pointyLayout)
+    private val flatGrid = WrappingHexGrid(8, 4, flatLayout)
 
     @Test
     fun `flat wrapping hex grid constrains hexagons to its grid size`() {
@@ -129,5 +133,109 @@ class WrappingHexGridTest {
         // Long
         assertThat(flatGrid.hex(0, 0, 0).rotateLeft(Hex(7, -7, 0))).isEqualTo(Hex(0, -3, 3))
         assertThat(flatGrid.hex(0, 0, 0).rotateRight(Hex(7, -7, 0))).isEqualTo(Hex(7, -4, -3))
+    }
+
+    @Test
+    fun `grid width and height`() {
+        assertThat(abs(pointyGrid.width() - 8 * sqrt(3.0))).isLessThan(0.0001)
+        assertThat(pointyGrid.height()).isEqualTo(6.0)
+
+        assertThat(flatGrid.width()).isEqualTo(12.0)
+        assertThat(abs(flatGrid.height() - 4 * sqrt(3.0))).isLessThan(0.0001)
+    }
+
+    @Test
+    fun `pointy hex corner and torus coordinates`() {
+        // In theory...
+        // h1[0] == h2[2] (x same, y out by grid height)
+        // h1[5] == h2[3] (x same, y out by grid height)
+        // h1[4] == h4[0] (x out by grid width, y same)
+        // h1[3] == h4[1] (x out by grid width, y same)
+        // h1[5] == h3[1] (x out by grid width, y out by grid height)
+        // h1[4] == h3[2] (x out by grid width, y out by grid height)
+        //
+        // h2[4] == h3[0] (x out by grid width, y same)
+        // h2[3] == h3[1] (x out by grid width, y same)
+        //
+        // h3[3] == h4[5] (x same, y out by grid height)
+        // h3[2] == h4[0] (x same, y out by grid height)
+        val hex1 = pointyGrid.hex(0, 0, 0)
+        val hex2 = pointyGrid.hex(2, -3, 1)
+        val hex3 = pointyGrid.hex(9, -3, -6)
+        val hex4 = pointyGrid.hex(7, 0, -7)
+        val corners1 = pointyLayout.polygonCorners(hex1)
+        val corners2 = pointyLayout.polygonCorners(hex2)
+        val corners3 = pointyLayout.polygonCorners(hex3)
+        val corners4 = pointyLayout.polygonCorners(hex4)
+
+        // verify h1 and h2 points that touch
+        var diff = corners1[0] - corners2[2]
+        assertThat(abs(diff.x)).isLessThan(0.001)
+        assertThat(abs(diff.y - pointyGrid.height())).isLessThan(0.001)
+        diff = corners1[5] - corners2[3]
+        assertThat(abs(diff.x)).isLessThan(0.001)
+        assertThat(abs(diff.y - pointyGrid.height())).isLessThan(0.001)
+
+        // verify h1 and h4 points that touch
+        diff = corners1[4] - corners4[0]
+        assertThat(abs(diff.x + pointyGrid.width())).isLessThan(0.001)
+        assertThat(abs(diff.y)).isLessThan(0.001)
+        diff = corners1[3] - corners4[1]
+        assertThat(abs(diff.x + pointyGrid.width())).isLessThan(0.001)
+        assertThat(abs(diff.y)).isLessThan(0.001)
+
+        // verify h1 and h3 points that touch
+        diff = corners1[5] - corners3[1]
+        assertThat(abs(diff.x + pointyGrid.width())).isLessThan(0.001)
+        assertThat(abs(diff.y - pointyGrid.height())).isLessThan(0.001)
+        diff = corners1[4] - corners3[2]
+        assertThat(abs(diff.x + pointyGrid.width())).isLessThan(0.001)
+        assertThat(abs(diff.y - pointyGrid.height())).isLessThan(0.001)
+
+        // Convert to torus coordinates
+        val c1 = pointyGrid.toroidCoordinates(hex1)
+        val c2 = pointyGrid.toroidCoordinates(hex2)
+        val c3 = pointyGrid.toroidCoordinates(hex3)
+        val c4 = pointyGrid.toroidCoordinates(hex4)
+
+        // check coordinates are same by taking length of their difference
+        assertThat((c1[0] - c2[2]).length()).isLessThan(0.001)
+        assertThat((c1[5] - c2[3]).length()).isLessThan(0.001)
+        assertThat((c1[4] - c4[0]).length()).isLessThan(0.001)
+        assertThat((c1[3] - c4[1]).length()).isLessThan(0.001)
+        assertThat((c1[5] - c3[1]).length()).isLessThan(0.001)
+        assertThat((c1[4] - c3[2]).length()).isLessThan(0.001)
+
+        assertThat((c2[4] - c3[0]).length()).isLessThan(0.001)
+        assertThat((c2[3] - c3[1]).length()).isLessThan(0.001)
+        assertThat((c3[3] - c4[5]).length()).isLessThan(0.001)
+        assertThat((c3[2] - c4[0]).length()).isLessThan(0.001)
+
+    }
+
+    @Test
+    fun `flat hex coordinates on torus`() {
+        val hex1 = flatGrid.hex(0, 0, 0)
+        val hex2 = flatGrid.hex(0, -3, 3)
+        val hex3 = flatGrid.hex(7, -7, 0)
+        val hex4 = flatGrid.hex(7, -4, -3)
+        val c1 = flatGrid.toroidCoordinates(hex1)
+        val c2 = flatGrid.toroidCoordinates(hex2)
+        val c3 = flatGrid.toroidCoordinates(hex3)
+        val c4 = flatGrid.toroidCoordinates(hex4)
+
+        // check coordinates are same by taking length of their difference
+        assertThat((c1[4] - c2[2]).length()).isLessThan(0.001)
+        assertThat((c1[5] - c2[1]).length()).isLessThan(0.001)
+        assertThat((c1[3] - c4[5]).length()).isLessThan(0.001)
+        assertThat((c1[2] - c4[0]).length()).isLessThan(0.001)
+        assertThat((c1[4] - c3[0]).length()).isLessThan(0.001)
+        assertThat((c1[3] - c3[1]).length()).isLessThan(0.001)
+
+        assertThat((c2[3] - c3[5]).length()).isLessThan(0.001)
+        assertThat((c2[2] - c3[0]).length()).isLessThan(0.001)
+        assertThat((c3[2] - c4[4]).length()).isLessThan(0.001)
+        assertThat((c3[1] - c4[5]).length()).isLessThan(0.001)
+
     }
 }

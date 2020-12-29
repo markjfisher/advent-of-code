@@ -1,20 +1,45 @@
 package net.fish.geometry.hex
 
+import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 data class Point2D(
     val x: Double,
     val y: Double
-)
+) {
+    operator fun plus(other: Point2D) = add(other)
+    operator fun minus(other: Point2D) = subtract(other)
+    operator fun times(k: Double) = scale(k)
+
+    fun add(other: Point2D) = Point2D(x + other.x, y + other.y)
+    fun subtract(other: Point2D) = Point2D(x - other.x, y - other.y)
+    fun scale(k: Double) = Point2D(k * x, k * y)
+}
+
+data class Point3D(
+    val x: Double,
+    val y: Double,
+    val z: Double
+) {
+    operator fun plus(other: Point3D) = add(other)
+    operator fun minus(other: Point3D) = subtract(other)
+    operator fun times(k: Double) = scale(k)
+
+    fun add(other: Point3D) = Point3D(x + other.x, y + other.y, z + other.z)
+    fun subtract(other: Point3D) = Point3D(x - other.x, y - other.y, z - other.z)
+    fun scale(k: Double) = Point3D(k * x, k * y, k * z)
+    fun length(): Double = sqrt(x*x + y*y + z*z)
+}
 
 data class Layout(
-    val orientation: Orientation,
-    val size: Point2D,
-    val origin: Point2D
+    val orientation: Orientation.ORIENTATION = POINTY,
+    val size: Point2D = Point2D(1.0, 1.0),
+    val origin: Point2D = Point2D(0.0, 0.0)
 ) {
     fun hexToPixel(h: Hex): Point2D {
-        val (f0, f1, f2, f3) = orientation
+        val (f0, f1, f2, f3) = orientation.o
         val x = (f0 * h.q + f1 * h.r) * size.x
         val y = (f2 * h.q + f3 * h.r) * size.y
         return Point2D(x + origin.x, y + origin.y)
@@ -22,13 +47,13 @@ data class Layout(
 
     fun pixelToHex(p: Point2D): FractionalHex {
         val (x, y) = Point2D((p.x - origin.x) / size.x, (p.y - origin.y) / size.y)
-        val q = orientation.b0 * x + orientation.b1 * y
-        val r = orientation.b2 * x + orientation.b3 * y
+        val q = orientation.o.b0 * x + orientation.o.b1 * y
+        val r = orientation.o.b2 * x + orientation.o.b3 * y
         return FractionalHex(q, r, -q - r)
     }
 
     fun hexCornerOffset(corner: Int): Point2D {
-        val angle = 2.0 * Math.PI * (orientation.start_angle - corner) / 6.0
+        val angle = 2.0 * Math.PI * (orientation.o.start_angle - corner) / 6.0
         return Point2D(size.x * cos(angle), size.y * sin(angle))
     }
 
