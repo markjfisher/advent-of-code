@@ -1,4 +1,4 @@
-package net.fish
+package net.fish.function
 
 typealias Predicate<T> = Function1<T, Boolean>
 

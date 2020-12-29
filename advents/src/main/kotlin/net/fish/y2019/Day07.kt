@@ -1,7 +1,7 @@
 package net.fish.y2019
 
 import net.fish.Day
-import net.fish.permutations
+import net.fish.maths.permutations
 import net.fish.resourceString
 
 object Day07: Day {

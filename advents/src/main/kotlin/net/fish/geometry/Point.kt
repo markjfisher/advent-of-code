@@ -1,9 +1,9 @@
-package net.fish
+package net.fish.geometry
 
-import net.fish.Direction.EAST
-import net.fish.Direction.NORTH
-import net.fish.Direction.SOUTH
-import net.fish.Direction.WEST
+import net.fish.geometry.Direction.EAST
+import net.fish.geometry.Direction.NORTH
+import net.fish.geometry.Direction.SOUTH
+import net.fish.geometry.Direction.WEST
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
@@ -41,3 +41,19 @@ data class Point(val x: Int, val y: Int): Comparable<Point> {
             sqrt(((b.y - a.y) * (b.y - a.y) + (b.x - a.x) * (b.x - a.x)).toDouble())
     }
 }
+
+fun Collection<Point>.minX() = this.map { it.x }.minOrNull()
+fun Collection<Point>.minY() = this.map { it.y }.minOrNull()
+fun Collection<Point>.maxX() = this.map { it.x }.maxOrNull()
+fun Collection<Point>.maxY() = this.map { it.y }.maxOrNull()
+fun Collection<Point>.bounds() =
+    this.fold(listOf(Int.MAX_VALUE, Int.MAX_VALUE, Int.MIN_VALUE, Int.MIN_VALUE)) { list, point ->
+        listOf(
+            kotlin.math.min(list[0], point.x),
+            kotlin.math.min(list[1], point.y),
+            kotlin.math.max(list[2], point.x),
+            kotlin.math.max(list[3], point.y)
+        )
+    }.let { (minX, minY, maxX, maxY) ->
+        Point(minX, minY) to Point(maxX, maxY)
+    }

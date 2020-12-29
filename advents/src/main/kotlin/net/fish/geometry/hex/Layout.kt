@@ -1,7 +1,12 @@
-package net.fish.geometry
+package net.fish.geometry.hex
 
 import kotlin.math.cos
 import kotlin.math.sin
+
+data class Point2D(
+    val x: Double,
+    val y: Double
+)
 
 data class Layout(
     val orientation: Orientation,

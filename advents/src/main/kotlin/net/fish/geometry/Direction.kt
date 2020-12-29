@@ -1,4 +1,4 @@
-package net.fish
+package net.fish.geometry
 
 import java.lang.Exception
 import java.lang.IllegalArgumentException
@@ -49,7 +49,7 @@ enum class Direction {
 
         fun from(c: Char, heading: Direction): Direction {
             val dir = c.toUpperCase()
-            return if (dir == 'F') return heading else this.from(dir)
+            return if (dir == 'F') return heading else from(dir)
         }
     }
 }

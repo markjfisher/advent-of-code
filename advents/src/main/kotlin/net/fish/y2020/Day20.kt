@@ -3,15 +3,15 @@ package net.fish.y2020
 import com.marcinmoskala.math.product
 import mu.KotlinLogging
 import net.fish.Day
-import net.fish.Direction.EAST
-import net.fish.Direction.NORTH
-import net.fish.Direction.SOUTH
-import net.fish.Direction.WEST
-import net.fish.Point
-import net.fish.createArray
-import net.fish.flipMatrixByVertical
+import net.fish.geometry.Direction.EAST
+import net.fish.geometry.Direction.NORTH
+import net.fish.geometry.Direction.SOUTH
+import net.fish.geometry.Direction.WEST
+import net.fish.geometry.Point
+import net.fish.maths.createArray
+import net.fish.maths.flipMatrixByVertical
 import net.fish.resourceStrings
-import net.fish.rotateMatrix
+import net.fish.maths.rotateMatrix
 
 private val logger = KotlinLogging.logger { }
 

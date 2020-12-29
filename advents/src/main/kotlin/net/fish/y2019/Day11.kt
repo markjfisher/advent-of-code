@@ -1,6 +1,9 @@
 package net.fish.y2019
 
 import net.fish.*
+import net.fish.geometry.Direction
+import net.fish.geometry.Point
+import net.fish.geometry.bounds
 
 object Day11: Day {
     private val program = resourceString(2019, 11).split(",").map { it.toLong() }

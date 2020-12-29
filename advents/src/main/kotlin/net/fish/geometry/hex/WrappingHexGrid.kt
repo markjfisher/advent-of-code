@@ -1,14 +1,14 @@
-package net.fish.geometry
+package net.fish.geometry.hex
 
-import net.fish.geometry.Orientation.ORIENTATION.FLAT
-import net.fish.geometry.Orientation.ORIENTATION.POINTY
+import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
+import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 
 /*
  This is a rectangular grid of Hex objects, whose ends wrap around.
  Thus making a Toroid in topology.
  This class required a lot of sweat, new ink for hex graphs, 2 pencils, 1 eraser, and quite a bit of wine.
  */
-data class WrappingHexGrid<T: HexData>(
+data class WrappingHexGrid(
     val m: Int,
     val n: Int,
     val orientation: Orientation.ORIENTATION

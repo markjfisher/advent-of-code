@@ -1,7 +1,7 @@
-package net.fish.geometry
+package net.fish.geometry.hex
 
-import net.fish.geometry.Orientation.ORIENTATION.FLAT
-import net.fish.geometry.Orientation.ORIENTATION.POINTY
+import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
+import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

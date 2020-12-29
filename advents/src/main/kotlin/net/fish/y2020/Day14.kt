@@ -1,6 +1,6 @@
 package net.fish.y2020
 
-import net.fish.BinaryBits
+import net.fish.maths.BinaryBits
 import net.fish.Day
 import net.fish.resourceLines
 import kotlin.math.pow

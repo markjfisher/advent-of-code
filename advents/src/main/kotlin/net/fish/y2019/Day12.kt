@@ -2,7 +2,7 @@ package net.fish.y2019
 
 import com.marcinmoskala.math.combinations
 import net.fish.Day
-import net.fish.lcm
+import net.fish.maths.lcm
 import net.fish.resourceLines
 import kotlin.math.abs
 

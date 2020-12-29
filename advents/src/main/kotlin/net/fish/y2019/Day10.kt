@@ -1,7 +1,7 @@
 package net.fish.y2019
 
 import net.fish.Day
-import net.fish.Point
+import net.fish.geometry.Point
 import net.fish.resourceLines
 
 object Day10: Day {

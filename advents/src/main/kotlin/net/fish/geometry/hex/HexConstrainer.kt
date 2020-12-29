@@ -1,4 +1,4 @@
-package net.fish.geometry
+package net.fish.geometry.hex
 
 interface HexConstrainer {
     fun constrain(hex: Hex): Hex

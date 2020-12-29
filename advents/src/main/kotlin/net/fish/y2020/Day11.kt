@@ -1,7 +1,7 @@
 package net.fish.y2020
 
 import net.fish.Day
-import net.fish.createArray
+import net.fish.maths.createArray
 import net.fish.resourceLines
 import net.fish.y2020.Day11.Location
 import net.fish.y2020.Day11.Location.EMPTY

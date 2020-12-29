@@ -1,6 +1,6 @@
 package net.fish.y2020
 
-import net.fish.manhattenDistance
+import net.fish.geometry.manhattenDistance
 import net.fish.resourcePath
 import net.fish.y2020.Day12.toPathP1
 import net.fish.y2020.Day12.toPathP2

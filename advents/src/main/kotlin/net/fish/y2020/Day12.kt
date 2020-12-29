@@ -1,14 +1,14 @@
 package net.fish.y2020
 
 import net.fish.Day
-import net.fish.Direction
-import net.fish.Direction.EAST
-import net.fish.Direction.NORTH
-import net.fish.Direction.SOUTH
-import net.fish.Direction.WEST
-import net.fish.PathPositions
-import net.fish.manhattenDistance
-import net.fish.move
+import net.fish.geometry.Direction
+import net.fish.geometry.Direction.EAST
+import net.fish.geometry.Direction.NORTH
+import net.fish.geometry.Direction.SOUTH
+import net.fish.geometry.Direction.WEST
+import net.fish.geometry.PathPositions
+import net.fish.geometry.manhattenDistance
+import net.fish.geometry.move
 import net.fish.resourceLines
 
 object Day12 : Day {

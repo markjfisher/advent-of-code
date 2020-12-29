@@ -1,12 +1,12 @@
 package net.fish.y2019
 
 import net.fish.Day
-import net.fish.PathPositions
-import net.fish.findIntersections
-import net.fish.move
+import net.fish.geometry.PathPositions
+import net.fish.geometry.findIntersections
+import net.fish.geometry.move
 import net.fish.resourceLines
-import net.fish.stepsTo
-import net.fish.wireManhattanDistance
+import net.fish.geometry.stepsTo
+import net.fish.geometry.wireManhattanDistance
 
 object Day03 : Day {
     private val wireData = resourceLines(2019, 3)

@@ -2,6 +2,7 @@ package net.fish.y2020
 
 import net.fish.resourcePath
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.math.BigInteger
 
@@ -38,6 +39,7 @@ class Day13Test {
         assertThat(Day13.doPart2("2,x,3,x,10")).isEqualTo(16)
     }
 
+    @Disabled("just for generating our own input sequences")
     @Test
     fun `generate sequences`() {
         val largest = (0 until 1000).map {

@@ -1,5 +1,6 @@
 package net.fish
 
+import java.time.Duration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -46,5 +47,16 @@ object Runner {
         val dur2 = System.nanoTime() - start2
 
         println(format.format("" + dayName + " " + date.format(dayOfWeek), p1, p2, formatDuration(System.nanoTime() - start1), formatDuration(dur1), (formatDuration(dur2))))
+    }
+}
+
+fun formatDuration(nanos: Long): String {
+    val d = Duration.ofNanos(nanos)
+    val ms = nanos / 1_000_000.0
+    return when {
+        ms > 60000 -> String.format("%s m %s s", d.toMinutes(), d.minusMinutes(d.toMinutes()).seconds)
+        ms > 10000 -> String.format("%s s", d.seconds)
+        ms > 1000 -> String.format("%.2f s", ms / 1000.0)
+        else -> String.format("%.2f ms", ms)
     }
 }

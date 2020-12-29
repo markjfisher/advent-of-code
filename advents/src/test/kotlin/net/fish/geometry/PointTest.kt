@@ -1,5 +1,6 @@
-package net.fish
+package net.fish.geometry
 
+import net.fish.geometry.Point
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.math.sqrt

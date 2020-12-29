@@ -2,7 +2,7 @@ package net.fish.y2020
 
 import com.marcinmoskala.math.product
 import net.fish.Day
-import net.fish.combinations
+import net.fish.maths.combinations
 import net.fish.resourceLines
 
 object Day01 : Day {

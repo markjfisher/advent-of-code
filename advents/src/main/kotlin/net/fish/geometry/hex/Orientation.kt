@@ -1,4 +1,4 @@
-package net.fish.geometry
+package net.fish.geometry.hex
 
 import kotlin.math.sqrt
 

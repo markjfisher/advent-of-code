@@ -1,6 +1,6 @@
 package net.fish.y2019
 
-import net.fish.Point
+import net.fish.geometry.Point
 import net.fish.resourcePath
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

@@ -1,6 +1,6 @@
 package net.fish.y2020
 
-import net.fish.flipMatrixByVertical
+import net.fish.maths.flipMatrixByVertical
 import net.fish.resourceStrings
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

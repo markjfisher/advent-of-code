@@ -1,9 +1,9 @@
 package net.fish.y2019
 
-import net.fish.findIntersections
-import net.fish.move
-import net.fish.stepsTo
-import net.fish.wireManhattanDistance
+import net.fish.geometry.findIntersections
+import net.fish.geometry.move
+import net.fish.geometry.stepsTo
+import net.fish.geometry.wireManhattanDistance
 import net.fish.y2019.Day03.convertWirePathsToCoordinates
 import net.fish.y2019.Day03.minimumSignalDelay
 import org.assertj.core.api.Assertions.assertThat
@@ -12,10 +12,12 @@ import org.junit.jupiter.api.Test
 class Day03Test {
     @Test
     fun `finding intersections`() {
-        assertThat(findIntersections(
+        assertThat(
+            findIntersections(
             listOf(Pair(2, 3), Pair(3, 4), Pair(4, 5)),
             listOf(Pair(4, 5), Pair(3, 4), Pair(0, 0))
-        )).containsExactlyInAnyOrder(Pair(3, 4), Pair(4, 5))
+        )
+        ).containsExactlyInAnyOrder(Pair(3, 4), Pair(4, 5))
     }
 
     @Test

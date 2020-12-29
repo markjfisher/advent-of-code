@@ -1,4 +1,4 @@
-package net.fish
+package net.fish.maths
 
 // Useful combinations/permutations implementations from
 // https://medium.com/@voddan/a-handful-of-kotlin-permutations-7659c555d421

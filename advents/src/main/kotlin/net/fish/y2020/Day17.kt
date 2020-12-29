@@ -6,7 +6,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import net.fish.AroundSpace
+import net.fish.maths.AroundSpace
 import net.fish.Day
 import net.fish.resourceLines
 
