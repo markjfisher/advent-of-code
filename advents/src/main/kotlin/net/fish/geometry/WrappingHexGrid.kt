@@ -8,7 +8,7 @@ import net.fish.geometry.Orientation.ORIENTATION.POINTY
  Thus making a Toroid in topology.
  This class required a lot of sweat, new ink for hex graphs, 2 pencils, 1 eraser, and quite a bit of wine.
  */
-data class WrappingHexGrid(
+data class WrappingHexGrid<T: HexData>(
     val m: Int,
     val n: Int,
     val orientation: Orientation.ORIENTATION
