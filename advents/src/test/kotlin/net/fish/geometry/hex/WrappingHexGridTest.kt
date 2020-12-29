@@ -145,6 +145,15 @@ class WrappingHexGridTest {
     }
 
     @Test
+    fun `torus coordinates are 7 points with centre as last coordinate`() {
+        val hex1 = pointyGrid.hex(0, 0, 0)
+        val c1 = pointyGrid.toroidCoordinates(hex1)
+        assertThat(c1).hasSize(7)
+        // The centre point of 0,0,0 is at [60, 0, 0], x = r1 + r2
+        assertThat((c1[6] - Point3D(60.0, 0.0, 0.0)).length()).isLessThan(0.001)
+    }
+
+    @Test
     fun `pointy hex corner and torus coordinates`() {
         // In theory...
         // h1[0] == h2[2] (x same, y out by grid height)

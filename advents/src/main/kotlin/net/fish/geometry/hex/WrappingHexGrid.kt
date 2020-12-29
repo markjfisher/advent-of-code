@@ -83,8 +83,8 @@ data class WrappingHexGrid(
         fun w(theta: Double): Point3D = Point3D(cos(theta), sin(theta), 0.0)
         fun q(theta: Double, phi: Double): Point3D = w(theta) * r2 + w(theta) * cos(phi) * r1 + Point3D(0.0, 0.0, r1 * sin(phi))
 
-        return layout.polygonCorners(hex).map {
-            println("doing hex corner at $it")
+        val centre = layout.hexToPixel(hex)
+        return (layout.polygonCorners(hex) + centre).map {
             val theta = 2.0 * PI * (1.0 - it.x / width())
             val phi = 2.0 * PI * it.y / height()
 
