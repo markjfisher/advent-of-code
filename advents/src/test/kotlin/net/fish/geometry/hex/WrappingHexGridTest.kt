@@ -14,6 +14,27 @@ class WrappingHexGridTest {
     private val flatGrid = WrappingHexGrid(8, 4, flatLayout)
 
     @Test
+    fun `can get hexes out of pointy grid in correct sequence`() {
+        val hexes = listOf(
+            Hex(0, 0, 0), Hex(1, 0, -1), Hex(2, 0, -2),
+            Hex(1, -1, 0), Hex(2, -1, -1), Hex(3, -1, -2),
+            Hex(1, -2, 1), Hex(2, -2, 0), Hex(3, -2, -1),
+            Hex(2, -3, 1), Hex(3, -3, 0), Hex(4, -3, -1)
+        )
+        assertThat(WrappingHexGrid(3, 4, pointyLayout).hexes()).containsExactlyElementsOf(hexes)
+    }
+
+    @Test
+    fun `can get hexes out of flat grid in correct sequence`() {
+        val hexes = listOf(
+            Hex(0, 0, 0), Hex(1, -1, 0), Hex(2, -1, -1), Hex(3, -2, -1),
+            Hex(0, -1, 1), Hex(1, -2, 1), Hex(2, -2, 0), Hex(3, -3, 0),
+            Hex(0, -2, 2), Hex(1, -3, 2), Hex(2, -3, 1), Hex(3, -4, 1)
+        )
+        assertThat(WrappingHexGrid(4, 3, flatLayout).hexes()).containsExactlyElementsOf(hexes)
+    }
+
+    @Test
     fun `flat wrapping hex grid constrains hexagons to its grid size`() {
         // Top to bottom
         assertThat(flatGrid.constrain(Hex(0, 1, -1))).isEqualTo(Hex(0, -3, 3))

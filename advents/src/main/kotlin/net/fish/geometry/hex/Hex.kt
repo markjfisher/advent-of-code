@@ -14,7 +14,7 @@ data class Hex(
     val constrainer: HexConstrainer = DefaultHexConstrainer()
 ) {
     init {
-        require(q + r + s == 0) { "q + r + s must be 0" }
+        require(q + r + s == 0) { "q + r + s must be 0, got [$q, $r, $s]" }
     }
 
     operator fun plus(other: Hex) = add(other)

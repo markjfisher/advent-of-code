@@ -17,7 +17,7 @@ data class WrappingHexGrid(
     val layout: Layout,
     val r1: Double = 10.0, // The radius of the minor circle, thinking of a doughnut, this is the smaller of the 2 circles
     val r2: Double = 50.0  // The radius of the major circle, the one which sweeps around dictating centre of minor circle
-): HexConstrainer {
+) : HexConstrainer {
     init {
         require(if (layout.orientation == POINTY) n % 2 == 0 else true) {
             "Invalid dimensions for pointy orientation, n must be even. Given: $n"
@@ -34,7 +34,7 @@ data class WrappingHexGrid(
         FLAT -> 1.5 * m
     }
 
-    fun height(): Double = when(layout.orientation) {
+    fun height(): Double = when (layout.orientation) {
         POINTY -> 1.5 * n
         FLAT -> n * layout.orientation.o.f3 // f3 = sqrt(3)
     }
@@ -44,23 +44,19 @@ data class WrappingHexGrid(
     private val maxPointyR = 0
     private val maxPointyQminusS = 2 * m - 1
     private val minPointyQminusS = 0
-    private val pointyROffset = Hex(-n / 2, n, -n / 2)
-    private val pointyQSOffset = Hex(m, 0, -m)
 
     // Magic constants for constraining to flat grid
     private val minFlatRminusS = 1 - 2 * n
     private val maxFlatRminusS = 0
     private val minFlatQ = 0
     private val maxFlatQ = m - 1
-    private val flatQOffset = Hex(m, -m / 2, -m / 2)
-    private val flatRSOffset = Hex(0, n, -n)
 
     fun hex(q: Int, r: Int, s: Int): Hex = constrain(Hex(q, r, s, this))
 
     override tailrec fun constrain(hex: Hex): Hex {
         val adjust = when (layout.orientation) {
-            POINTY -> adjust(hex.r, minPointyR, maxPointyR, pointyROffset, hex.q, hex.s, minPointyQminusS, maxPointyQminusS, pointyQSOffset)
-            FLAT -> adjust(hex.q, minFlatQ, maxFlatQ, flatQOffset, hex.r, hex.s, minFlatRminusS, maxFlatRminusS, flatRSOffset)
+            POINTY -> adjust(hex.r, minPointyR, maxPointyR, Hex(-n / 2, n, -n / 2), hex.q, hex.s, minPointyQminusS, maxPointyQminusS, Hex(m, 0, -m))
+            FLAT -> adjust(hex.q, minFlatQ, maxFlatQ, Hex(m, -m / 2, -m / 2), hex.r, hex.s, minFlatRminusS, maxFlatRminusS, Hex(0, n, -n))
         }
         return if (adjust == Hex(0, 0, 0)) Hex(hex.q, hex.r, hex.s, this) else constrain(Hex(hex.q + adjust.q, hex.r + adjust.r, hex.s + adjust.s))
     }
@@ -90,5 +86,28 @@ data class WrappingHexGrid(
 
             q(theta, phi)
         }
+    }
+
+    fun hexes(): Iterable<Hex> {
+        return sequence {
+            when (layout.orientation) {
+                POINTY -> for (r in 0 until n) {
+                    for (q in 0 until m) {
+                        val qc = q + r / 2 + r % 2
+                        val rc = -r
+                        val sc = 0 - qc - rc
+                        yield(Hex(qc, rc, sc, this@WrappingHexGrid))
+                    }
+                }
+                FLAT -> for (s in 0 until n) {
+                    for (q in 0 until m) {
+                        val qc = q
+                        val sc = s - q / 2
+                        val rc = 0 - qc - sc
+                        yield(Hex(qc, rc, sc, this@WrappingHexGrid))
+                    }
+                }
+            }
+        }.asIterable()
     }
 }
