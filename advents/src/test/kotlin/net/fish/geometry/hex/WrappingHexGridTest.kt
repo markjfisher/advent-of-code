@@ -268,4 +268,63 @@ class WrappingHexGridTest {
         assertThat((c3[1] - c4[5]).length()).isLessThan(0.001)
 
     }
+
+    @Test
+    fun `getting mesh coordinates and indexes from 1x2 pointy grid`() {
+        val grid = WrappingHexGrid(1, 2, pointyLayout)
+        val mesh = grid.mesh()
+        assertThat(mesh.points).hasSize(6) // lots of duplicates in this tiny grid
+        assertThat(mesh.indices).hasSize(36)
+        assertThat(mesh.indices).containsExactly(
+            0, 1, 4,
+            1, 2, 4,
+            2, 1, 4,
+            1, 0, 4,
+            0, 3, 4,
+            3, 0, 4,
+
+            2, 3, 5,
+            3, 0, 5,
+            0, 3, 5,
+            3, 2, 5,
+            2, 1, 5,
+            1, 2, 5
+        )
+    }
+    @Test
+    fun `getting mesh coordinates and indexes from 2x2 pointy grid`() {
+        val grid = WrappingHexGrid(2, 2, pointyLayout)
+        val mesh = grid.mesh()
+        assertThat(mesh.points).hasSize(12) // lots of duplicates in this tiny grid
+        assertThat(mesh.indices).hasSize(72)
+        assertThat(mesh.indices).containsExactly(
+            0, 1, 6,
+            1, 2, 6,
+            2, 3, 6,
+            3, 4, 6,
+            4, 5, 6,
+            5, 0, 6,
+
+            4, 3, 9,
+            3, 7, 9,
+            7, 1, 9,
+            1, 0, 9,
+            0, 8, 9,
+            8, 4, 9,
+
+            7, 8, 10,
+            8, 0, 10,
+            0, 5, 10,
+            5, 2, 10,
+            2, 1, 10,
+            1, 7, 10,
+
+            2, 5, 11,
+            5, 4, 11,
+            4, 8, 11,
+            8, 7, 11,
+            7, 3, 11,
+            3, 2, 11
+        )
+    }
 }

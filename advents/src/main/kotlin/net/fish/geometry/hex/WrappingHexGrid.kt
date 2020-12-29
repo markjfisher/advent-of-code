@@ -110,4 +110,38 @@ data class WrappingHexGrid(
             }
         }.asIterable()
     }
+
+    fun mesh(): HexGridMesh {
+        val allPointsMap = mutableMapOf<Int, Point3D>()
+        val indices = mutableListOf<Int>()
+        var pointIndex = 0
+        hexes().forEach { hex ->
+            // accumulate 7 unique points of the hex into a list, with their indexes in the global points map
+            val hexPointIndices = mutableListOf<Int>()
+            toroidCoordinates(hex).forEach { hexPoint ->
+                val theIndex: Int
+                val duplicatePoints = allPointsMap.filterValues { (it - hexPoint).length() < 0.001 }
+                if (duplicatePoints.isEmpty()) {
+                    // Create a new entry in global map, track the point and its index
+                    theIndex = pointIndex++
+                    allPointsMap[theIndex] = hexPoint
+                } else {
+                    // use the actual one previously stored in the map to remove any rounding errors
+                    theIndex = duplicatePoints.entries.first().key
+                }
+                hexPointIndices += theIndex
+            }
+            // we now have 7 points and their indexes into the global points map, so add to the mesh the triangle combinations
+            // These are strictly in the same order as we look at hex corners
+            indices.addAll(listOf(hexPointIndices[0], hexPointIndices[1], hexPointIndices[6]))
+            indices.addAll(listOf(hexPointIndices[1], hexPointIndices[2], hexPointIndices[6]))
+            indices.addAll(listOf(hexPointIndices[2], hexPointIndices[3], hexPointIndices[6]))
+            indices.addAll(listOf(hexPointIndices[3], hexPointIndices[4], hexPointIndices[6]))
+            indices.addAll(listOf(hexPointIndices[4], hexPointIndices[5], hexPointIndices[6]))
+            indices.addAll(listOf(hexPointIndices[5], hexPointIndices[0], hexPointIndices[6]))
+        }
+        val points = allPointsMap.toSortedMap().values.toList()
+
+        return HexGridMesh(points, indices)
+    }
 }
