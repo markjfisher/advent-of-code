@@ -30,8 +30,8 @@ class Renderer {
         // Create uniforms for world and projection matrices
         shaderProgram.createUniform("projectionMatrix")
         shaderProgram.createUniform("worldMatrix")
+        shaderProgram.createUniform("texture_sampler")
 
-        window.setClearColor(0.0f, 0.0f, 0.0f, 0.0f)
     }
 
     fun clear() {
@@ -49,6 +49,7 @@ class Renderer {
         // Update projection Matrix
         val projectionMatrix = transformation.getProjectionMatrix(FOV, window.width.toFloat(), window.height.toFloat(), Z_NEAR, Z_FAR)
         shaderProgram.setUniform("projectionMatrix", projectionMatrix)
+        shaderProgram.setUniform("texture_sampler", 0)
 
         // Render our items
         for (gameItem in gameItems) {

@@ -5,6 +5,7 @@ import advents.conwayhex.engine.GameItem
 import advents.conwayhex.engine.GameLogic
 import advents.conwayhex.engine.Window
 import advents.conwayhex.engine.graph.Mesh
+import advents.conwayhex.engine.graph.Texture
 import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.Layout
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
@@ -20,7 +21,7 @@ import org.lwjgl.glfw.GLFW.GLFW_KEY_UP
 import org.lwjgl.glfw.GLFW.GLFW_KEY_X
 import org.lwjgl.glfw.GLFW.GLFW_KEY_Z
 
-class ConwayHex2020Day24: GameLogic {
+class ConwayHex2020Day24 : GameLogic {
     private val data = resourceLines(2020, 24)
     val torusMinorRadius = 5.0
     val torusMajorRadius = 40.0
@@ -49,23 +50,95 @@ class ConwayHex2020Day24: GameLogic {
     }
 
     override fun init(window: Window) {
+        // Create the Mesh
         val positions = floatArrayOf(
-            -0.5f, 0.5f, 0.0f,
-            -0.5f, -0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
-            0.5f, 0.5f, 0.0f
+            // V0
+            -0.5f, 0.5f, 0.5f,
+            // V1
+            -0.5f, -0.5f, 0.5f,
+            // V2
+            0.5f, -0.5f, 0.5f,
+            // V3
+            0.5f, 0.5f, 0.5f,
+            // V4
+            -0.5f, 0.5f, -0.5f,
+            // V5
+            0.5f, 0.5f, -0.5f,
+            // V6
+            -0.5f, -0.5f, -0.5f,
+            // V7
+            0.5f, -0.5f, -0.5f,
+            // For text coords in top face
+            // V8: V4 repeated
+            -0.5f, 0.5f, -0.5f,
+            // V9: V5 repeated
+            0.5f, 0.5f, -0.5f,
+            // V10: V0 repeated
+            -0.5f, 0.5f, 0.5f,
+            // V11: V3 repeated
+            0.5f, 0.5f, 0.5f,
+            // For text coords in right face
+            // V12: V3 repeated
+            0.5f, 0.5f, 0.5f,
+            // V13: V2 repeated
+            0.5f, -0.5f, 0.5f,
+            // For text coords in left face
+            // V14: V0 repeated
+            -0.5f, 0.5f, 0.5f,
+            // V15: V1 repeated
+            -0.5f, -0.5f, 0.5f,
+            // For text coords in bottom face
+            // V16: V6 repeated
+            -0.5f, -0.5f, -0.5f,
+            // V17: V7 repeated
+            0.5f, -0.5f, -0.5f,
+            // V18: V1 repeated
+            -0.5f, -0.5f, 0.5f,
+            // V19: V2 repeated
+            0.5f, -0.5f, 0.5f
         )
-        val colours = floatArrayOf(
-            0.5f, 0.0f, 0.0f,
-            0.0f, 0.5f, 0.0f,
-            0.0f, 0.0f, 0.5f,
-            0.0f, 0.15f, 0.15f
+        val textCoords = floatArrayOf(
+            0.0f, 0.0f,
+            0.0f, 0.5f,
+            0.5f, 0.5f,
+            0.5f, 0.0f,
+            0.0f, 0.0f,
+            0.5f, 0.0f,
+            0.0f, 0.5f,
+            0.5f, 0.5f,
+            // For text coords in top face
+            0.0f, 0.5f,
+            0.5f, 0.5f,
+            0.0f, 1.0f,
+            0.5f, 1.0f,
+            // For text coords in right face
+            0.0f, 0.0f,
+            0.0f, 0.5f,
+            // For text coords in left face
+            0.5f, 0.0f,
+            0.5f, 0.5f,
+            // For text coords in bottom face
+            0.5f, 0.0f,
+            1.0f, 0.0f,
+            0.5f, 0.5f,
+            1.0f, 0.5f
         )
         val indices = intArrayOf(
-            0, 1, 3, 3, 1, 2
+            // Front face
+            0, 1, 3, 3, 1, 2,
+            // Top Face
+            8, 10, 11, 9, 8, 11,
+            // Right face
+            12, 13, 7, 5, 12, 7,
+            // Left face
+            14, 15, 6, 4, 14, 6,
+            // Bottom face
+            16, 18, 19, 17, 16, 19,
+            // Back face
+            4, 6, 7, 5, 4, 7
         )
-
-        val mesh = Mesh(positions, colours, indices)
+        val texture = Texture("visualisations/textures/grassblock.png")
+        val mesh = Mesh(positions, textCoords, indices, texture)
         val gameItem = GameItem(mesh)
         gameItem.setPosition(0f, 0f, -2f)
         gameItems += gameItem
@@ -108,11 +181,12 @@ class ConwayHex2020Day24: GameLogic {
             gameItem.scale = scale
 
             // Update rotation angle
-            var rotation = gameItem.rotation.z + 1.5f
+            var rotation: Float = gameItem.rotation.x + 1.5f
             if (rotation > 360f) {
                 rotation = 0f
             }
-            gameItem.setRotation(0f, 0f, rotation)
+            gameItem.setRotation(rotation, rotation, rotation)
+
         }
     }
 

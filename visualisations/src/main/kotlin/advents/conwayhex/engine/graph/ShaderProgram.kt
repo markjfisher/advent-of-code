@@ -19,6 +19,7 @@ import org.lwjgl.opengl.GL20C.glGetShaderi
 import org.lwjgl.opengl.GL20C.glGetUniformLocation
 import org.lwjgl.opengl.GL20C.glLinkProgram
 import org.lwjgl.opengl.GL20C.glShaderSource
+import org.lwjgl.opengl.GL20C.glUniform1i
 import org.lwjgl.opengl.GL20C.glUniformMatrix4fv
 import org.lwjgl.opengl.GL20C.glUseProgram
 import org.lwjgl.opengl.GL20C.glValidateProgram
@@ -30,7 +31,7 @@ class ShaderProgram {
     private var vertexShaderId = 0
     private var fragmentShaderId = 0
 
-    private val uniforms: MutableMap<String, Int> = mutableMapOf()
+    private val uniforms = mutableMapOf<String, Int>()
 
     fun createVertexShader(shaderCode: String) {
         vertexShaderId = createShader(shaderCode, GL_VERTEX_SHADER)
@@ -59,6 +60,9 @@ class ShaderProgram {
         }
     }
 
+    fun setUniform(uniformName: String, value: Int) {
+        uniforms[uniformName]?.let { glUniform1i(it, value) }
+    }
 
     private fun createShader(shaderCode: String, shaderType: Int): Int {
         val shaderId = glCreateShader(shaderType)

@@ -1,9 +1,37 @@
 package advents.conwayhex.engine
 
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.glfw.GLFWErrorCallback
-import org.lwjgl.opengl.GL
-import org.lwjgl.opengl.GL11
+import org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR
+import org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR
+import org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE
+import org.lwjgl.glfw.GLFW.GLFW_OPENGL_CORE_PROFILE
+import org.lwjgl.glfw.GLFW.GLFW_OPENGL_FORWARD_COMPAT
+import org.lwjgl.glfw.GLFW.GLFW_OPENGL_PROFILE
+import org.lwjgl.glfw.GLFW.GLFW_PRESS
+import org.lwjgl.glfw.GLFW.GLFW_RELEASE
+import org.lwjgl.glfw.GLFW.GLFW_RESIZABLE
+import org.lwjgl.glfw.GLFW.GLFW_VISIBLE
+import org.lwjgl.glfw.GLFW.glfwCreateWindow
+import org.lwjgl.glfw.GLFW.glfwDefaultWindowHints
+import org.lwjgl.glfw.GLFW.glfwGetVideoMode
+import org.lwjgl.glfw.GLFW.glfwInit
+import org.lwjgl.glfw.GLFW.glfwMakeContextCurrent
+import org.lwjgl.glfw.GLFW.glfwPollEvents
+import org.lwjgl.glfw.GLFW.glfwSetFramebufferSizeCallback
+import org.lwjgl.glfw.GLFW.glfwSetKeyCallback
+import org.lwjgl.glfw.GLFW.glfwSetWindowPos
+import org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose
+import org.lwjgl.glfw.GLFW.glfwShowWindow
+import org.lwjgl.glfw.GLFW.glfwSwapBuffers
+import org.lwjgl.glfw.GLFW.glfwSwapInterval
+import org.lwjgl.glfw.GLFW.glfwWindowHint
+import org.lwjgl.glfw.GLFWErrorCallback.createPrint
+import org.lwjgl.opengl.GL.createCapabilities
+import org.lwjgl.opengl.GL11C.GL_DEPTH_TEST
+import org.lwjgl.opengl.GL11C.GL_FALSE
+import org.lwjgl.opengl.GL11C.GL_TRUE
+import org.lwjgl.opengl.GL11C.glClearColor
+import org.lwjgl.opengl.GL11C.glEnable
 import org.lwjgl.system.MemoryUtil
 
 
@@ -19,68 +47,69 @@ data class Window(
     fun init() {
         // Setup an error callback. The default implementation
         // will print the error message in System.err.
-        GLFWErrorCallback.createPrint(System.err).set()
+        createPrint(System.err).set()
 
         // Initialize GLFW. Most GLFW functions will not work before doing this.
-        check(GLFW.glfwInit()) { "Unable to initialize GLFW" }
-        GLFW.glfwDefaultWindowHints() // optional, the current window hints are already the default
-        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GL11.GL_FALSE) // the window will stay hidden after creation
-        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GL11.GL_TRUE) // the window will be resizable
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3)
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2)
-        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE)
-        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GL11.GL_TRUE)
+        check(glfwInit()) { "Unable to initialize GLFW" }
+        glfwDefaultWindowHints() // optional, the current window hints are already the default
+        glfwWindowHint(GLFW_VISIBLE, GL_FALSE) // the window will stay hidden after creation
+        glfwWindowHint(GLFW_RESIZABLE, GL_TRUE) // the window will be resizable
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2)
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
 
         // Create the window
-        windowHandle = GLFW.glfwCreateWindow(width, height, title, MemoryUtil.NULL, MemoryUtil.NULL)
+        windowHandle = glfwCreateWindow(width, height, title, MemoryUtil.NULL, MemoryUtil.NULL)
         if (windowHandle == MemoryUtil.NULL) {
             throw RuntimeException("Failed to create the GLFW window")
         }
 
         // Setup resize callback
-        GLFW.glfwSetFramebufferSizeCallback(windowHandle) { window: Long, width: Int, height: Int ->
+        glfwSetFramebufferSizeCallback(windowHandle) { window: Long, width: Int, height: Int ->
             this.width = width
             this.height = height
             isResized = true
         }
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-        GLFW.glfwSetKeyCallback(windowHandle) { window: Long, key: Int, scancode: Int, action: Int, mods: Int ->
-            if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE) {
-                GLFW.glfwSetWindowShouldClose(window, true) // We will detect this in the rendering loop
+        glfwSetKeyCallback(windowHandle) { window: Long, key: Int, scancode: Int, action: Int, mods: Int ->
+            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+                glfwSetWindowShouldClose(window, true) // We will detect this in the rendering loop
             }
         }
 
         // Get the resolution of the primary monitor
-        val vidmode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor())
+        val vidmode = glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor())
         // Center our window
-        GLFW.glfwSetWindowPos(
+        glfwSetWindowPos(
             windowHandle,
             (vidmode!!.width() - width) / 2,
             (vidmode.height() - height) / 2
         )
 
         // Make the OpenGL context current
-        GLFW.glfwMakeContextCurrent(windowHandle)
+        glfwMakeContextCurrent(windowHandle)
         if (isvSync()) {
             // Enable v-sync
-            GLFW.glfwSwapInterval(1)
+            glfwSwapInterval(1)
         }
 
         // Make the window visible
-        GLFW.glfwShowWindow(windowHandle)
-        GL.createCapabilities()
+        glfwShowWindow(windowHandle)
+        createCapabilities()
 
         // Set the clear color
-        GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+        glEnable(GL_DEPTH_TEST)
     }
 
     fun setClearColor(r: Float, g: Float, b: Float, alpha: Float) {
-        GL11.glClearColor(r, g, b, alpha)
+        glClearColor(r, g, b, alpha)
     }
 
     fun isKeyPressed(keyCode: Int): Boolean {
-        return GLFW.glfwGetKey(windowHandle, keyCode) == GLFW.GLFW_PRESS
+        return GLFW.glfwGetKey(windowHandle, keyCode) == GLFW_PRESS
     }
 
     fun windowShouldClose(): Boolean {
@@ -96,7 +125,7 @@ data class Window(
     }
 
     fun update() {
-        GLFW.glfwSwapBuffers(windowHandle)
-        GLFW.glfwPollEvents()
+        glfwSwapBuffers(windowHandle)
+        glfwPollEvents()
     }
 }
