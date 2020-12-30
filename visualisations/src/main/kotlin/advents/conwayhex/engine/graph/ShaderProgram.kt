@@ -2,11 +2,19 @@ package advents.conwayhex.engine.graph
 
 import org.lwjgl.opengl.GL20
 import java.lang.Exception
+import org.lwjgl.system.MemoryStack
+
+import org.joml.Matrix4f
+import org.lwjgl.opengl.GL20C.glGetUniformLocation
+import org.lwjgl.opengl.GL20C.glUniformMatrix4fv
+
 
 class ShaderProgram {
     private var programId: Int = 0
     private var vertexShaderId = 0
     private var fragmentShaderId = 0
+
+    private val uniforms: MutableMap<String, Int> = mutableMapOf()
 
     fun createVertexShader(shaderCode: String) {
         vertexShaderId = createShader(shaderCode, GL20.GL_VERTEX_SHADER)
@@ -19,6 +27,22 @@ class ShaderProgram {
     fun createProgram() {
         programId = GL20.glCreateProgram()
     }
+
+    fun createUniform(uniformName: String) {
+        val uniformLocation: Int = glGetUniformLocation(programId, uniformName)
+        if (uniformLocation < 0) {
+            throw Exception("Could not find uniform:$uniformName")
+        }
+        uniforms[uniformName] = uniformLocation
+    }
+
+    fun setUniform(uniformName: String?, value: Matrix4f) {
+        // Dump the matrix into a float buffer
+        MemoryStack.stackPush().use { stack ->
+            uniforms[uniformName]?.let { glUniformMatrix4fv(it, false, value[stack.mallocFloat(16)]) }
+        }
+    }
+
 
     private fun createShader(shaderCode: String, shaderType: Int): Int {
         val shaderId = GL20.glCreateShader(shaderType)

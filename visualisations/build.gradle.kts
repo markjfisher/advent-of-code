@@ -27,6 +27,8 @@ val junitJupiterEngineVersion: String by project
 
 val lwjglVersion: String by project
 val glnVersion: String by project
+val jomlVersion: String by project
+
 val lwjglNatives = "natives-linux"
 
 dependencies {
@@ -83,6 +85,7 @@ dependencies {
     implementation("com.github.kotlin-graphics.imgui:glfw:-SNAPSHOT")
     // additional libs
     implementation("com.github.kotlin-graphics:gln:$glnVersion")
+    implementation("org.joml:joml:$jomlVersion")
 
     implementation(project(":advents"))
 }

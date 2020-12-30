@@ -1,19 +1,25 @@
 package advents.conwayhex.engine.graph
 
-import org.lwjgl.opengl.GL11.GL_FLOAT
-import org.lwjgl.opengl.GL15
-import org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER
-import org.lwjgl.opengl.GL15.GL_STATIC_DRAW
-import org.lwjgl.opengl.GL15.glBindBuffer
-import org.lwjgl.opengl.GL15.glBufferData
-import org.lwjgl.opengl.GL20
-import org.lwjgl.opengl.GL20.glEnableVertexAttribArray
-import org.lwjgl.opengl.GL20.glVertexAttribPointer
-import org.lwjgl.opengl.GL30
+import org.lwjgl.opengl.GL11C.GL_FLOAT
+import org.lwjgl.opengl.GL11C.GL_TRIANGLES
+import org.lwjgl.opengl.GL11C.GL_UNSIGNED_INT
+import org.lwjgl.opengl.GL11C.glDrawElements
+import org.lwjgl.opengl.GL15C.GL_ARRAY_BUFFER
+import org.lwjgl.opengl.GL15C.GL_ELEMENT_ARRAY_BUFFER
+import org.lwjgl.opengl.GL15C.GL_STATIC_DRAW
+import org.lwjgl.opengl.GL15C.glBindBuffer
+import org.lwjgl.opengl.GL15C.glBufferData
+import org.lwjgl.opengl.GL15C.glDeleteBuffers
+import org.lwjgl.opengl.GL15C.glGenBuffers
+import org.lwjgl.opengl.GL20C.glDisableVertexAttribArray
+import org.lwjgl.opengl.GL20C.glEnableVertexAttribArray
+import org.lwjgl.opengl.GL20C.glVertexAttribPointer
+import org.lwjgl.opengl.GL30C.glGenVertexArrays
+import org.lwjgl.opengl.GL30C.glBindVertexArray
+import org.lwjgl.opengl.GL30C.glDeleteVertexArrays
 import org.lwjgl.system.MemoryUtil
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
-
 
 class Mesh(positions: FloatArray, colours: FloatArray, indices: IntArray) {
     var vaoId = 0
@@ -23,16 +29,26 @@ class Mesh(positions: FloatArray, colours: FloatArray, indices: IntArray) {
     var vertexCount = 0
 
     fun cleanUp() {
-        GL20.glDisableVertexAttribArray(0)
+        glDisableVertexAttribArray(0)
 
         // Delete the VBOs
         glBindBuffer(GL_ARRAY_BUFFER, 0)
-        GL15.glDeleteBuffers(posVboId)
-        GL15.glDeleteBuffers(idxVboId)
+        glDeleteBuffers(posVboId)
+        glDeleteBuffers(colourVboId)
+        glDeleteBuffers(idxVboId)
 
         // Delete the VAO
-        GL30.glBindVertexArray(0)
-        GL30.glDeleteVertexArrays(vaoId)
+        glBindVertexArray(0)
+        glDeleteVertexArrays(vaoId)
+    }
+
+    fun render() {
+        // Draw the mesh
+        glBindVertexArray(vaoId)
+        glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0)
+
+        // Restore state
+        glBindVertexArray(0)
     }
 
     init {
@@ -41,11 +57,11 @@ class Mesh(positions: FloatArray, colours: FloatArray, indices: IntArray) {
         val indicesBuffer: IntBuffer = MemoryUtil.memAllocInt(indices.size)
         try {
             vertexCount = indices.size
-            vaoId = GL30.glGenVertexArrays()
-            GL30.glBindVertexArray(vaoId)
+            vaoId = glGenVertexArrays()
+            glBindVertexArray(vaoId)
 
             // Position VBO
-            posVboId = GL15.glGenBuffers()
+            posVboId = glGenBuffers()
             posBuffer.put(positions).flip()
             glBindBuffer(GL_ARRAY_BUFFER, posVboId)
             glBufferData(GL_ARRAY_BUFFER, posBuffer, GL_STATIC_DRAW)
@@ -53,7 +69,7 @@ class Mesh(positions: FloatArray, colours: FloatArray, indices: IntArray) {
             glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0)
 
             // Colour VBO
-            colourVboId = GL15.glGenBuffers()
+            colourVboId = glGenBuffers()
             colourBuffer.put(colours).flip()
             glBindBuffer(GL_ARRAY_BUFFER, colourVboId)
             glBufferData(GL_ARRAY_BUFFER, colourBuffer, GL_STATIC_DRAW)
@@ -61,12 +77,12 @@ class Mesh(positions: FloatArray, colours: FloatArray, indices: IntArray) {
             glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0)
 
             // Index VBO
-            idxVboId = GL15.glGenBuffers()
+            idxVboId = glGenBuffers()
             indicesBuffer.put(indices).flip()
-            glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, idxVboId)
-            glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW)
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idxVboId)
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW)
             glBindBuffer(GL_ARRAY_BUFFER, 0)
-            GL30.glBindVertexArray(0)
+            glBindVertexArray(0)
         } finally {
             MemoryUtil.memFree(posBuffer)
             MemoryUtil.memFree(colourBuffer)
