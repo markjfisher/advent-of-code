@@ -8,7 +8,6 @@ import gln.glViewport
 import imgui.Cond
 import imgui.ImGui
 import imgui.classes.Context
-import imgui.demo.ShowDemoWindowWidgets
 import imgui.impl.gl.ImplGL3
 import imgui.impl.glfw.ImplGlfw
 import net.fish.resourceLines
@@ -23,7 +22,7 @@ import uno.glfw.VSync
 import uno.glfw.glfw
 import java.lang.Integer.max
 
-class Vis12(val ferryPositions: List<Pair<Int, Int>>) {
+class FerryJourney2020Day12(private val ferryPositions: List<Pair<Int, Int>>) {
 
     var dataPosition = 0.5f
     var animate = false
@@ -160,7 +159,7 @@ class Vis12(val ferryPositions: List<Pair<Int, Int>>) {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val viz = Vis12(Day12.toPathP1(resourceLines(2020, 12)))
+            val viz = FerryJourney2020Day12(Day12.toPathP1(resourceLines(2020, 12)))
             viz.run()
         }
     }
