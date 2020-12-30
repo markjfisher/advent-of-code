@@ -68,7 +68,8 @@ class ConwayHex2020Day24 : GameLogic {
             -0.5f, -0.5f, -0.5f,
             // V7
             0.5f, -0.5f, -0.5f,
-            // For text coords in top face
+
+            // For texture coords in top face
             // V8: V4 repeated
             -0.5f, 0.5f, -0.5f,
             // V9: V5 repeated
@@ -77,16 +78,19 @@ class ConwayHex2020Day24 : GameLogic {
             -0.5f, 0.5f, 0.5f,
             // V11: V3 repeated
             0.5f, 0.5f, 0.5f,
+
             // For text coords in right face
             // V12: V3 repeated
             0.5f, 0.5f, 0.5f,
             // V13: V2 repeated
             0.5f, -0.5f, 0.5f,
+
             // For text coords in left face
             // V14: V0 repeated
             -0.5f, 0.5f, 0.5f,
             // V15: V1 repeated
             -0.5f, -0.5f, 0.5f,
+
             // For text coords in bottom face
             // V16: V6 repeated
             -0.5f, -0.5f, -0.5f,
@@ -137,6 +141,8 @@ class ConwayHex2020Day24 : GameLogic {
             // Back face
             4, 6, 7, 5, 4, 7
         )
+
+        // relative to project root directory
         val texture = Texture("visualisations/textures/grassblock.png")
         val mesh = Mesh(positions, textCoords, indices, texture)
         val gameItem = GameItem(mesh)
@@ -181,11 +187,19 @@ class ConwayHex2020Day24 : GameLogic {
             gameItem.scale = scale
 
             // Update rotation angle
-            var rotation: Float = gameItem.rotation.x + 1.5f
-            if (rotation > 360f) {
-                rotation = 0f
+            var rotationX: Float = gameItem.rotation.x + 0.05f
+            if (rotationX > 360f) {
+                rotationX = 0f
             }
-            gameItem.setRotation(rotation, rotation, rotation)
+            var rotationY: Float = gameItem.rotation.y + 2.5f
+            if (rotationY > 360f) {
+                rotationY = 0f
+            }
+            var rotationZ: Float = gameItem.rotation.z + 0.02f
+            if (rotationZ > 360f) {
+                rotationZ = 0f
+            }
+            gameItem.setRotation(rotationX, rotationY, rotationZ)
 
         }
     }
