@@ -1,9 +1,7 @@
 package advents.conwayhex.engine
 
-import java.lang.Exception
 import java.nio.charset.StandardCharsets
 import java.util.Scanner
-
 
 object Utils {
     fun loadResource(fileName: String): String {

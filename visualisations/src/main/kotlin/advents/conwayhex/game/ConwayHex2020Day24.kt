@@ -3,6 +3,7 @@ package advents.conwayhex.game
 import advents.conwayhex.engine.GameEngine
 import advents.conwayhex.engine.GameItem
 import advents.conwayhex.engine.GameLogic
+import advents.conwayhex.engine.Timer
 import advents.conwayhex.engine.Window
 import advents.conwayhex.engine.graph.Mesh
 import advents.conwayhex.engine.graph.Texture
@@ -20,6 +21,7 @@ import org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT
 import org.lwjgl.glfw.GLFW.GLFW_KEY_UP
 import org.lwjgl.glfw.GLFW.GLFW_KEY_X
 import org.lwjgl.glfw.GLFW.GLFW_KEY_Z
+import java.util.Date
 
 class ConwayHex2020Day24 : GameLogic {
     private val data = resourceLines(2020, 24)
@@ -36,6 +38,68 @@ class ConwayHex2020Day24 : GameLogic {
     private var displyInc = 0
     private var displzInc = 0
     private var scaleInc = 0
+
+    private var textureNumber = 0
+    private val timer = Timer()
+    private var nextUpdate: Double = timer.time + 0.5
+
+    val textCoords1 = floatArrayOf(
+        // front face starting
+        0.0f, 0.0f,
+        0.0f, 0.5f,
+        0.5f, 0.5f,
+        0.5f, 0.0f,
+
+        0.0f, 0.0f,
+        0.5f, 0.0f,
+        0.0f, 0.5f,
+        0.5f, 0.5f,
+        // For text coords in top face
+        0.0f, 0.5f,
+        0.5f, 0.5f,
+        0.0f, 1.0f,
+        0.5f, 1.0f,
+        // For text coords in right face
+        0.0f, 0.0f,
+        0.0f, 0.5f,
+        // For text coords in left face
+        0.5f, 0.0f,
+        0.5f, 0.5f,
+        // For text coords in bottom face
+        0.5f, 0.0f,
+        1.0f, 0.0f,
+        0.5f, 0.5f,
+        1.0f, 0.5f
+    )
+    val textCoords2 = floatArrayOf(
+        // change first 4 pairs for front face
+        0.0f, 0.5f,
+        0.0f, 1.0f,
+        0.5f, 1.0f,
+        0.5f, 0.5f,
+
+        0.0f, 0.0f,
+        0.5f, 0.0f,
+        0.0f, 0.5f,
+        0.5f, 0.5f,
+        // For text coords in top face
+        0.0f, 0.5f,
+        0.5f, 0.5f,
+        0.0f, 1.0f,
+        0.5f, 1.0f,
+        // For text coords in right face
+        0.0f, 0.0f,
+        0.0f, 0.5f,
+        // For text coords in left face
+        0.5f, 0.0f,
+        0.5f, 0.5f,
+        // For text coords in bottom face
+        0.5f, 0.0f,
+        1.0f, 0.0f,
+        0.5f, 0.5f,
+        1.0f, 0.5f
+    )
+
 
     fun readInitialPosition(): List<Hex> {
         val doubledCoords = Day24.walk(data)
@@ -101,32 +165,6 @@ class ConwayHex2020Day24 : GameLogic {
             // V19: V2 repeated
             0.5f, -0.5f, 0.5f
         )
-        val textCoords = floatArrayOf(
-            0.0f, 0.0f,
-            0.0f, 0.5f,
-            0.5f, 0.5f,
-            0.5f, 0.0f,
-            0.0f, 0.0f,
-            0.5f, 0.0f,
-            0.0f, 0.5f,
-            0.5f, 0.5f,
-            // For text coords in top face
-            0.0f, 0.5f,
-            0.5f, 0.5f,
-            0.0f, 1.0f,
-            0.5f, 1.0f,
-            // For text coords in right face
-            0.0f, 0.0f,
-            0.0f, 0.5f,
-            // For text coords in left face
-            0.5f, 0.0f,
-            0.5f, 0.5f,
-            // For text coords in bottom face
-            0.5f, 0.0f,
-            1.0f, 0.0f,
-            0.5f, 0.5f,
-            1.0f, 0.5f
-        )
         val indices = intArrayOf(
             // Front face
             0, 1, 3, 3, 1, 2,
@@ -144,7 +182,7 @@ class ConwayHex2020Day24 : GameLogic {
 
         // relative to project root directory
         val texture = Texture("visualisations/textures/grassblock.png")
-        val mesh = Mesh(positions, textCoords, indices, texture)
+        val mesh = Mesh(positions, textCoords1, indices, texture)
         val gameItem = GameItem(mesh)
         gameItem.setPosition(0f, 0f, -2f)
         gameItems += gameItem
@@ -189,17 +227,24 @@ class ConwayHex2020Day24 : GameLogic {
             // Update rotation angle
             var rotationX: Float = gameItem.rotation.x + 0.05f
             if (rotationX > 360f) {
-                rotationX = 0f
+                rotationX -= 360f
             }
-            var rotationY: Float = gameItem.rotation.y + 2.5f
+            var rotationY: Float = gameItem.rotation.y + 2.3f
             if (rotationY > 360f) {
-                rotationY = 0f
+                rotationY -= 360f
             }
             var rotationZ: Float = gameItem.rotation.z + 0.02f
             if (rotationZ > 360f) {
-                rotationZ = 0f
+                rotationZ -= 360f
             }
             gameItem.setRotation(rotationX, rotationY, rotationZ)
+            val mesh = gameItem.mesh
+            if (timer.time > nextUpdate) {
+                nextUpdate += 0.5
+                textureNumber = (textureNumber + 1) % 2
+                mesh.textCoords = if (textureNumber == 0) textCoords1 else textCoords2
+                mesh.updateTexture = true
+            }
 
         }
     }

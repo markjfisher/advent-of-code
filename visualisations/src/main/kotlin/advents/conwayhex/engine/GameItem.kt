@@ -3,7 +3,9 @@ package advents.conwayhex.engine
 import advents.conwayhex.engine.graph.Mesh
 import org.joml.Vector3f
 
-class GameItem(val mesh: Mesh) {
+class GameItem(
+    val mesh: Mesh
+) {
     val position: Vector3f = Vector3f()
     var scale: Float = 1f
     val rotation: Vector3f = Vector3f()
