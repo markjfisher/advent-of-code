@@ -36,7 +36,6 @@ import org.lwjgl.opengl.GL11C.glClearColor
 import org.lwjgl.opengl.GL11C.glEnable
 import org.lwjgl.opengl.GL11C.glPolygonMode
 import org.lwjgl.system.MemoryUtil
-import java.lang.Exception
 
 data class Window(
     val title: String,
@@ -105,7 +104,7 @@ data class Window(
         // Set the clear color
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
         glEnable(GL_DEPTH_TEST)
-        // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE )
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
     }
 
     fun setClearColor(r: Float, g: Float, b: Float, alpha: Float) {

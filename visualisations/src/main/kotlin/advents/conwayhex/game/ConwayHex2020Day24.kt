@@ -51,7 +51,8 @@ class ConwayHex2020Day24 : GameLogic {
 
     override fun init(window: Window) {
         // mesh loading is via resources
-        val mesh = loadMesh("/conwayhex/models/cube.obj")
+        // val mesh = loadMesh("/conwayhex/models/cube.obj")
+        val mesh = loadMesh("/conwayhex/models/beveled-hexagon.obj")
 
         // texture loading isn't via resources, so is relative to project root dir
         mesh.texture = Texture("visualisations/textures/grassblock.png")

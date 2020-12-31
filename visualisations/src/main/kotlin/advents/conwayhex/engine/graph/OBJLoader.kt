@@ -20,6 +20,7 @@ object OBJLoader {
                 "vt" -> textures.add(Vector2f(tokens[1].toFloat(), tokens[2].toFloat()))
                 "vn" -> normals.add(Vector3f(tokens[1].toFloat(), tokens[2].toFloat(), tokens[3].toFloat()))
                 "f" -> faces.add(Face(tokens[1], tokens[2], tokens[3]))
+                else -> println("ignoring: $line")
             }
         }
         return reorderLists(vertices, textures, normals, faces)
