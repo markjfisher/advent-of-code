@@ -24,6 +24,8 @@ import org.lwjgl.opengl.GL20C.glUniformMatrix4fv
 import org.lwjgl.opengl.GL20C.glUseProgram
 import org.lwjgl.opengl.GL20C.glValidateProgram
 import org.lwjgl.system.MemoryStack
+import org.joml.Vector3f
+import org.lwjgl.opengl.GL20C.glUniform3f
 
 
 class ShaderProgram {
@@ -62,6 +64,10 @@ class ShaderProgram {
 
     fun setUniform(uniformName: String, value: Int) {
         uniforms[uniformName]?.let { glUniform1i(it, value) }
+    }
+
+    fun setUniform(uniformName: String, value: Vector3f) {
+        uniforms[uniformName]?.let { glUniform3f(it, value.x, value.y, value.z) }
     }
 
     private fun createShader(shaderCode: String, shaderType: Int): Int {

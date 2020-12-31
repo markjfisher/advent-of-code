@@ -4,12 +4,11 @@ import advents.conwayhex.engine.graph.Mesh
 import org.joml.Vector3f
 
 class GameItem(
-    val mesh: Mesh
+    val mesh: Mesh,
+    var position: Vector3f = Vector3f(),
+    var scale: Float = 1f,
+    var rotation: Vector3f = Vector3f(),
 ) {
-    val position: Vector3f = Vector3f()
-    var scale: Float = 1f
-    val rotation: Vector3f = Vector3f()
-
     fun setPosition(x: Float, y: Float, z: Float) {
         position.x = x
         position.y = y
@@ -20,5 +19,9 @@ class GameItem(
         rotation.x = x
         rotation.y = y
         rotation.z = z
+    }
+
+    override fun toString(): String {
+        return String.format("GameItem[position: %s, rotation: %s, scale: %f, mesh: %s]", position, rotation, scale, mesh)
     }
 }

@@ -3,13 +3,13 @@ package advents.conwayhex.game
 import advents.conwayhex.engine.GameItem
 import advents.conwayhex.engine.Utils
 import advents.conwayhex.engine.Window
+import advents.conwayhex.engine.graph.Camera
 import advents.conwayhex.engine.graph.ShaderProgram
 import advents.conwayhex.engine.graph.Transformation
 import org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT
 import org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT
 import org.lwjgl.opengl.GL11C.glClear
 import org.lwjgl.opengl.GL11C.glViewport
-
 
 class Renderer {
     private val transformation: Transformation = Transformation()
@@ -23,14 +23,18 @@ class Renderer {
 
     fun init(window: Window) {
         shaderProgram.createProgram()
-        shaderProgram.createVertexShader(Utils.loadResource("/conwayhex/vertex.vs"))
-        shaderProgram.createFragmentShader(Utils.loadResource("/conwayhex/fragment.fs"))
+        shaderProgram.createVertexShader(Utils.loadResource("/conwayhex/shaders/vertex.vs"))
+        shaderProgram.createFragmentShader(Utils.loadResource("/conwayhex/shaders/fragment.fs"))
         shaderProgram.link()
 
         // Create uniforms for world and projection matrices
         shaderProgram.createUniform("projectionMatrix")
-        shaderProgram.createUniform("worldMatrix")
+        shaderProgram.createUniform("modelViewMatrix")
         shaderProgram.createUniform("texture_sampler")
+
+        // Create uniform for default colour and the flag that controls it
+        shaderProgram.createUniform("colour")
+        shaderProgram.createUniform("useColour")
 
     }
 
@@ -38,7 +42,7 @@ class Renderer {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
     }
 
-    fun render(window: Window, gameItems: List<GameItem>) {
+    fun render(window: Window, camera: Camera, gameItems: List<GameItem>) {
         clear()
         if (window.isResized) {
             glViewport(0, 0, window.width, window.height)
@@ -49,16 +53,19 @@ class Renderer {
         // Update projection Matrix
         val projectionMatrix = transformation.getProjectionMatrix(FOV, window.width.toFloat(), window.height.toFloat(), Z_NEAR, Z_FAR)
         shaderProgram.setUniform("projectionMatrix", projectionMatrix)
+        // Update view Matrix
+        val viewMatrix = transformation.getViewMatrix(camera)
+
+        // Need to change this if we have more than 1 texture, presumably
         shaderProgram.setUniform("texture_sampler", 0)
 
         // Render our items
         for (gameItem in gameItems) {
-            val worldMatrix = transformation.getWorldMatrix(
-                gameItem.position,
-                gameItem.rotation,
-                gameItem.scale
-            )
-            shaderProgram.setUniform("worldMatrix", worldMatrix)
+            val mesh = gameItem.mesh
+            val modelViewMatrix = transformation.getModelViewMatrix(gameItem, viewMatrix)
+            shaderProgram.setUniform("modelViewMatrix", modelViewMatrix)
+            shaderProgram.setUniform("colour", mesh.colour)
+            shaderProgram.setUniform("useColour", if (mesh.isTextured()) 0 else 1)
             gameItem.mesh.render()
         }
 

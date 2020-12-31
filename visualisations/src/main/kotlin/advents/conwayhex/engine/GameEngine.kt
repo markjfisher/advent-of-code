@@ -12,6 +12,7 @@ class GameEngine(
 
     private val window: Window = Window(windowTitle, width, height, vSync)
     private val timer: Timer = Timer()
+    private val mouseInput: MouseInput = MouseInput()
 
     companion object {
         const val TARGET_FPS = 75
@@ -22,8 +23,8 @@ class GameEngine(
         try {
             init()
             gameLoop()
-        } catch (excp: Exception) {
-            excp.printStackTrace()
+        } catch (e: Exception) {
+            e.printStackTrace()
         } finally {
             cleanup()
         }
@@ -32,6 +33,7 @@ class GameEngine(
     private fun init() {
         window.init()
         timer.init()
+        mouseInput.init(window)
         gameLogic.init(window)
     }
 
@@ -69,11 +71,12 @@ class GameEngine(
     }
 
     private fun input() {
-        gameLogic.input(window)
+        mouseInput.input(window)
+        gameLogic.input(window, mouseInput)
     }
 
     private fun update(interval: Float) {
-        gameLogic.update(interval)
+        gameLogic.update(interval, mouseInput)
     }
 
     private fun render() {

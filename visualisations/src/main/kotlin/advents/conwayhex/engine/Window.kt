@@ -29,11 +29,14 @@ import org.lwjgl.glfw.GLFWErrorCallback.createPrint
 import org.lwjgl.opengl.GL.createCapabilities
 import org.lwjgl.opengl.GL11C.GL_DEPTH_TEST
 import org.lwjgl.opengl.GL11C.GL_FALSE
+import org.lwjgl.opengl.GL11C.GL_FRONT_AND_BACK
+import org.lwjgl.opengl.GL11C.GL_LINE
 import org.lwjgl.opengl.GL11C.GL_TRUE
 import org.lwjgl.opengl.GL11C.glClearColor
 import org.lwjgl.opengl.GL11C.glEnable
+import org.lwjgl.opengl.GL11C.glPolygonMode
 import org.lwjgl.system.MemoryUtil
-
+import java.lang.Exception
 
 data class Window(
     val title: String,
@@ -41,7 +44,7 @@ data class Window(
     var height: Int,
     private var vSync: Boolean
 ) {
-    private var windowHandle: Long = 0
+    var windowHandle: Long = 0
     var isResized = false
 
     fun init() {
@@ -80,11 +83,11 @@ data class Window(
         }
 
         // Get the resolution of the primary monitor
-        val vidmode = glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor())
+        val vidmode = glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor()) ?: throw Exception("Cannot get primary monitor information")
         // Center our window
         glfwSetWindowPos(
             windowHandle,
-            (vidmode!!.width() - width) / 2,
+            (vidmode.width() - width) / 2,
             (vidmode.height() - height) / 2
         )
 
@@ -102,6 +105,7 @@ data class Window(
         // Set the clear color
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
         glEnable(GL_DEPTH_TEST)
+        // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE )
     }
 
     fun setClearColor(r: Float, g: Float, b: Float, alpha: Float) {
