@@ -25,9 +25,7 @@ val assertJVersion: String by project
 val mockkVersion: String by project
 val junitJupiterEngineVersion: String by project
 
-val lwjglVersion: String by project
-val glnVersion: String by project
-val lwjglNatives = "natives-linux"
+val jomlVersion: String by project
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -40,6 +38,7 @@ dependencies {
 
     implementation("com.marcinmoskala:DiscreteMathToolkit:$mathsToolKitVersion")
     implementation("org.reflections:reflections:$reflectionsVersion")
+    implementation("org.joml:joml:$jomlVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackClassicVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logbackEncoderVersion")

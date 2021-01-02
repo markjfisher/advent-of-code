@@ -14,6 +14,7 @@ import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.resourceLines
 import net.fish.y2020.Day24
+import org.joml.Quaternionf
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW.GLFW_KEY_A
@@ -22,18 +23,19 @@ import org.lwjgl.glfw.GLFW.GLFW_KEY_S
 import org.lwjgl.glfw.GLFW.GLFW_KEY_W
 import org.lwjgl.glfw.GLFW.GLFW_KEY_X
 import org.lwjgl.glfw.GLFW.GLFW_KEY_Z
+import kotlin.math.PI
 
 class ConwayHex2020Day24 : GameLogic {
     private val data = resourceLines(2020, 24)
-    val torusMinorRadius = 5.0
-    val torusMajorRadius = 40.0
-    val gridWidth = 320
-    val gridHeight = 40
+    val torusMinorRadius = 0.25
+    val torusMajorRadius = 1.0
+    val gridWidth = 8
+    val gridHeight = 4
     val gridLayout = Layout(POINTY)
     val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout, torusMinorRadius, torusMajorRadius)
 
     private val renderer = Renderer()
-    private val camera = Camera()
+    private val camera = Camera(Vector3f(2f, 1f, 1.9f), Vector3f(19f, -38f, 0f))
     private var cameraInc = Vector3f()
     private val gameItems = mutableListOf<GameItem>()
 
@@ -52,15 +54,31 @@ class ConwayHex2020Day24 : GameLogic {
     override fun init(window: Window) {
         // mesh loading is via resources
         // val mesh = loadMesh("/conwayhex/models/cube.obj")
-        val mesh = loadMesh("/conwayhex/models/beveled-hexagon.obj")
+        val mesh = loadMesh("/conwayhex/models/simple-hexagon.obj")
 
         // texture loading isn't via resources, so is relative to project root dir
         mesh.texture = Texture("visualisations/textures/grassblock.png")
+
         val gameItem = GameItem(mesh)
         gameItem.position = Vector3f(0f, 0f, -2f)
         gameItem.scale = 0.5f
         gameItems += gameItem
         println("added: $gameItem")
+
+        hexGrid.centres().forEach { hexCentre ->
+            val centre = Vector3f(hexCentre.x.toFloat(), hexCentre.y.toFloat(), hexCentre.z.toFloat())
+            val normal = centre.normalize(Vector3f())
+            val q = Quaternionf()
+            q.fromAxisAngleRad(normal, 45f)
+            println("n: $normal, q: $q")
+            val gameItem = GameItem(mesh)
+            gameItem.position = centre
+            val rot = q.getEulerAnglesXYZ(Vector3f())
+            gameItem.rotation = Vector3f(rot.x * 360f / 2f / PI.toFloat(), rot.y * 360f / 2f / PI.toFloat(), rot.z * 360f / 2f / PI.toFloat())
+            gameItem.scale = 1f / gridWidth
+            println("added $gameItem")
+            gameItems += gameItem
+        }
 
         renderer.init(window)
     }
@@ -86,6 +104,7 @@ class ConwayHex2020Day24 : GameLogic {
             val rotVec: Vector2f = mouseInput.displVec
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0f)
         }
+        // println("camera: ${camera.position}, ${camera.rotation}")
     }
 
     override fun render(window: Window) {

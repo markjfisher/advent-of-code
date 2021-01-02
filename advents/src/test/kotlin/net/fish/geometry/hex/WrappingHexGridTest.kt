@@ -3,6 +3,8 @@ package net.fish.geometry.hex
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import org.assertj.core.api.Assertions.assertThat
+import org.joml.Matrix3f
+import org.joml.Vector3f
 import org.junit.jupiter.api.Test
 import kotlin.math.abs
 import kotlin.math.sqrt
@@ -291,6 +293,7 @@ class WrappingHexGridTest {
             1, 2, 5
         )
     }
+
     @Test
     fun `getting mesh coordinates and indexes from 2x2 pointy grid`() {
         val grid = WrappingHexGrid(2, 2, pointyLayout)
@@ -326,5 +329,112 @@ class WrappingHexGridTest {
             7, 3, 11,
             3, 2, 11
         )
+    }
+
+    @Test
+    fun `getting pointy hex centres`() {
+        val grid = WrappingHexGrid(m = 2, n = 2, layout = pointyLayout, r1 = 1.0, r2 = 2.0)
+        val centres = grid.centres()
+        // freaky shape!
+        assertThat((centres[0] - Point3D(3.0, 0.0, 0.0)).length()).isLessThan(0.0001)
+        assertThat((centres[1] - Point3D(-3.0, 0.0, 0.0)).length()).isLessThan(0.0001)
+        assertThat((centres[2] - Point3D(0.0, 1.0, 0.0)).length()).isLessThan(0.0001)
+        assertThat((centres[3] - Point3D(0.0, -1.0, 0.0)).length()).isLessThan(0.0001)
+    }
+
+    @Test
+    fun `getting flat hex centres`() {
+        val grid = WrappingHexGrid(m = 2, n = 2, layout = flatLayout, r1 = 1.0, r2 = 2.0)
+        val centres = grid.centres()
+        // freaky shape!
+        assertThat((centres[0] - Point3D(3.0, 0.0, 0.0)).length()).isLessThan(0.0001)
+        assertThat((centres[1] - Point3D(-2.0, 0.0, 1.0)).length()).isLessThan(0.0001)
+        assertThat((centres[2] - Point3D(1.0, 0.0, 0.0)).length()).isLessThan(0.0001)
+        assertThat((centres[3] - Point3D(-2.0, 0.0, -1.0)).length()).isLessThan(0.0001)
+    }
+
+    @Test
+    fun `getting axes of flat hexes`() {
+        val grid = WrappingHexGrid(m = 4, n = 4, layout = flatLayout, r1 = 1.0, r2 = 2.0)
+        val axes = grid.hexAxes()
+//        println("=====================================================================")
+//        grid.hexes().forEachIndexed { i, hex ->
+//            println("hex: $hex")
+//            println("axes:\n${axes[i]}")
+//            println("-------------------")
+//        }
+
+        checkHexAxes(axes[0], Vector3f(3f, 0f, 0f), Matrix3f(0f, -1f, 0f, 0f, 0f, -1f, 1f, 0f, 0f))
+        checkHexAxes(axes[1], Vector3f(0f, 2.7071f, 0.7071f), Matrix3f(1f, 0f, 0f, 0f, 0.6547f, -0.7559f, 0f, 0.7559f, 0.6547f))
+        checkHexAxes(axes[2], Vector3f(-3f, 0f, 0f), Matrix3f(0f, 1f, 0f, 0f, 0f, -1f, -1f, 0f, 0f))
+        checkHexAxes(axes[3], Vector3f(0f, -2.7071f, 0.7071f), Matrix3f(-1f, 0f, 0f, 0f, -0.6547f, -0.7559f, 0f, -0.7559f, 0.6547f))
+
+        checkHexAxes(axes[4], Vector3f(2f, 0f, 1f), Matrix3f(0f, -1f, 0f, 1f, 0f, 0f, 0f, 0f, 1f))
+        checkHexAxes(axes[5], Vector3f(0f, 1.293f, 0.7071f), Matrix3f(1f, 0f, 0f, 0f, 0.6547f, 0.7559f, 0f, -0.7559f, 0.6547f))
+        checkHexAxes(axes[6], Vector3f(-2f, 0f, 1f), Matrix3f(0f, 1f, 0f, -1f, 0f, 0f, 0f, 0f, 1f))
+        checkHexAxes(axes[7], Vector3f(0f, -1.293f, 0.7071f), Matrix3f(-1f, 0f, 0f, 0f, -0.6547f, 0.7559f, 0f, 0.7559f, 0.6547f))
+
+        checkHexAxes(axes[8], Vector3f(1f, 0f, 0f), Matrix3f(0f, -1f, 0f, 0f, 0f, 1f, -1f, 0f, 0f))
+        checkHexAxes(axes[9], Vector3f(0f, 1.293f, -0.7071f), Matrix3f(1f, 0f, 0f, 0f, -0.6547f, 0.7559f, 0f, -0.7559f, -0.6547f))
+        checkHexAxes(axes[10], Vector3f(-1f, 0f, 0f), Matrix3f(0f, 1f, 0f, 0f, 0f, 1f, 1f, 0f, 0f))
+        checkHexAxes(axes[11], Vector3f(0f, -1.293f, -0.7071f), Matrix3f(-1f, 0f, 0f, 0f, 0.6547f, 0.7559f, 0f, 0.7559f, -0.6547f))
+
+        checkHexAxes(axes[12], Vector3f(2f, 0f, -1f), Matrix3f(0f, -1f, 0f, -1f, 0f, 0f, 0f, 0f, -1f))
+        checkHexAxes(axes[13], Vector3f(0f, 2.7071f, -0.7071f), Matrix3f(1f, 0f, 0f, 0f, -0.6547f, -0.7559f, 0f, 0.7559f, -0.6547f))
+        checkHexAxes(axes[14], Vector3f(-2f, 0f, -1f), Matrix3f(0f, 1f, 0f, 1f, 0f, 0f, 0f, 0f, -1f))
+        checkHexAxes(axes[15], Vector3f(0f, -2.7071f, -0.7071f), Matrix3f(-1f, 0f, 0f, 0f, 0.6547f, -0.7559f, 0f, -0.7559f, -0.6547f))
+
+    }
+
+    @Test
+    fun `getting axes of pointy hexes`() {
+        val grid = WrappingHexGrid(m = 4, n = 4, layout = pointyLayout, r1 = 1.0, r2 = 2.0)
+        val axes = grid.hexAxes()
+//        println("=====================================================================")
+//        grid.hexes().forEachIndexed { i, hex ->
+//            println("hex: $hex")
+//            println("axes:\n${axes[i]}")
+//            println("-------------------")
+//        }
+
+        checkHexAxes(axes[0], Vector3f(3f, 0f, 0f), Matrix3f(0f, -1f, 0f, 0f, 0f, -1f, 1f, 0f, 0f))
+        checkHexAxes(axes[1], Vector3f(0f, 3f, 0f), Matrix3f(1f, 0f, 0f, 0f, 0f, -1f, 0f, 1f, 0f))
+        checkHexAxes(axes[2], Vector3f(-3f, 0f, 0f), Matrix3f(0f, 1f, 0f, 0f, 0f, -1f, -1f, 0f, 0f))
+        checkHexAxes(axes[3], Vector3f(0f, -3f, 0f), Matrix3f(-1f, 0f, 0f, 0f, -0f, -1f, 0f, -1f, 0f))
+
+        checkHexAxes(axes[4], Vector3f(1.4142f, 1.4142f, 1f), Matrix3f(0.7071f, -0.7071f, 0f, 0.7071f, 0.7071f, 0f, 0f, 0f, 1f))
+        checkHexAxes(axes[5], Vector3f(-1.4142f, 1.4142f, 1f), Matrix3f(0.7071f, 0.7071f, 0f, -0.7071f, 0.7071f, 0f, 0f, 0f, 1f))
+        checkHexAxes(axes[6], Vector3f(-1.4142f, -1.4142f, 1f), Matrix3f(-0.7071f, 0.7071f, 0f, -0.7071f, -0.7071f, 0f, 0f, 0f, 1f))
+        checkHexAxes(axes[7], Vector3f(1.4142f, -1.4142f, 1f), Matrix3f(-0.7071f, -0.7071f, 0f, 0.7071f, -0.7071f, 0f, 0f, 0f, 1f))
+
+        checkHexAxes(axes[8], Vector3f(1f, 0f, 0f), Matrix3f(0f, -1f, 0f, 0f, 0f, 1f, -1f, 0f, 0f))
+        checkHexAxes(axes[9], Vector3f(0f, 1f, 0f), Matrix3f(1f, 0f, 0f, 0f, 0f, 1f, 0f, -1f, 0f))
+        checkHexAxes(axes[10], Vector3f(-1f, 0f, 0f), Matrix3f(0f, 1f, 0f, 0f, 0f, 1f, 1f, 0f, 0f))
+        checkHexAxes(axes[11], Vector3f(0f, -1f, 0f), Matrix3f(-1f, 0f, 0f, 0f, -0f, 1f, 0f, 1f, 0f))
+
+        checkHexAxes(axes[12], Vector3f(1.4142f, 1.4142f, -1f), Matrix3f(0.7071f, -0.7071f, 0f, -0.7071f, -0.7071f, 0f, 0f, 0f, -1f))
+        checkHexAxes(axes[13], Vector3f(-1.4142f, 1.4142f, -1f), Matrix3f(0.7071f, 0.7071f, 0f, 0.7071f, -0.7071f, 0f, 0f, 0f, -1f))
+        checkHexAxes(axes[14], Vector3f(-1.4142f, -1.4142f, -1f), Matrix3f(-0.7071f, 0.7071f, 0f, 0.7071f, 0.7071f, 0f, 0f, 0f, -1f))
+        checkHexAxes(axes[15], Vector3f(1.4142f, -1.4142f, -1f), Matrix3f(-0.7071f, -0.7071f, 0f, -0.7071f, 0.7071f, 0f, 0f, 0f, -1f))
+
+    }
+
+    private fun checkHexAxes(hexAxis: HexAxis, expectedLoaction: Vector3f, expectedAxis: Matrix3f) {
+        val v3 = Vector3f() // a holder for writing stuff into
+        val m3 = Matrix3f()
+        assertThat(hexAxis.location.sub(expectedLoaction).length()).isLessThan(0.001f)
+
+        println("--- expecte matrix:")
+        println(expectedAxis)
+
+        println("--- before subtracting expected:")
+        println(hexAxis.axes)
+
+        hexAxis.axes.sub(expectedAxis, m3)
+        println("--- after subtracting expected:")
+        println(hexAxis.axes)
+
+        m3.getScale(v3)
+        assertThat(v3.length()).isLessThan(0.001f)
     }
 }

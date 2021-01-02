@@ -26,6 +26,7 @@ data class Point3D(
     operator fun plus(other: Point3D) = add(other)
     operator fun minus(other: Point3D) = subtract(other)
     operator fun times(k: Double) = scale(k)
+    operator fun div(k: Double) = scale(1.0 / k)
 
     fun add(other: Point3D) = Point3D(x + other.x, y + other.y, z + other.z)
     fun subtract(other: Point3D) = Point3D(x - other.x, y - other.y, z - other.z)

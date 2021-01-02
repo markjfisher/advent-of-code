@@ -2,6 +2,9 @@ package net.fish.geometry.hex
 
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
+import org.joml.Matrix3f
+import org.joml.Vector3d
+import org.joml.Vector3f
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -81,8 +84,8 @@ data class WrappingHexGrid(
 
         val centre = layout.hexToPixel(hex)
         return (layout.polygonCorners(hex) + centre).map {
-            val theta = 2.0 * PI * (1.0 - it.x / width())
-            val phi = 2.0 * PI * it.y / height()
+            val theta = 2.0 * PI * it.x / width()
+            val phi = 2.0 * PI * (1.0 - it.y / height())
 
             q(theta, phi)
         }
@@ -143,5 +146,39 @@ data class WrappingHexGrid(
         val points = allPointsMap.toSortedMap().values.toList()
 
         return HexGridMesh(points, indices)
+    }
+
+    fun centres(): List<Point3D> {
+        return hexes().map { hex -> toroidCoordinates(hex).last() }
+    }
+
+    fun hexAxes(): List<HexAxis> {
+        return hexes().map { hex ->
+            val cornersOnTorus = toroidCoordinates(hex)
+            val centre = cornersOnTorus[6]
+            val (xP, yP) = when(layout.orientation) {
+                POINTY -> {
+                    val midpoint01 = (cornersOnTorus[0] + cornersOnTorus[1]) * 0.5
+                    val midpoint34 = (cornersOnTorus[3] + cornersOnTorus[4]) * 0.5
+                    val xDir = midpoint34 - midpoint01
+                    val yDir = cornersOnTorus[5] - cornersOnTorus[2]
+                    Pair(xDir, yDir)
+                }
+                FLAT -> {
+                    val xDir = cornersOnTorus[3] - cornersOnTorus[0]
+                    val midpoint45 = (cornersOnTorus[4] + cornersOnTorus[5]) * 0.5
+                    val midpoint21 = (cornersOnTorus[2] + cornersOnTorus[1]) * 0.5
+                    val yDir = midpoint45 - midpoint21
+                    Pair(xDir, yDir)
+                }
+            }
+            val unitX = Vector3f(xP.x.toFloat(), xP.y.toFloat(), xP.z.toFloat()).normalize()
+            val unitY = Vector3f(yP.x.toFloat(), yP.y.toFloat(), yP.z.toFloat()).normalize()
+            val unitZ = unitX.cross(unitY, Vector3f())
+            HexAxis(
+                location = Vector3f(centre.x.toFloat(), centre.y.toFloat(), centre.z.toFloat()),
+                axes = Matrix3f(unitX, unitY, unitZ)
+            )
+        }
     }
 }
