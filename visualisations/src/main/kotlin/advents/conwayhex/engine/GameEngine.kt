@@ -76,7 +76,7 @@ class GameEngine(
     }
 
     private fun update(interval: Float) {
-        gameLogic.update(interval, mouseInput)
+        gameLogic.update(interval, mouseInput, window)
     }
 
     private fun render() {

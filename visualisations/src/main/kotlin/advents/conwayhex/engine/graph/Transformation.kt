@@ -1,17 +1,15 @@
 package advents.conwayhex.engine.graph
 
+import advents.conwayhex.engine.item.GameItem
+import org.joml.Math.toRadians
 import org.joml.Matrix4f
 import org.joml.Vector3f
-import advents.conwayhex.engine.GameItem
-
-
-
 
 class Transformation {
-
     private val projectionMatrix: Matrix4f = Matrix4f()
     private val modelViewMatrix: Matrix4f = Matrix4f()
     private val viewMatrix: Matrix4f = Matrix4f()
+    private val modelMatrix: Matrix4f = Matrix4f()
 
     fun getProjectionMatrix(fov: Float, width: Float, height: Float, zNear: Float, zFar: Float): Matrix4f {
         return projectionMatrix.setPerspective(fov, width / height, zNear, zFar)
@@ -22,25 +20,35 @@ class Transformation {
         val rotation = camera.rotation
         viewMatrix.identity()
 
-        // First do the rotation so camera rotates over its position
-        viewMatrix
-            .rotate(Math.toRadians(rotation.x.toDouble()).toFloat(), Vector3f(1f, 0f, 0f))
-            .rotate(Math.toRadians(rotation.y.toDouble()).toFloat(), Vector3f(0f, 1f, 0f))
-
-        // Then do the translation
-        viewMatrix.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z)
+        // First do the rotation so camera rotates over its position, then translation.
         return viewMatrix
+            .rotate(toRadians(rotation.x), Vector3f(1f, 0f, 0f))
+            .rotate(toRadians(rotation.y), Vector3f(0f, 1f, 0f))
+            .rotate(toRadians(rotation.z), Vector3f(0f, 0f, 1f))
+            .translate(-cameraPos.x, -cameraPos.y, -cameraPos.z)
     }
 
-    fun getModelViewMatrix(gameItem: GameItem, viewMatrix: Matrix4f): Matrix4f {
+    fun buildModelViewMatrix(gameItem: GameItem, viewMatrix: Matrix4f): Matrix4f {
+        return buildModelViewMatrix(buildModelMatrix(gameItem), viewMatrix)
+    }
+
+    fun buildModelViewMatrix(modelMatrix: Matrix4f, viewMatrix: Matrix4f): Matrix4f {
+        return viewMatrix.mulAffine(modelMatrix, modelViewMatrix)
+    }
+
+    fun buildModelMatrix(gameItem: GameItem): Matrix4f {
         val rotation = gameItem.rotation
-        modelViewMatrix.identity()
-            .translate(gameItem.position)
-            .rotateX(Math.toRadians(-rotation.x.toDouble()).toFloat())
-            .rotateY(Math.toRadians(-rotation.y.toDouble()).toFloat())
-            .rotateZ(Math.toRadians(-rotation.z.toDouble()).toFloat())
-            .scale(gameItem.scale)
-        val viewCurr = Matrix4f(viewMatrix)
-        return viewCurr.mul(modelViewMatrix)
+        return modelMatrix.translationRotateScale(
+            gameItem.position.x,
+            gameItem.position.y,
+            gameItem.position.z,
+            rotation.x,
+            rotation.y,
+            rotation.z,
+            rotation.w,
+            gameItem.scale,
+            gameItem.scale,
+            gameItem.scale
+        )
     }
 }

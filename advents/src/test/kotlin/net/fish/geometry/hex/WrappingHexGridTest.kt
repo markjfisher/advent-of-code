@@ -3,10 +3,15 @@ package net.fish.geometry.hex
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import org.assertj.core.api.Assertions.assertThat
+import org.joml.Math.toRadians
 import org.joml.Matrix3f
+import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.junit.jupiter.api.Test
+import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 class WrappingHexGridTest {
@@ -419,6 +424,22 @@ class WrappingHexGridTest {
 
     }
 
+    @Test
+    fun `validate normals again`() {
+        val grid = WrappingHexGrid(m = 12, n = 12, layout = pointyLayout, r1 = 1.0, r2 = 2.0)
+        val axes = grid.hexAxes()
+        val hexes = grid.hexes().toList()
+
+        println("=====================================================================")
+        listOf(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132).forEach { i ->
+            val hex = hexes[i]
+            println("hex: $hex")
+            println("axes:\n${axes[i]}")
+            println("-------------------")
+        }
+
+    }
+
     private fun checkHexAxes(hexAxis: HexAxis, expectedLoaction: Vector3f, expectedAxis: Matrix3f) {
         val v3 = Vector3f() // a holder for writing stuff into
         val m3 = Matrix3f()
@@ -437,4 +458,142 @@ class WrappingHexGridTest {
         m3.getScale(v3)
         assertThat(v3.length()).isLessThan(0.001f)
     }
+
+    @Test
+    fun `rotation testing`() {
+        val r45x = Vector3f(toRadians(45f), 0f, 0f)
+        val rm45x = Vector3f(toRadians(-45f), 0f, 0f)
+        val a45x = Matrix3f().identity().rotateXYZ(r45x)
+        val am45x = Matrix3f().identity().rotateXYZ(rm45x)
+        println(" 45° x:\n$a45x")
+        println("-45° x:\n$am45x")
+
+        val c1 = Vector3f(0f, 1f, 0f).mul(a45x)
+        println(" A45x x [0,1,0] = $c1")
+
+        val c2 = Vector3f(0f, 1f, 0f).mul(am45x)
+        println("Am45x x [0,1,0] = $c2")
+
+        val m1 = a45x.mul(am45x, Matrix3f())
+        println("a x am = \n$m1")
+    }
+
+    @Test
+    fun `euler angles`() {
+        val rotAngles = Vector3f(toRadians(45f), toRadians(45f), toRadians(45f))
+        val matrixOfRotation = Matrix3f().rotateZYX(rotAngles)
+        val e = matrixOfRotation.getEulerAnglesZYX(Vector3f())
+        println("matrix of rotation:\n$matrixOfRotation")
+        println("rotAngles: $rotAngles")
+        println("    euler: $e")
+
+        val m2 = Matrix3f().rotateZYX(rotAngles)
+        val p1 = Vector3f(1f, 1f, 1f).mul(m2)
+        println(" m2 x [1,1,1] = $p1")
+
+        val p2 = Vector3f(1f, 1f, 1f).rotateX(toRadians(45f))
+        println("[1,1,1] rot by 45x = $p2")
+        val p3 = p2.rotateY(toRadians(45f), Vector3f())
+        println("... rot by 45y = $p3")
+        val p4 = p3.rotateZ(toRadians(45f), Vector3f())
+        println("... rot by 45z = $p4")
+
+    }
+
+    @Test
+    fun `checking camera matrix rotations`() {
+        //val rotAngles = Vector3f(toRadians(10.0f), toRadians(0.0), toRadians(0.0))
+        val cameraLocation = Vector3f(0f, 0f, 1f)
+        val cameraRotation = Vector3f(0f, 0f, 0f)
+        val cameraDirectionAxes = Matrix3f().rotateZYX(cameraRotation)
+        println("cameraDirs:\n$cameraDirectionAxes")
+        val rotAngles = Vector3f(toRadians(45.0f), toRadians(0.0f), toRadians(0.0f))
+        val matrixOfRotation = Matrix3f().rotateZYX(rotAngles)
+        println("matrix of rotation:\n$matrixOfRotation")
+
+        cameraDirectionAxes.mul(matrixOfRotation)
+        println("new cameraRotation 1:\n$cameraDirectionAxes")
+        cameraDirectionAxes.mul(matrixOfRotation)
+        println("new cameraRotation 2:\n$cameraDirectionAxes")
+
+        cameraLocation.mul(cameraDirectionAxes)
+        println("new camera location1: $cameraLocation")
+
+
+        // now start at 0, sqrt(2)/2, sqrt(2)/2 pointing at 0,0,0, so camera direction = -45, 0, 0
+        val cameraDirection2 = Matrix3f().rotateZYX(Vector3f(-0.785398163f, 0f, 0f))
+        println("cd:\n$cameraDirection2")
+        val r2o2 = sqrt(2f)/2f
+        cameraLocation.set(0f, r2o2, r2o2)
+        cameraDirection2.mul(matrixOfRotation)
+        println("cd:\n$cameraDirection2") // should be along z axis - the matrix is now I! This isn't the one to now apply a rotation with, but the camera's normals.
+        cameraLocation.mul(cameraDirection2)
+        println("new camera location2: $cameraLocation")
+
+    }
+
+    @Test
+    fun `looking at`() {
+        // 22.5 degrees above the horizon
+        val cameraLocation = Vector3f(0f, 0.382683432f, 0.923879533f)
+        val worldCentre = Vector3f(0f, 0f, 0f)
+        val dirVec = worldCentre.sub(cameraLocation, Vector3f())
+        var lookAlong = Matrix3f().lookAlong(dirVec, Vector3f(0f, 1f, 0f))
+
+        println("lookAlong with camera at 1 unit, 22.5 deg above horizon: $cameraLocation\n$lookAlong")
+        // lookAlong with camera at 1 unit, 22.5 deg above horizon: ( 0.000E+0  3.827E-1  9.239E-1)
+        // 1.000E+0  0.000E+0  0.000E+0
+        // 0.000E+0  9.239E-1 -3.827E-1
+        // 0.000E+0  3.827E-1  9.239E-1
+        // NOTE: first row = X axis, second row = Y axis (note -ve z), third row = Z axis - positive z. seems wrong
+
+        dirVec.mul(-1f)
+        lookAlong = Matrix3f().lookAlong(dirVec, Vector3f(0f, 1f, 0f))
+
+        println("lookAlong with camera at 1 unit, 22.5 deg above horizon: $cameraLocation\n$lookAlong")
+
+
+
+//        var eulerAngles = lookAlong.getEulerAnglesZYX(Vector3f()).mul(180f / PI.toFloat())
+//        println("lookAlong:\n$lookAlong\nangles: $eulerAngles")
+
+//        cameraLocation.set(0f, 0.99f, -0.01f)
+//        lookAlong = Matrix3f().lookAlong(worldCentre.sub(cameraLocation, Vector3f()), Vector3f(0f, -1f, 0f))
+//        eulerAngles = lookAlong.getEulerAnglesZYX(Vector3f()).mul(180f / PI.toFloat())
+//        println("lookAlong:\n$lookAlong\nangles: $eulerAngles")
+
+    }
+
+    @Test
+    fun `euler angles checking`() {
+        val cameraAngles = vectorToRadians(Vector3f(5f, 5f, 0f))
+        val yaw = cameraAngles.y
+        val pitch = cameraAngles.x
+        val manuallyCalculatedEuler = Vector3f(
+            cos(yaw) * cos(pitch),
+            sin(pitch),
+            sin(yaw) * cos(pitch)
+        ).normalize()
+        val matrixCalculatedEuler = Matrix3f().rotateXYZ(cameraAngles).getEulerAnglesZYX(Vector3f())
+
+        println("manual:\n$manuallyCalculatedEuler")
+        println("matrix:\n$matrixCalculatedEuler")
+
+    }
+
+    @Test
+    fun `4f matrix tests for rotation`() {
+        val cameraLocation = Vector3f(0f, 0.382683432f, 0.923879533f)
+        val worldCentre = Vector3f(0f, 0f, 0f)
+        val distanceFromWorldCentre = worldCentre.sub(cameraLocation, Vector3f()).length()
+        val view = Matrix4f().translation(0f, 0f, -distanceFromWorldCentre)
+            .rotateX(toRadians(5f))
+            .translate(-worldCentre.x, -worldCentre.y, -worldCentre.z)
+
+    }
+
+    fun vectorToRadians(v: Vector3f): Vector3f {
+        return v.mul((PI / 180.0).toFloat(), Vector3f())
+    }
+
 }

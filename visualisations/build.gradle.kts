@@ -91,16 +91,6 @@ dependencies {
 }
 
 tasks {
-    register("advent2019", JavaExec::class) {
-        main = "net.fish.y2019.AdventOfCode2019"
-        classpath = sourceSets["main"].runtimeClasspath
-    }
-
-    register("advent2020", JavaExec::class) {
-        main = "net.fish.y2020.AdventOfCode2020"
-        classpath = sourceSets["main"].runtimeClasspath
-    }
-
     named<ShadowJar>("shadowJar") {
         mergeServiceFiles()
     }

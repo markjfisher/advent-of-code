@@ -1,24 +1,25 @@
-package advents.conwayhex.engine
+package advents.conwayhex.engine.item
 
 import advents.conwayhex.engine.graph.Mesh
+import org.joml.Quaternionf
 import org.joml.Vector3f
 
 class GameItem(
     val mesh: Mesh,
-    var position: Vector3f = Vector3f(),
+    val position: Vector3f = Vector3f(),
     var scale: Float = 1f,
-    var rotation: Vector3f = Vector3f(),
+    val rotation: Quaternionf = Quaternionf()
 ) {
     fun setPosition(x: Float, y: Float, z: Float) {
-        position.x = x
-        position.y = y
-        position.z = z
+        position.set(x, y, z)
     }
 
-    fun setRotation(x: Float, y: Float, z: Float) {
-        rotation.x = x
-        rotation.y = y
-        rotation.z = z
+    fun setPosition(v: Vector3f) {
+        position.set(v)
+    }
+
+    fun setRotation(q: Quaternionf) {
+        rotation.set(q)
     }
 
     override fun toString(): String {

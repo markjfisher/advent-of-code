@@ -2,8 +2,10 @@ package advents.conwayhex.engine
 
 import org.joml.Vector2d
 import org.joml.Vector2f
+import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1
 import org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_2
+import org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_MIDDLE
 import org.lwjgl.glfw.GLFW.GLFW_PRESS
 import org.lwjgl.glfw.GLFW.glfwSetCursorEnterCallback
 import org.lwjgl.glfw.GLFW.glfwSetCursorPosCallback
@@ -21,6 +23,9 @@ class MouseInput {
     var isRightButtonPressed = false
         private set
 
+    var isMiddleButtonPressed = false
+        private set
+
     fun init(window: Window) {
         glfwSetCursorPosCallback(window.windowHandle) { windowHandle: Long, xpos: Double, ypos: Double ->
             currentPos.x = xpos
@@ -30,6 +35,11 @@ class MouseInput {
         glfwSetMouseButtonCallback(window.windowHandle) { windowHandle: Long, button: Int, action: Int, mode: Int ->
             isLeftButtonPressed = button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS
             isRightButtonPressed = button == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS
+            isMiddleButtonPressed = button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS
+        }
+        GLFW.glfwSetScrollCallback(window.windowHandle) { windowHandle: Long, xOffset: Double, yOffset: Double ->
+            // we only get a yOffset = +/- 1 for forward/backward
+            println("Got scroll: $xOffset, $yOffset")
         }
     }
 

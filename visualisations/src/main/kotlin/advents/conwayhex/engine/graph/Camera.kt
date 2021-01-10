@@ -1,5 +1,6 @@
 package advents.conwayhex.engine.graph
 
+import org.joml.Math.toRadians
 import org.joml.Vector3f
 import kotlin.math.cos
 import kotlin.math.sin
@@ -23,14 +24,20 @@ class Camera() {
 
     fun movePosition(offsetX: Float, offsetY: Float, offsetZ: Float) {
         if (offsetZ != 0f) {
-            position.x += sin(Math.toRadians(rotation.y.toDouble())).toFloat() * -1.0f * offsetZ
-            position.z += cos(Math.toRadians(rotation.y.toDouble())).toFloat() * offsetZ
+            position.x += sin(toRadians(rotation.y)) * -1.0f * offsetZ
+            position.z += cos(toRadians(rotation.y)) * offsetZ
         }
         if (offsetX != 0f) {
-            position.x += sin(Math.toRadians((rotation.y - 90).toDouble())).toFloat() * -1.0f * offsetX
-            position.z += cos(Math.toRadians((rotation.y - 90).toDouble())).toFloat() * offsetX
+            position.x += sin(toRadians(rotation.y - 90)) * -1.0f * offsetX
+            position.z += cos(toRadians(rotation.y - 90)) * offsetX
         }
         position.y += offsetY
+    }
+
+    fun movePositionDirect(offsetX: Float, offsetY: Float, offsetZ: Float) {
+        position.x += offsetX
+        position.y += offsetY
+        position.z += offsetZ
     }
 
     fun setRotation(x: Float, y: Float, z: Float) {
@@ -39,9 +46,13 @@ class Camera() {
         rotation.z = z
     }
 
+    override fun toString(): String {
+        return String.format("pos: $position, rot: $rotation")
+    }
+
     fun moveRotation(offsetX: Float, offsetY: Float, offsetZ: Float) {
-        rotation.x += offsetX
-        rotation.y += offsetY
-        rotation.z += offsetZ
+        rotation.x = (rotation.x + offsetX) % 360f
+        rotation.y = (rotation.y + offsetY) % 360f
+        rotation.z = (rotation.z + offsetZ) % 360f
     }
 }

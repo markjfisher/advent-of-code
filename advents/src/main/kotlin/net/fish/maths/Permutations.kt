@@ -63,6 +63,11 @@ class BinaryBits(N: Int) : IntCombinations(N) {
     override fun state() = state.map { it.state() }.reversed()
 }
 
+class D6(N: Int) : IntCombinations(N) {
+    override val state = Array(N) { Ring(6, 1) }.toList()
+    override fun state() = state.map { it.state() }.reversed()
+}
+
 class AroundSpace(N: Int) : IntCombinations(N) {
     override val state = Array(N) { Ring(3, -1) }.toList()
     override fun state() = state.map { it.state() }.reversed()
@@ -113,6 +118,14 @@ fun main() {
     for (configuration in Permutations(3)) {
         println(configuration)
     }
+
+    println("d6 combinations")
+    for (d6 in D6(2)) {
+        println(d6)
+    }
+    val d6x3 = D6(3).filter { dice -> dice.count { it >= 5 } >= 2 }
+    println("d6x3: ${d6x3.count()} : $d6x3")
+
 }
 
 // Faster iterations.
