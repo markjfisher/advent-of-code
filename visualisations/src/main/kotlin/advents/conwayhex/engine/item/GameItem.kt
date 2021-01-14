@@ -8,7 +8,8 @@ class GameItem(
     val mesh: Mesh,
     val position: Vector3f = Vector3f(),
     var scale: Float = 1f,
-    val rotation: Quaternionf = Quaternionf()
+    val rotation: Quaternionf = Quaternionf(),
+    var colour: Vector3f = mesh.colour
 ) {
     fun setPosition(x: Float, y: Float, z: Float) {
         position.set(x, y, z)

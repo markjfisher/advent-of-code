@@ -53,20 +53,21 @@ class ConwayHex2020Day24 : GameLogic {
     val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout, torusMinorRadius, torusMajorRadius)
 
     private val renderer = Renderer()
-//    private val initialCameraPosition = Vector3f(0f, 0f, 0f)
-//    private val initialCameraRotation = Vector3f(0f, 0f, 0f)
+    private val initialWorldCentre = Vector3f(0f, 0f, 0f)
+    private val worldCentre = Vector3f(initialWorldCentre)
+
+    private val initialCameraPosition = Vector3f(0f, 0f, 1f)
+    private val initialCameraRotation = Quaternionf().lookAlong(worldCentre.sub(initialCameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize()//.conjugate()
 
 //    private val initialCameraPosition = Vector3f(0f, 0.38268f, 0.92388f)
 //    private val initialCameraRotation = Vector3f(22.5f, 0f, 0f)
 
-    private val initialCameraPosition = Vector3f(-0.3546f, -0.2919f, -0.01403f)
-    private val initialCameraRotation = Vector3f(-96.26f, -2.292f, 0f)
+//    private val initialCameraPosition = Vector3f(-0.3546f, -0.2919f, -0.01403f)
+//    private val initialCameraRotation = Vector3f(-96.26f, -2.292f, 0f)
 
-    private val initialWorldCentre = Vector3f(0f, 0f, 0f)
 
-    private val camera = Camera(Vector3f(initialCameraPosition), Vector3f(initialCameraRotation))
     // private val camera = Camera(Vector3f(0f, 0f, 0.2f), Vector3f(-74f, 0f, -90f))
-    private val worldCentre = Vector3f(initialWorldCentre)
+    private val camera = Camera(Vector3f(initialCameraPosition), Quaternionf(initialCameraRotation))
 
     private var cameraInc = Vector3f()
     private var cameraRot = Vector3f()
@@ -85,14 +86,14 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     override fun init(window: Window) {
-        val triangleMesh = loadMesh("/conwayhex/models/triangle.obj")
+        val triangleMesh = loadMesh("/conwayhex/models/hexagon-debug.obj")
         val triangleItem = GameItem(triangleMesh)
         triangleItem.setPosition(Vector3f(worldCentre))
         triangleItem.scale = 0.02f
         gameItems.add(triangleItem)
 
         // mesh loading is via resources
-        val mesh = loadMesh("/conwayhex/models/hexagon-debug.obj")
+        val mesh = loadMesh("/conwayhex/models/simple-hexagon.obj")
 
         // texture loading isn't via resources, so is relative to project root dir
         // mesh.texture = Texture("visualisations/textures/grassblock.png")
@@ -116,7 +117,13 @@ class ConwayHex2020Day24 : GameLogic {
             //  0   0  -1
             //  1   0   0
 
-            mesh.colour = Vector3f(0.5f, 0.5f, 0.5f)
+            // take the axes RGB values from the normal projections onto x/y/z axes
+            mesh.colour = Vector3f(
+                axes.getColumn(0, Vector3f()).x,
+                axes.getColumn(1, Vector3f()).y,
+                axes.getColumn(2, Vector3f()).z
+            )
+
             val gameItem = GameItem(mesh)
             gameItem.setPosition(location)
             gameItem.scale = gameItemScale // TODO: calculate this according to the torus size
@@ -125,12 +132,6 @@ class ConwayHex2020Day24 : GameLogic {
             gameItem.setRotation(q)
 
             gameItems += gameItem
-
-            // mesh.colour = Vector3f(0.1f, 0.1f, 0.8f)
-//            val unit = GameItem(mesh)
-//            unit.position = location
-//            unit.scale = 0.02f
-//            gameItems += unit
         }
 
         renderer.init(window)
@@ -145,37 +146,43 @@ class ConwayHex2020Day24 : GameLogic {
         cameraRot.set(0.0, 0.0, 0.0)
         when {
             window.isKeyPressed(GLFW_KEY_W) -> {
-                val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
+                // val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
+                val unitVectorsForCameraOrientation = camera.rotation.get(Matrix3f())
                 val forwardVector = unitVectorsForCameraOrientation.getColumn(2, Vector3f()).mul(CAMERA_POS_STEP)
                 val newCameraPosition = camera.position.sub(forwardVector, Vector3f())
                 camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
             }
             window.isKeyPressed(GLFW_KEY_S) -> {
-                val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
+                // val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
+                val unitVectorsForCameraOrientation = camera.rotation.get(Matrix3f())
                 val forwardVector = unitVectorsForCameraOrientation.getColumn(2, Vector3f()).mul(CAMERA_POS_STEP)
                 val newCameraPosition = camera.position.add(forwardVector, Vector3f())
                 camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
             }
             window.isKeyPressed(GLFW_KEY_A) -> {
-                val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
+                // val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
+                val unitVectorsForCameraOrientation = camera.rotation.get(Matrix3f())
                 val leftVector = unitVectorsForCameraOrientation.getColumn(0, Vector3f()).mul(CAMERA_POS_STEP)
                 val newCameraPosition = camera.position.sub(leftVector, Vector3f())
                 camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
             }
             window.isKeyPressed(GLFW_KEY_D) -> {
-                val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
+                // val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
+                val unitVectorsForCameraOrientation = camera.rotation.get(Matrix3f())
                 val leftVector = unitVectorsForCameraOrientation.getColumn(0, Vector3f()).mul(CAMERA_POS_STEP)
                 val newCameraPosition = camera.position.add(leftVector, Vector3f())
                 camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
             }
             window.isKeyPressed(GLFW_KEY_Z) -> {
-                val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
+                // val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
+                val unitVectorsForCameraOrientation = camera.rotation.get(Matrix3f())
                 val upVector = unitVectorsForCameraOrientation.getColumn(1, Vector3f()).mul(CAMERA_POS_STEP)
                 val newCameraPosition = camera.position.sub(upVector, Vector3f())
                 camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
             }
             window.isKeyPressed(GLFW_KEY_X) -> {
-                val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
+                // val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
+                val unitVectorsForCameraOrientation = camera.rotation.get(Matrix3f())
                 val upVector = unitVectorsForCameraOrientation.getColumn(1, Vector3f()).mul(CAMERA_POS_STEP)
                 val newCameraPosition = camera.position.add(upVector, Vector3f())
                 camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
@@ -188,7 +195,7 @@ class ConwayHex2020Day24 : GameLogic {
             window.isKeyPressed(GLFW_KEY_PERIOD) -> cameraRot.z = 1f
             window.isKeyPressed(GLFW_KEY_SEMICOLON) -> println("camera: $camera")
             window.isKeyPressed(GLFW_KEY_0) -> with(camera) {
-                rotation.set(initialCameraRotation.x, initialCameraRotation.y, initialCameraRotation.z)
+                rotation.set(initialCameraRotation.x, initialCameraRotation.y, initialCameraRotation.z, initialCameraRotation.w)
                 position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z)
                 worldCentre.set(initialWorldCentre.x, initialWorldCentre.y, initialWorldCentre.z)
             }
@@ -197,25 +204,20 @@ class ConwayHex2020Day24 : GameLogic {
 
     override fun update(interval: Float, mouseInput: MouseInput, window: Window) {
 
-        // Update camera based on mouse..?
         when {
             mouseInput.isMiddleButtonPressed && (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) -> {
                 // free camera move in its XY plane
-                val oldCamera = Vector3f(camera.position)
-                val oldWorld = Vector3f(worldCentre)
                 val moveVec: Vector2f = mouseInput.displVec
-                // camera.moveRotation(moveVec.x * MOUSE_SENSITIVITY, moveVec.y * MOUSE_SENSITIVITY, 0f)
-                val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
-                // val forwardVector = unitVectorsForCameraOrientation.getColumn(2, Vector3f()).mul(CAMERA_POS_STEP * moveVec.x)
+                // val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
+                val unitVectorsForCameraOrientation = camera.rotation.get(Matrix3f())
                 val upVector = unitVectorsForCameraOrientation.getColumn(1, Vector3f()).mul(CAMERA_POS_STEP * moveVec.x * MOUSE_SENSITIVITY)
                 val leftVector = unitVectorsForCameraOrientation.getColumn(0, Vector3f()).mul(CAMERA_POS_STEP * moveVec.y * MOUSE_SENSITIVITY)
                 val newCameraPosition = camera.position.add(upVector, Vector3f()).sub(leftVector)
                 val delta = newCameraPosition.sub(camera.position, Vector3f())
-                worldCentre.add(delta)
-                gameItems[0].position.set(worldCentre)
-                camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
                 if (abs(delta.length()) > 0.001f) {
-                    println("-------------------------\ndelta: $delta\noldCamera: $oldCamera\nnew: $newCameraPosition\nworld old: $oldWorld\nworld new: $worldCentre")
+                    worldCentre.add(delta)
+                    gameItems[0].position.set(worldCentre)
+                    camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
                 }
             }
             mouseInput.isMiddleButtonPressed && abs(mouseInput.displVec.length()) > 0.001f -> {
@@ -251,38 +253,68 @@ class ConwayHex2020Day24 : GameLogic {
             }
             window.isKeyPressed(GLFW_KEY_U) -> {
                 // pretending this is camera rotation about the x axis, positive rotation, so moving "up" in camera reference
-                val distanceFromWorldCentre = worldCentre.sub(camera.position, Vector3f()).length()
-                // rotate slightly in the up direction (positive about X)
-                val v = Matrix4f().translation(0f, 0f, -distanceFromWorldCentre)
-                    .rotateX(toRadians(5f))
-                    .translate(-worldCentre.x, -worldCentre.y, -worldCentre.z)
+                val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
+                val worldToCameraVector = camera.position.sub(worldCentre, Vector3f())
+                // this should stay the same as we only rotate about it
+                val rotationVector = inverseCameraRotation.positiveX(Vector3f())
+                val currentDir = inverseCameraRotation.positiveZ(Vector3f())
 
+                val newLocation = worldToCameraVector.rotateAxis(toRadians(5f), rotationVector.x, rotationVector.y, rotationVector.z, Vector3f()).add(worldCentre)
+
+                val dirVec = newLocation.sub(worldCentre, Vector3f())
+                val unitDirVec = dirVec.normalize(Vector3f())
+                val newUpVector = unitDirVec.cross(rotationVector, Vector3f())
+                val newRotationMatrix = Matrix3f().setColumn(0, rotationVector).setColumn(1, newUpVector).setColumn(2, unitDirVec)
+                val newRotation = Quaternionf().setFromNormalized(newRotationMatrix)
+                val distFromWorldCentre = camera.position.sub(currentDir.mul(dirVec.length(), Vector3f()), Vector3f()).sub(worldCentre).length()
+
+                println("""===================================
+distFromWorldCentre: $distFromWorldCentre
+old camera: $camera
+new location: $newLocation
+new rotation:
+$newRotationMatrix
+                """.trimIndent())
+
+                camera.setPosition(newLocation.x, newLocation.y, newLocation.z)
+                camera.setRotation(newRotation.w, newRotation.x, newRotation.y, newRotation.z)
             }
             window.isKeyPressed(GLFW_KEY_J) -> {
-                // pretending this is camera rotation about the x axis, positive rotation, so moving "up" in camera reference
-                val unitVectorsForCameraOrientation = Matrix3f().rotateZYX(vectorToRadians(camera.rotation).mul(-1f))
-                val rightVector = unitVectorsForCameraOrientation.getColumn(0, Vector3f())
-                val upVector = unitVectorsForCameraOrientation.getColumn(1, Vector3f())
-                val forwardVector = unitVectorsForCameraOrientation.getColumn(2, Vector3f())
+                // pretending this is camera rotation about the global axis
+                val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
+                val worldToCameraVector = camera.position.sub(worldCentre, Vector3f())
+                // this should stay the same as we only rotate about it
+                val rotationVector = Vector3f(0f, 1f, 0f)
+                val currentDir = inverseCameraRotation.positiveZ(Vector3f())
 
-                val distanceFromWorldCentre = worldCentre.sub(camera.position, Vector3f()).length()
-                // rotate slightly in the up direction (positive about X)
-                val rightRotation = unitVectorsForCameraOrientation.rotateY(toRadians(-5f), Matrix3f())
-                val newLocation = rightRotation.getColumn(2, Vector3f()).mul(distanceFromWorldCentre)
+                val newLocation = worldToCameraVector.rotateAxis(toRadians(5f), rotationVector.x, rotationVector.y, rotationVector.z, Vector3f()).add(worldCentre)
 
-                println("================\nU:\nunits:\n$unitVectorsForCameraOrientation\nupRot:\n$rightRotation\nold loc: ${camera.position}\nnew loc: $newLocation")
-                val newCameraRotation = rightRotation.getEulerAnglesZYX(Vector3f()).mul(180f / PI.toFloat())
-                println("old rot: ${camera.rotation}\nnew rot: $newCameraRotation")
+                val dirVec = newLocation.sub(worldCentre, Vector3f()).normalize()
+                // use same up direction to form the right, then re-calculate up
+                val newUpVector = inverseCameraRotation.positiveY(Vector3f())
+                val newRightVector = newUpVector.cross(dirVec, Vector3f()).normalize()
+                val newRotationMatrix = Matrix3f().setColumn(0, newRightVector).setColumn(1, newUpVector).setColumn(2, dirVec)
+                val newRotation = Quaternionf().setFromNormalized(newRotationMatrix)
+                val distFromWorldCentre = camera.position.sub(currentDir.mul(dirVec.length(), Vector3f()), Vector3f()).sub(worldCentre).length()
+
+                println("""===================================
+distFromWorldCentre: $distFromWorldCentre
+old camera: $camera
+new location: $newLocation
+new rotation:
+$newRotationMatrix
+                """.trimIndent())
+
                 camera.setPosition(newLocation.x, newLocation.y, newLocation.z)
-                camera.setRotation(newCameraRotation.x, newCameraRotation.y, newCameraRotation.z)
-//                val newCameraPosition = camera.position.sub(forwardVector, Vector3f())
-//                camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
+                camera.setRotation(newRotation.w, newRotation.x, newRotation.y, newRotation.z)
             }
         }
 
         // Update camera position
-        camera.movePosition(cameraInc.x * CAMERA_POS_STEP, cameraInc.y * CAMERA_POS_STEP, cameraInc.z * CAMERA_POS_STEP)
+//        camera.movePosition(cameraInc.x * CAMERA_POS_STEP, cameraInc.y * CAMERA_POS_STEP, cameraInc.z * CAMERA_POS_STEP)
+
         camera.moveRotation(cameraRot.x, cameraRot.y, cameraRot.z)
+
         // println("camera: ${camera.position}, ${camera.rotation}")
     }
 

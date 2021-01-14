@@ -5,12 +5,13 @@ import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import org.assertj.core.api.Assertions.assertThat
 import org.joml.Math.toRadians
 import org.joml.Matrix3f
-import org.joml.Matrix4f
+import org.joml.Quaternionf
 import org.joml.Vector3f
 import org.junit.jupiter.api.Test
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.round
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -582,18 +583,316 @@ class WrappingHexGridTest {
     }
 
     @Test
-    fun `4f matrix tests for rotation`() {
-        val cameraLocation = Vector3f(0f, 0.382683432f, 0.923879533f)
-        val worldCentre = Vector3f(0f, 0f, 0f)
-        val distanceFromWorldCentre = worldCentre.sub(cameraLocation, Vector3f()).length()
-        val view = Matrix4f().translation(0f, 0f, -distanceFromWorldCentre)
-            .rotateX(toRadians(5f))
-            .translate(-worldCentre.x, -worldCentre.y, -worldCentre.z)
+    fun `quaternion tests vs matrix - setting full direction vector works but multiplication is not as expected`() {
+        val q = Quaternionf().setFromNormalized(Matrix3f().identity())
+
+        // Check matrix rotation and quaternion rotation do the same thing to a point
+        val r45x = Vector3f(toRadians(45f), 0f, 0f)
+        val a45x = Matrix3f().identity().rotateXYZ(r45x)
+        val r15x = Vector3f(toRadians(15f), 0f, 0f)
+        val a15x = Matrix3f().identity().rotateXYZ(r15x)
+        q.setFromNormalized(a45x)
+
+        // rotate 0,0,1 by 45 degrees x 3 - THIS WORKS as it's SIMPLE in one plane
+        println("rotating 0,0,1 by 45 deg around X, 3 times")
+        val p1 = Vector3f(0f, 0f, 1f)
+        val c1 = p1.mul(a45x, Vector3f()) // this is ( 0.000E+0  7.071E-1  7.071E-1), i.e. 0,1,0 rotated by x axis by 45 deg
+        val c2 = p1.rotate(q, Vector3f()) // this is the same as c1, i.e. a rotation about x axis of 45 deg
+        println("c1: $c1\nc2: $c2\ndiff: ${c1.sub(c2, Vector3f()).length()}")
+        c1.mul(a45x)
+        c2.rotate(q)
+        println("c1: $c1\nc2: $c2\ndiff: ${c1.sub(c2, Vector3f()).length()}")
+        c1.mul(a45x)
+        c2.rotate(q)
+        println("c1: $c1\nc2: $c2\ndiff: ${c1.sub(c2, Vector3f()).length()}")
+
+        // Check another point
+        println("\nRotating 1,1,1 by 45 deg X axis")
+        p1.set(1f, 1f, 1f)
+        p1.mul(a45x, c1)
+        p1.rotate(q, c2)
+        println("c1: $c1\nc2: $c2\ndiff: ${c1.sub(c2, Vector3f()).length()}")
+
+        // Check another point, 15 degrees, when we're going over the top of X axis (crossing z negative to positive)
+        println("\nrotate point from -ve z into +ve z:")
+        q.setFromNormalized(a15x)
+        p1.set(0f, 1.95f, -0.1f)
+        p1.mul(a15x, c1)
+        p1.rotate(q, c2)
+        println("c1: $c1\nc2: $c2\ndiff: ${c1.sub(c2, Vector3f()).length()}")
+
+        // check xz rotation - THIS DOESN'T WORK FOR MATRIX AS THE INITIAL SETUP OF THE MATRIX IS NOT SIMULTANEOUS
+        println("\nrotate point on unit sphere at $p1 by 45 deg in x/z, twice to get to 0,1,0")
+        // This matrix does not do the correct rotation - not doing it simultaneously
+        val r45xz = Vector3f(toRadians(45f), 0f, toRadians(45f))
+        val a45xz = Matrix3f().identity().rotateXYZ(r45xz)
+
+        // We can get a quaternion from direction vector - THIS WORKS BECAUSE WE SPECIFY THE EXACT VECTOR TO ROTATE AROUND INITIALLY!
+        val sqrt2div2 = sqrt(2f) / 2f
+        // create a unit vector to rotate around, this will be either the (local) "X" for pitch, "Y" for yaw, "Z" for roll
+        q.setAngleAxis(toRadians(45f), sqrt2div2, 0f, sqrt2div2)
+        println("Q THAT IS X/Z 45 DEGREES: $q\nas matrix:\n${q.get(Matrix3f())}")
+        p1.set(0.7071f, 0f, -0.7071f)
+        p1.mul(a45xz, c1)
+        p1.rotate(q, c2)
+        // Only c2 is correct...
+        println("xz1: c1: $c1\nc2: $c2\ndiff: ${c1.sub(c2, Vector3f()).length()}")
+        c1.mul(a45xz)
+        c2.rotate(q)
+        // Only c2 is correct...
+        println("xz2: c1: $c1\nc2: $c2\ndiff: ${c1.sub(c2, Vector3f()).length()}")
+
+        // Rotate another point by our magic q:
+        val p2 = Vector3f(0f, 1f, 0f)
+        p2.rotate(q, c1)
+        c1.rotate(q, c2)
+        println("\nMagic Q on $p2 -> $c1 -> $c2")
+
+        // We can also simply use v3.rotateAxis, THIS WORKS!
+        println("\nTrying with v3.rotateAxis")
+        p1.rotateAxis(toRadians(45f), sqrt2div2, 0f, sqrt2div2, c1)
+        c1.rotateAxis(toRadians(45f), sqrt2div2, 0f, sqrt2div2, c2)
+        println("p1 -> $c1 -> $c2")
+
+        // can we combine 2 quaternion rotations to get same result - using multiply? doesn't work
+        println("\nTrying to build quat up from 2 rotations using MULTIPLY (p1: $p1)")
+        val qx = Quaternionf().setAngleAxis(toRadians(45f), 1f, 0f, 0f)
+        val qy = Quaternionf().setAngleAxis(toRadians(45f), 0f, 1f, 0f)
+        val qBoth1 = qx.mul(qy, Quaternionf())
+        val qBoth2 = qy.mul(qx, Quaternionf())
+
+        // This gets the original q value back. see https://gamedev.stackexchange.com/a/188332/146339
+        val qThing = qy.invert(Quaternionf()).mul(qx, Quaternionf()).mul(qy, Quaternionf())
+
+        p1.rotate(qBoth1, c1)
+        c1.rotate(qBoth1, c2)
+        println("both1 $qBoth1: p1 -> $c1 -> $c2")
+
+        p1.rotate(qBoth2, c1)
+        c1.rotate(qBoth2, c2)
+        println("both2 $qBoth2: p1 -> $c1 -> $c2")
+
+        p1.rotate(qThing, c1)
+        c1.rotate(qThing, c2)
+        println("thing! $qThing: p1 -> $c1 -> $c2")
+        c1.set(sqrt2div2, 0f, sqrt2div2)
+        c1.rotate(qThing, c2)
+        println("Thing should convert $c1 into itself, as rotating a point on the line doesn't move:")
+        println("$c1 -> $c2")
+
+
+        // /* This is for outputting points to plot in https://www.monroecc.edu/faculty/paulseeburger/calcnsf/CalcPlot3D/
+        // loop around doing 5 degree rotations
+        println("# X  # Y # Z")
+        q.setAngleAxis(toRadians(5f), 1f, 0f, 0f)
+        val q2 = Quaternionf().setAngleAxis(toRadians(-5f), 0f, 1f, 0f)
+        q.mul(q2)
+
+        q.setAngleAxis(toRadians(5f), sqrt2div2, 0f, sqrt2div2)
+        c1.set(0f, 0f, 1f)
+        for (it in 0..(360/5)) {
+            c1.rotate(q)
+            val cx = if (abs(c1.x) < 0.0001) 0f else c1.x
+            val cy = if (abs(c1.y) < 0.0001) 0f else c1.y
+            val cz = if (abs(c1.z) < 0.0001) 0f else c1.z
+            println("""
+                <point>
+                    point="($cx, $cy, $cz)"
+                    color="rgb(0,0,0)"
+                    size="4"
+                    visible="true"
+                </point>
+            """.trimIndent())
+        }
+        // */
+
+
+        // Converting from q to normals - THIS WORKS
+        q.setAngleAxis(toRadians(45f), sqrt2div2, 0f, sqrt2div2) // 45 degree around XZ plane
+        val m1 = q.get(Matrix3f())
+        println("\n45 deg XZ matrix from q:\n$m1")
+        p1.mul(m1, c1)
+        c1.mul(m1, c2)
+        println("p1 -> $c1 -> $c2")
+
+        // ALSO WORKS - just X rotation
+        q.setAngleAxis(toRadians(45f), 1f, 0f, 0f) // 45 degree around XZ plane
+        q.get(m1)
+        println("\n45 deg X matrix from q:\n$m1")
+        p1.mul(m1, c1)
+        c1.mul(m1, c2)
+        println("p1 -> $c1 -> $c2")
+
+        // Convert quaternion to Simple Angles
+        q.getEulerAnglesXYZ(c1)
 
     }
 
+    @Test
+    fun `quaternion to rotation about one axis and back again`() {
+        // so what happens if I have an orientation, apply the rotation in one of its "axes" (e.g. local x axis after converting to matrix)
+        // and then convert back to quaternion to keep its orientation
+
+        // the camera orientation, pointing in x/z direction
+        val cameraOrientation = Quaternionf().fromAxisAngleDeg(Vector3f(1f, 0f, 1f).normalize(), 45f)
+
+        // cameraOrientation.rotateLocalX()
+
+    }
+
+    @Test
+    fun `what u does`() {
+        val sqrt2div2 = sqrt(2f) / 2f
+        val sqrt3div3 = sqrt(3f) / 3f
+        val worldCentre = Vector3f(-0.2f, 0.4f, 0.3f)
+        // val cameraPosition = Vector3f(sqrt2div2, 0f, sqrt2div2)
+        val cameraPosition = Vector3f(sqrt3div3, -sqrt3div3, sqrt3div3)
+
+        val rotationFromLookAt = Quaternionf().lookAlong(worldCentre.sub(cameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize().conjugate()
+
+//        val rotationFromZYX = Quaternionf().rotationZYX(0f, toRadians(45f), 0f)
+
+        println("""
+            <!--
+rotationFromLookAt: $rotationFromLookAt
+${rotationFromLookAt.get(Matrix3f())}
+            -->
+        """.trimIndent())
+
+        val cameraRotation = Quaternionf(rotationFromLookAt)
+
+        plotHeader(1)
+
+
+        println("<step 1>")
+        for(x in (0 .. 355/5)) {
+            val cameraOrientationMatrix = cameraRotation.get(Matrix3f())
+            val worldToCameraVector = cameraPosition.sub(worldCentre, Vector3f())
+            // this should stay the same as we only rotate about it
+//            val rotationVector = cameraOrientationMatrix.getColumn(0, Vector3f()).normalize()
+//            val currentUp = cameraOrientationMatrix.getColumn(1, Vector3f()).normalize()
+//            val currentDir = cameraOrientationMatrix.getColumn(2, Vector3f()).normalize()
+
+            val inverseCameraRotation = cameraRotation.conjugate(Quaternionf())
+            val rotationVector = inverseCameraRotation.positiveX(Vector3f())
+            val currentUp = inverseCameraRotation.positiveY(Vector3f())
+            val currentDir = inverseCameraRotation.positiveZ(Vector3f())
+
+            val newLocation = worldToCameraVector.rotateAxis(toRadians(5f), rotationVector.x, rotationVector.y, rotationVector.z, Vector3f()).add(worldCentre)
+
+            val dirVec = newLocation.sub(worldCentre, Vector3f())
+            val unitDirVec = dirVec.normalize(Vector3f())
+            val newUpVector = unitDirVec.cross(rotationVector, Vector3f())
+            val newRotationMatrix = Matrix3f().setColumn(0, rotationVector).setColumn(1, newUpVector).setColumn(2, unitDirVec)
+            val determinant = newRotationMatrix.determinant()
+            val newRotation = Quaternionf().setFromNormalized(newRotationMatrix)
+
+            // calculate a point, distance from camera in opposite direction of the camera dir to prove it's pointing at world centre
+            val distFromWorldCentre = cameraPosition.sub(currentDir.mul(dirVec.length(), Vector3f()), Vector3f()).sub(worldCentre).length()
+            println("<!-- should be 0: $distFromWorldCentre -->")
+
+            val cx = if (abs(cameraPosition.x) < 0.0001) 0f else cameraPosition.x
+            val cy = if (abs(cameraPosition.y) < 0.0001) 0f else cameraPosition.y
+            val cz = if (abs(cameraPosition.z) < 0.0001) 0f else cameraPosition.z
+
+            val grey = round((0.1f + x * 0.8f / 72f) * 255f).toInt()
+
+            // println("<step ${x+1}>")
+            println("""
+                <!-- point number $x -->
+                <!--
+                x/y/z: $rotationVector, $currentUp, $currentDir
+                camera rotation matrix:
+$cameraOrientationMatrix
+                determ: ${cameraOrientationMatrix.determinant()}
+
+                new direction: $dirVec
+                new up: $newUpVector
+                new rotation matrix determ: $determinant
+                new rot matrix:
+$newRotationMatrix
+                -->
+
+            """.trimIndent())
+            println("""
+                <point>
+                    point="($cx, $cy, $cz)"
+                    color="rgb($grey,$grey,$grey)"
+                    size="4"
+                    visible="true"
+                </point>
+            """.trimIndent())
+
+            cameraPosition.set(newLocation)
+            cameraRotation.set(newRotation)
+        }
+        plotFooter()
+    }
+
+
     fun vectorToRadians(v: Vector3f): Vector3f {
         return v.mul((PI / 180.0).toFloat(), Vector3f())
+    }
+
+    fun plotHeader(points: Int) {
+        println("""
+            <init steps="$points">
+        """.trimIndent())
+    }
+
+    fun plotFooter() {
+        println("""
+    <window>
+		hsrmode="3"
+		nomidpts="true"
+		anaglyph="-1"
+		transparent="false"
+		alpha="140"
+		twoViews="false"
+		unlinkViews="false"
+		axisExtension="0.7"
+		xaxislabel="x"
+		yaxislabel="y"
+		zaxislabel="z"
+		xmin="-2"
+		xmax="2"
+		xscale="1"
+		xscalefactor="1"
+		ymin="-2"
+		ymax="2"
+		yscale="1"
+		yscalefactor="1"
+		zmin="-2"
+		zmax="2"
+		zscale="1"
+		zscalefactor="1"
+		zminClip="-4"
+		zmaxClip="4"
+		zoom="1.265333"
+		edgesOn="true"
+		facesOn="true"
+		showBox="true"
+		showAxes="true"
+		showTicks="true"
+		perspective="true"
+		centerxpercent="0.5"
+		centerypercent="0.5"
+		rotationsteps="30"
+		autospin="true"
+		xygrid="false"
+		yzgrid="false"
+		xzgrid="false"
+		gridsOnBox="true"
+		gridPlanes="false"
+		gridColor="rgb(128,128,128)"
+	</window>
+	<viewpoint>
+		center="1.5,2,4,1"
+		focus="0,0,0,1"
+		up="0,2,0,1"
+	</viewpoint>
+</step>
+        """.trimIndent())
     }
 
 }

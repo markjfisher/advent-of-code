@@ -3,6 +3,7 @@ package advents.conwayhex.engine.graph
 import advents.conwayhex.engine.item.GameItem
 import org.joml.Math.toRadians
 import org.joml.Matrix4f
+import org.joml.Quaternionf
 import org.joml.Vector3f
 
 class Transformation {
@@ -21,10 +22,14 @@ class Transformation {
         viewMatrix.identity()
 
         // First do the rotation so camera rotates over its position, then translation.
+//        val eulers = rotation.getEulerAnglesXYZ(Vector3f())
+//        return viewMatrix
+//            .rotate(toRadians(eulers.x), Vector3f(1f, 0f, 0f))
+//            .rotate(toRadians(eulers.y), Vector3f(0f, 1f, 0f))
+//            .rotate(toRadians(eulers.z), Vector3f(0f, 0f, 1f))
+//            .translate(-cameraPos.x, -cameraPos.y, -cameraPos.z)
         return viewMatrix
-            .rotate(toRadians(rotation.x), Vector3f(1f, 0f, 0f))
-            .rotate(toRadians(rotation.y), Vector3f(0f, 1f, 0f))
-            .rotate(toRadians(rotation.z), Vector3f(0f, 0f, 1f))
+            .rotate(rotation.conjugate(Quaternionf()))
             .translate(-cameraPos.x, -cameraPos.y, -cameraPos.z)
     }
 
