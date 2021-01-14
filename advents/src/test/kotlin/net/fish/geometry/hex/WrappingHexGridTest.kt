@@ -829,6 +829,118 @@ $newRotationMatrix
         plotFooter()
     }
 
+    @Test
+    fun `what j does`() {
+        val worldCentre = Vector3f(0.5f, 1f, 0.25f)
+        val cameraPosition = Vector3f(-0.5f, -0.5f, 1.75f)
+        val rotationFromLookAt = Quaternionf().lookAlong(worldCentre.sub(cameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize().conjugate()
+        val cameraRotation = Quaternionf(rotationFromLookAt)
+
+        val camera = Camera(rotation = cameraRotation, position = cameraPosition)
+
+        val projectBack = cameraPosition.sub(cameraPosition.normalize().mul(cameraPosition.sub(worldCentre, Vector3f()).length(), Vector3f()), Vector3f()).sub(worldCentre).length()
+        println("<!-- initial check: $projectBack -->")
+
+        plotHeader(1)
+
+        println("<step 1>")
+        for(x in (0 .. 355/5)) {
+            val rotAngles = Vector3f(toRadians(5f), toRadians(5f), 0f)
+
+            // do left/right first so we don't affect the up vector
+            val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
+
+            val cameraX = inverseCameraRotation.positiveX(Vector3f())
+            val cameraY = inverseCameraRotation.positiveY(Vector3f())
+            val cameraZ = inverseCameraRotation.positiveZ(Vector3f())
+            val globalY = Vector3f(0f, 1f, 0f)
+
+            // calculate the new camera direction (relative to world centre) after rotation by global Y first
+            val newCameraVector = camera.position.sub(worldCentre, Vector3f())
+            if (rotAngles.x != 0f) {
+                newCameraVector.rotateAxis(rotAngles.x, globalY.x, globalY.y, globalY.z)
+            }
+
+            // calculate camera's new rotation vector before we rotate about its local X for any up/down movement
+            val newX = cameraY.cross(newCameraVector, Vector3f()).normalize()
+            // val newY = newCameraVector.cross(newX, Vector3f()).normalize()
+            println("""<!-- XXXXXXXXXXX 
+                |cameraX: $cameraX, newX: $newX 
+                |from Y: $cameraY cross Z: $newCameraVector)
+                |-->""".trimMargin())
+
+            // now rotate about any up/down
+            if (rotAngles.y != 0f) {
+                newCameraVector.rotateAxis(rotAngles.y, newX.x, newX.y, newX.z)
+            }
+
+            // calculate the new up vector from the direction vector and the unchanged (for this part of the rotation) X vector
+            val newZ = newCameraVector.normalize(Vector3f())
+            val newY = newZ.cross(newX, Vector3f())
+
+            val newRotationMatrix = Matrix3f().setColumn(0, newX).setColumn(1, newY).setColumn(2, newZ)
+            val newRotation = Quaternionf().setFromNormalized(newRotationMatrix)
+
+            newCameraVector.add(worldCentre)
+
+            // DEBUG BIT IN MIDDLE
+            val cameraOrientationMatrix = camera.rotation.get(Matrix3f())
+            val determinant = newRotationMatrix.determinant()
+            val distFromWorldCentre = newCameraVector.sub(newZ.mul(newCameraVector.sub(worldCentre, Vector3f()).length(), Vector3f()), Vector3f()).sub(worldCentre).length()
+            println("<!-- should be 0: $distFromWorldCentre -->")
+
+            val cx = if (abs(newCameraVector.x) < 0.0001) 0f else newCameraVector.x
+            val cy = if (abs(newCameraVector.y) < 0.0001) 0f else newCameraVector.y
+            val cz = if (abs(newCameraVector.z) < 0.0001) 0f else newCameraVector.z
+
+            val grey = round((0.1f + x * 0.8f / 72f) * 255f).toInt()
+
+            // println("<step ${x+1}>")
+            println("""
+                <!-- point number $x -->
+                <!--
+                x/y/z: $cameraX, $cameraY, $cameraZ
+                camera rotation matrix:
+$cameraOrientationMatrix
+                determ: ${cameraOrientationMatrix.determinant()}
+
+                new up: $newY
+                new direction: $newZ
+                new rotation matrix determ: $determinant
+                new rot matrix:
+$newRotationMatrix
+                -->
+
+            """.trimIndent())
+            println("""
+                <point>
+                    point="($cx, $cy, $cz)"
+                    color="rgb($grey,$grey,$grey)"
+                    size="4"
+                    visible="true"
+                </point>
+            """.trimIndent())
+            // END DEBUG BIT
+
+            camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
+            camera.setRotation(newRotation.x, newRotation.y, newRotation.z, newRotation.w)
+
+        }
+        plotFooter()
+    }
+
+    data class Camera(
+        val rotation: Quaternionf = Quaternionf(),
+        val position: Vector3f = Vector3f()
+    ) {
+        fun setRotation(x: Float, y: Float, z: Float, w: Float) {
+            rotation.set(x, y, z, w)
+        }
+
+        fun setPosition(x: Float, y: Float, z: Float) {
+            position.set(x, y, z)
+        }
+    }
 
     fun vectorToRadians(v: Vector3f): Vector3f {
         return v.mul((PI / 180.0).toFloat(), Vector3f())

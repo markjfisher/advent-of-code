@@ -13,6 +13,7 @@ import org.lwjgl.glfw.GLFW.GLFW_RESIZABLE
 import org.lwjgl.glfw.GLFW.GLFW_VISIBLE
 import org.lwjgl.glfw.GLFW.glfwCreateWindow
 import org.lwjgl.glfw.GLFW.glfwDefaultWindowHints
+import org.lwjgl.glfw.GLFW.glfwGetKey
 import org.lwjgl.glfw.GLFW.glfwGetVideoMode
 import org.lwjgl.glfw.GLFW.glfwInit
 import org.lwjgl.glfw.GLFW.glfwMakeContextCurrent
@@ -25,16 +26,14 @@ import org.lwjgl.glfw.GLFW.glfwShowWindow
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.glfw.GLFW.glfwSwapInterval
 import org.lwjgl.glfw.GLFW.glfwWindowHint
+import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
 import org.lwjgl.glfw.GLFWErrorCallback.createPrint
 import org.lwjgl.opengl.GL.createCapabilities
 import org.lwjgl.opengl.GL11C.GL_DEPTH_TEST
 import org.lwjgl.opengl.GL11C.GL_FALSE
-import org.lwjgl.opengl.GL11C.GL_FRONT_AND_BACK
-import org.lwjgl.opengl.GL11C.GL_LINE
 import org.lwjgl.opengl.GL11C.GL_TRUE
 import org.lwjgl.opengl.GL11C.glClearColor
 import org.lwjgl.opengl.GL11C.glEnable
-import org.lwjgl.opengl.GL11C.glPolygonMode
 import org.lwjgl.system.MemoryUtil
 
 data class Window(
@@ -114,11 +113,11 @@ data class Window(
     }
 
     fun isKeyPressed(keyCode: Int): Boolean {
-        return GLFW.glfwGetKey(windowHandle, keyCode) == GLFW_PRESS
+        return glfwGetKey(windowHandle, keyCode) == GLFW_PRESS
     }
 
     fun windowShouldClose(): Boolean {
-        return GLFW.glfwWindowShouldClose(windowHandle)
+        return glfwWindowShouldClose(windowHandle)
     }
 
     fun isvSync(): Boolean {

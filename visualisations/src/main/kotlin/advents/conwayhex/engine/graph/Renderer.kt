@@ -1,8 +1,8 @@
 package advents.conwayhex.engine.graph
 
-import advents.conwayhex.engine.item.GameItem
 import advents.conwayhex.engine.Utils
 import advents.conwayhex.engine.Window
+import advents.conwayhex.engine.item.GameItem
 import org.joml.Math.toRadians
 import org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT
 import org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT
@@ -50,7 +50,6 @@ class Renderer {
             glViewport(0, 0, window.width, window.height)
             window.isResized = false
         }
-
         renderScene(window, camera, gameItems)
     }
 
