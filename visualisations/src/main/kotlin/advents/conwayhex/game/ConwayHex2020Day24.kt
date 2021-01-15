@@ -14,7 +14,6 @@ import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.resourceLines
 import net.fish.y2020.Day24
-import org.joml.Math
 import org.joml.Math.abs
 import org.joml.Matrix3f
 import org.joml.Quaternionf
@@ -23,21 +22,14 @@ import org.joml.Vector3f
 import org.joml.Vector3fc
 import org.lwjgl.glfw.GLFW.GLFW_KEY_0
 import org.lwjgl.glfw.GLFW.GLFW_KEY_A
-import org.lwjgl.glfw.GLFW.GLFW_KEY_COMMA
 import org.lwjgl.glfw.GLFW.GLFW_KEY_D
-import org.lwjgl.glfw.GLFW.GLFW_KEY_I
-import org.lwjgl.glfw.GLFW.GLFW_KEY_K
-import org.lwjgl.glfw.GLFW.GLFW_KEY_L
 import org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT
-import org.lwjgl.glfw.GLFW.GLFW_KEY_O
-import org.lwjgl.glfw.GLFW.GLFW_KEY_PERIOD
 import org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_SHIFT
 import org.lwjgl.glfw.GLFW.GLFW_KEY_S
 import org.lwjgl.glfw.GLFW.GLFW_KEY_SEMICOLON
 import org.lwjgl.glfw.GLFW.GLFW_KEY_W
 import org.lwjgl.glfw.GLFW.GLFW_KEY_X
 import org.lwjgl.glfw.GLFW.GLFW_KEY_Z
-import kotlin.math.sqrt
 
 class ConwayHex2020Day24 : GameLogic {
     private val data = resourceLines(2020, 24)
@@ -165,18 +157,12 @@ class ConwayHex2020Day24 : GameLogic {
                 worldCentre.add(upVector)
                 camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
             }
-            window.isKeyPressed(GLFW_KEY_I) -> cameraRot.x = -1f
-            window.isKeyPressed(GLFW_KEY_O) -> cameraRot.x = 1f
-            window.isKeyPressed(GLFW_KEY_K) -> cameraRot.y = -1f
-            window.isKeyPressed(GLFW_KEY_L) -> cameraRot.y = 1f
-            window.isKeyPressed(GLFW_KEY_COMMA) -> cameraRot.z = -1f
-            window.isKeyPressed(GLFW_KEY_PERIOD) -> cameraRot.z = 1f
             window.isKeyPressed(GLFW_KEY_SEMICOLON) -> println("camera: $camera")
             window.isKeyPressed(GLFW_KEY_0) -> with(camera) {
                 rotation.set(initialCameraRotation.x, initialCameraRotation.y, initialCameraRotation.z, initialCameraRotation.w)
                 position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z)
                 worldCentre.set(initialWorldCentre.x, initialWorldCentre.y, initialWorldCentre.z)
-                distanceToWorldCentre = 1f
+                distanceToWorldCentre = initialCameraPosition.length()
             }
         }
         gameItems[0].position.set(worldCentre)
@@ -236,7 +222,6 @@ class ConwayHex2020Day24 : GameLogic {
 
             mouseInput.scrollDirection != 0 -> {
                 // TODO: need to move the camera towards the world centre
-                println("dist: $distanceToWorldCentre, worldCentre: $worldCentre, camera: $camera")
                 // move camera a percentage closer/further from world centre.
                 val newDistanceToWorldCentre = distanceToWorldCentre * if(mouseInput.scrollDirection < 0) 1.05f else 0.95f
                 if (newDistanceToWorldCentre > 0.05f) {
@@ -246,7 +231,6 @@ class ConwayHex2020Day24 : GameLogic {
                 val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
                 val forwardVector = inverseCameraRotation.positiveZ(Vector3f())
                 val newCameraPosition = worldCentre.add(forwardVector.mul(distanceToWorldCentre), Vector3f())
-                println("camera now at: $newCameraPosition")
                 camera.position.set(newCameraPosition)
 
                 // stop the scroll!
