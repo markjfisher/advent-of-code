@@ -359,36 +359,57 @@ class WrappingHexGridTest {
         assertThat((centres[3] - Point3D(-2.0, 0.0, -1.0)).length()).isLessThan(0.0001)
     }
 
+    fun roundClose(v: Float): Float {
+        return when {
+            abs(v) < 0.0001 -> 0f
+            abs(v - 1f) < 0.0001 -> 1f
+            abs(v + 1f) < 0.0001 -> -1f
+            else -> v
+        }
+    }
+
     @Test
     fun `getting axes of flat hexes`() {
         val grid = WrappingHexGrid(m = 4, n = 4, layout = flatLayout, r1 = 1.0, r2 = 2.0)
         val axes = grid.hexAxes()
-//        println("=====================================================================")
-//        grid.hexes().forEachIndexed { i, hex ->
-//            println("hex: $hex")
-//            println("axes:\n${axes[i]}")
-//            println("-------------------")
-//        }
 
-        checkHexAxes(axes[0], Vector3f(3f, 0f, 0f), Matrix3f(0f, -1f, 0f, 0f, 0f, -1f, 1f, 0f, 0f))
-        checkHexAxes(axes[1], Vector3f(0f, 2.7071f, 0.7071f), Matrix3f(1f, 0f, 0f, 0f, 0.6547f, -0.7559f, 0f, 0.7559f, 0.6547f))
-        checkHexAxes(axes[2], Vector3f(-3f, 0f, 0f), Matrix3f(0f, 1f, 0f, 0f, 0f, -1f, -1f, 0f, 0f))
-        checkHexAxes(axes[3], Vector3f(0f, -2.7071f, 0.7071f), Matrix3f(-1f, 0f, 0f, 0f, -0.6547f, -0.7559f, 0f, -0.7559f, 0.6547f))
+        /*
+        grid.hexes().forEachIndexed { i, hex ->
+            val vx = roundClose(axes[i].location.x)
+            val vy = roundClose(axes[i].location.y)
+            val vz = roundClose(axes[i].location.z)
+            val m = axes[i].axes
+            val m00 = roundClose(m.m00)
+            val m01 = roundClose(m.m01)
+            val m02 = roundClose(m.m02)
+            val m10 = roundClose(m.m10)
+            val m11 = roundClose(m.m11)
+            val m12 = roundClose(m.m12)
+            val m20 = roundClose(m.m20)
+            val m21 = roundClose(m.m21)
+            val m22 = roundClose(m.m22)
+            println("""
+                checkHexAxes(axes[$i], Vector3f(${vx}f, ${vy}f, ${vz}f), Matrix3f(${m00}f, ${m01}f, ${m02}f, ${m10}f, ${m11}f, ${m12}f, ${m20}f, ${m21}f, ${m22}f))
+            """.trimIndent())
+        }
+        */
 
-        checkHexAxes(axes[4], Vector3f(2f, 0f, 1f), Matrix3f(0f, -1f, 0f, 1f, 0f, 0f, 0f, 0f, 1f))
-        checkHexAxes(axes[5], Vector3f(0f, 1.293f, 0.7071f), Matrix3f(1f, 0f, 0f, 0f, 0.6547f, 0.7559f, 0f, -0.7559f, 0.6547f))
-        checkHexAxes(axes[6], Vector3f(-2f, 0f, 1f), Matrix3f(0f, 1f, 0f, -1f, 0f, 0f, 0f, 0f, 1f))
-        checkHexAxes(axes[7], Vector3f(0f, -1.293f, 0.7071f), Matrix3f(-1f, 0f, 0f, 0f, -0.6547f, 0.7559f, 0f, 0.7559f, 0.6547f))
-
-        checkHexAxes(axes[8], Vector3f(1f, 0f, 0f), Matrix3f(0f, -1f, 0f, 0f, 0f, 1f, -1f, 0f, 0f))
-        checkHexAxes(axes[9], Vector3f(0f, 1.293f, -0.7071f), Matrix3f(1f, 0f, 0f, 0f, -0.6547f, 0.7559f, 0f, -0.7559f, -0.6547f))
-        checkHexAxes(axes[10], Vector3f(-1f, 0f, 0f), Matrix3f(0f, 1f, 0f, 0f, 0f, 1f, 1f, 0f, 0f))
-        checkHexAxes(axes[11], Vector3f(0f, -1.293f, -0.7071f), Matrix3f(-1f, 0f, 0f, 0f, 0.6547f, 0.7559f, 0f, 0.7559f, -0.6547f))
-
-        checkHexAxes(axes[12], Vector3f(2f, 0f, -1f), Matrix3f(0f, -1f, 0f, -1f, 0f, 0f, 0f, 0f, -1f))
-        checkHexAxes(axes[13], Vector3f(0f, 2.7071f, -0.7071f), Matrix3f(1f, 0f, 0f, 0f, -0.6547f, -0.7559f, 0f, 0.7559f, -0.6547f))
-        checkHexAxes(axes[14], Vector3f(-2f, 0f, -1f), Matrix3f(0f, 1f, 0f, 1f, 0f, 0f, 0f, 0f, -1f))
-        checkHexAxes(axes[15], Vector3f(0f, -2.7071f, -0.7071f), Matrix3f(-1f, 0f, 0f, 0f, 0.6547f, -0.7559f, 0f, -0.7559f, -0.6547f))
+        checkHexAxes(axes[0], Vector3f(0.0f, 0.0f, 3.0f), Matrix3f(-1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f))
+        checkHexAxes(axes[1], Vector3f(2.7071068f, 0.70710677f, 0.0f), Matrix3f(0.0f, 0.0f, 1.0f, 0.6546537f, -0.755929f, 0.0f, 0.755929f, 0.6546537f, 0.0f))
+        checkHexAxes(axes[2], Vector3f(0.0f, 0.0f, -3.0f), Matrix3f(1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, -1.0f))
+        checkHexAxes(axes[3], Vector3f(-2.7071068f, 0.70710677f, 0.0f), Matrix3f(0.0f, 0.0f, -1.0f, -0.6546537f, -0.755929f, 0.0f, -0.755929f, 0.6546537f, 0.0f))
+        checkHexAxes(axes[4], Vector3f(0.0f, 1.0f, 2.0f), Matrix3f(-1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f))
+        checkHexAxes(axes[5], Vector3f(1.2928932f, 0.70710677f, 0.0f), Matrix3f(0.0f, 0.0f, 1.0f, 0.6546537f, 0.755929f, 0.0f, -0.755929f, 0.6546537f, 0.0f))
+        checkHexAxes(axes[6], Vector3f(0.0f, 1.0f, -2.0f), Matrix3f(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f))
+        checkHexAxes(axes[7], Vector3f(-1.2928932f, 0.70710677f, 0.0f), Matrix3f(0.0f, 0.0f, -1.0f, -0.6546537f, 0.755929f, 0.0f, 0.755929f, 0.6546537f, 0.0f))
+        checkHexAxes(axes[8], Vector3f(0.0f, 0.0f, 1.0f), Matrix3f(-1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f))
+        checkHexAxes(axes[9], Vector3f(1.2928932f, -0.70710677f, 0.0f), Matrix3f(0.0f, 0.0f, 1.0f, -0.6546537f, 0.755929f, 0.0f, -0.755929f, -0.6546537f, 0.0f))
+        checkHexAxes(axes[10], Vector3f(0.0f, 0.0f, -1.0f), Matrix3f(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f))
+        checkHexAxes(axes[11], Vector3f(-1.2928932f, -0.70710677f, 0.0f), Matrix3f(0.0f, 0.0f, -1.0f, 0.6546537f, 0.755929f, 0.0f, 0.755929f, -0.6546537f, 0.0f))
+        checkHexAxes(axes[12], Vector3f(0.0f, -1.0f, 2.0f), Matrix3f(-1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f))
+        checkHexAxes(axes[13], Vector3f(2.7071068f, -0.70710677f, 0.0f), Matrix3f(0.0f, 0.0f, 1.0f, -0.6546537f, -0.755929f, 0.0f, 0.755929f, -0.6546537f, 0.0f))
+        checkHexAxes(axes[14], Vector3f(0.0f, -1.0f, -2.0f), Matrix3f(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f))
+        checkHexAxes(axes[15], Vector3f(-2.7071068f, -0.70710677f, 0.0f), Matrix3f(0.0f, 0.0f, -1.0f, 0.6546537f, -0.755929f, 0.0f, -0.755929f, -0.6546537f, 0.0f))
 
     }
 
@@ -396,32 +417,23 @@ class WrappingHexGridTest {
     fun `getting axes of pointy hexes`() {
         val grid = WrappingHexGrid(m = 4, n = 4, layout = pointyLayout, r1 = 1.0, r2 = 2.0)
         val axes = grid.hexAxes()
-//        println("=====================================================================")
-//        grid.hexes().forEachIndexed { i, hex ->
-//            println("hex: $hex")
-//            println("axes:\n${axes[i]}")
-//            println("-------------------")
-//        }
 
-        checkHexAxes(axes[0], Vector3f(3f, 0f, 0f), Matrix3f(0f, -1f, 0f, 0f, 0f, -1f, 1f, 0f, 0f))
-        checkHexAxes(axes[1], Vector3f(0f, 3f, 0f), Matrix3f(1f, 0f, 0f, 0f, 0f, -1f, 0f, 1f, 0f))
-        checkHexAxes(axes[2], Vector3f(-3f, 0f, 0f), Matrix3f(0f, 1f, 0f, 0f, 0f, -1f, -1f, 0f, 0f))
-        checkHexAxes(axes[3], Vector3f(0f, -3f, 0f), Matrix3f(-1f, 0f, 0f, 0f, -0f, -1f, 0f, -1f, 0f))
-
-        checkHexAxes(axes[4], Vector3f(1.4142f, 1.4142f, 1f), Matrix3f(0.7071f, -0.7071f, 0f, 0.7071f, 0.7071f, 0f, 0f, 0f, 1f))
-        checkHexAxes(axes[5], Vector3f(-1.4142f, 1.4142f, 1f), Matrix3f(0.7071f, 0.7071f, 0f, -0.7071f, 0.7071f, 0f, 0f, 0f, 1f))
-        checkHexAxes(axes[6], Vector3f(-1.4142f, -1.4142f, 1f), Matrix3f(-0.7071f, 0.7071f, 0f, -0.7071f, -0.7071f, 0f, 0f, 0f, 1f))
-        checkHexAxes(axes[7], Vector3f(1.4142f, -1.4142f, 1f), Matrix3f(-0.7071f, -0.7071f, 0f, 0.7071f, -0.7071f, 0f, 0f, 0f, 1f))
-
-        checkHexAxes(axes[8], Vector3f(1f, 0f, 0f), Matrix3f(0f, -1f, 0f, 0f, 0f, 1f, -1f, 0f, 0f))
-        checkHexAxes(axes[9], Vector3f(0f, 1f, 0f), Matrix3f(1f, 0f, 0f, 0f, 0f, 1f, 0f, -1f, 0f))
-        checkHexAxes(axes[10], Vector3f(-1f, 0f, 0f), Matrix3f(0f, 1f, 0f, 0f, 0f, 1f, 1f, 0f, 0f))
-        checkHexAxes(axes[11], Vector3f(0f, -1f, 0f), Matrix3f(-1f, 0f, 0f, 0f, -0f, 1f, 0f, 1f, 0f))
-
-        checkHexAxes(axes[12], Vector3f(1.4142f, 1.4142f, -1f), Matrix3f(0.7071f, -0.7071f, 0f, -0.7071f, -0.7071f, 0f, 0f, 0f, -1f))
-        checkHexAxes(axes[13], Vector3f(-1.4142f, 1.4142f, -1f), Matrix3f(0.7071f, 0.7071f, 0f, 0.7071f, -0.7071f, 0f, 0f, 0f, -1f))
-        checkHexAxes(axes[14], Vector3f(-1.4142f, -1.4142f, -1f), Matrix3f(-0.7071f, 0.7071f, 0f, 0.7071f, 0.7071f, 0f, 0f, 0f, -1f))
-        checkHexAxes(axes[15], Vector3f(1.4142f, -1.4142f, -1f), Matrix3f(-0.7071f, -0.7071f, 0f, -0.7071f, 0.7071f, 0f, 0f, 0f, -1f))
+        checkHexAxes(axes[0], Vector3f(0.0f, 0.0f, 3.0f), Matrix3f(-1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f))
+        checkHexAxes(axes[1], Vector3f(3.0f, 0.0f, 0.0f), Matrix3f(0.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f))
+        checkHexAxes(axes[2], Vector3f(0.0f, 0.0f, -3.0f), Matrix3f(1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, -1.0f))
+        checkHexAxes(axes[3], Vector3f(-3.0f, 0.0f, 0.0f), Matrix3f(0.0f, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f))
+        checkHexAxes(axes[4], Vector3f(1.4142135f, 1.0f, 1.4142135f), Matrix3f(-0.70710677f, 0.0f, 0.70710677f, 0.70710677f, 0.0f, 0.70710677f, 0.0f, 1.0f, 0.0f))
+        checkHexAxes(axes[5], Vector3f(1.4142135f, 1.0f, -1.4142135f), Matrix3f(0.70710677f, 0.0f, 0.70710677f, 0.70710677f, 0.0f, -0.70710677f, 0.0f, 1.0f, 0.0f))
+        checkHexAxes(axes[6], Vector3f(-1.4142135f, 1.0f, -1.4142135f), Matrix3f(0.70710677f, 0.0f, -0.70710677f, -0.70710677f, 0.0f, -0.70710677f, 0.0f, 1.0f, 0.0f))
+        checkHexAxes(axes[7], Vector3f(-1.4142135f, 1.0f, 1.4142135f), Matrix3f(-0.70710677f, 0.0f, -0.70710677f, -0.70710677f, 0.0f, 0.70710677f, 0.0f, 1.0f, 0.0f))
+        checkHexAxes(axes[8], Vector3f(0.0f, 0.0f, 1.0f), Matrix3f(-1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f))
+        checkHexAxes(axes[9], Vector3f(1.0f, 0.0f, 0.0f), Matrix3f(0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f))
+        checkHexAxes(axes[10], Vector3f(0.0f, 0.0f, -1.0f), Matrix3f(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f))
+        checkHexAxes(axes[11], Vector3f(-1.0f, 0.0f, 0.0f), Matrix3f(0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f))
+        checkHexAxes(axes[12], Vector3f(1.4142135f, -1.0f, 1.4142135f), Matrix3f(-0.70710677f, 0.0f, 0.70710677f, -0.70710677f, 0.0f, -0.70710677f, 0.0f, -1.0f, 0.0f))
+        checkHexAxes(axes[13], Vector3f(1.4142135f, -1.0f, -1.4142135f), Matrix3f(0.70710677f, 0.0f, 0.70710677f, -0.70710677f, 0.0f, 0.70710677f, 0.0f, -1.0f, 0.0f))
+        checkHexAxes(axes[14], Vector3f(-1.4142135f, -1.0f, -1.4142135f), Matrix3f(0.70710677f, 0.0f, -0.70710677f, 0.70710677f, 0.0f, 0.70710677f, 0.0f, -1.0f, 0.0f))
+        checkHexAxes(axes[15], Vector3f(-1.4142135f, -1.0f, 1.4142135f), Matrix3f(-0.70710677f, 0.0f, -0.70710677f, 0.70710677f, 0.0f, -0.70710677f, 0.0f, -1.0f, 0.0f))
 
     }
 
@@ -831,8 +843,8 @@ $newRotationMatrix
 
     @Test
     fun `what j does`() {
-        val worldCentre = Vector3f(0.5f, 1f, 0.25f)
-        val cameraPosition = Vector3f(-0.5f, -0.5f, 1.75f)
+        val worldCentre = Vector3f(0f, 0.1f, 0f)
+        val cameraPosition = Vector3f(1.2f, 0.2f, 1.2f)
         val rotationFromLookAt = Quaternionf().lookAlong(worldCentre.sub(cameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize().conjugate()
         val cameraRotation = Quaternionf(rotationFromLookAt)
 
@@ -845,7 +857,7 @@ $newRotationMatrix
 
         println("<step 1>")
         for(x in (0 .. 355/5)) {
-            val rotAngles = Vector3f(toRadians(5f), toRadians(5f), 0f)
+            val rotAngles = Vector3f(toRadians(5f), toRadians(0f), 0f)
 
             // do left/right first so we don't affect the up vector
             val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
@@ -925,6 +937,82 @@ $newRotationMatrix
             camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
             camera.setRotation(newRotation.x, newRotation.y, newRotation.z, newRotation.w)
 
+        }
+        plotFooter()
+    }
+
+    @Test
+    fun `all the circles`() {
+        plotHeader(1)
+        println("<step 1>")
+        for (y in (-9 .. 9)) {
+            println("<!-- y: $y -->")
+            val xz = 1f - sqrt(2f * y * y / 100f)
+            val worldCentre = Vector3f(0f, 0f, 0f)
+            val cameraPosition = Vector3f(xz, y / 10f, xz)
+            val rotationFromLookAt = Quaternionf().lookAlong(worldCentre.sub(cameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize().conjugate()
+            val cameraRotation = Quaternionf(rotationFromLookAt)
+
+            val camera = Camera(rotation = cameraRotation, position = cameraPosition)
+
+            val projectBack = cameraPosition.sub(cameraPosition.normalize().mul(cameraPosition.sub(worldCentre, Vector3f()).length(), Vector3f()), Vector3f()).sub(worldCentre).length()
+
+            for (x in (0..355 / 15)) {
+                val rotAngles = Vector3f(toRadians(15f), toRadians(0f), 0f)
+
+                // do left/right first so we don't affect the up vector
+                val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
+
+                val cameraX = inverseCameraRotation.positiveX(Vector3f())
+                val cameraY = inverseCameraRotation.positiveY(Vector3f())
+                val cameraZ = inverseCameraRotation.positiveZ(Vector3f())
+                val globalY = Vector3f(0f, 1f, 0f)
+
+                // calculate the new camera direction (relative to world centre) after rotation by global Y first
+                val newCameraVector = camera.position.sub(worldCentre, Vector3f())
+                if (rotAngles.x != 0f) {
+                    newCameraVector.rotateAxis(rotAngles.x, globalY.x, globalY.y, globalY.z)
+                }
+
+                // calculate camera's new rotation vector before we rotate about its local X for any up/down movement
+                val newX = cameraY.cross(newCameraVector, Vector3f()).normalize()
+                // val newY = newCameraVector.cross(newX, Vector3f()).normalize()
+
+                // now rotate about any up/down
+                if (rotAngles.y != 0f) {
+                    newCameraVector.rotateAxis(rotAngles.y, newX.x, newX.y, newX.z)
+                }
+
+                // calculate the new up vector from the direction vector and the unchanged (for this part of the rotation) X vector
+                val newZ = newCameraVector.normalize(Vector3f())
+                val newY = newZ.cross(newX, Vector3f())
+
+                val newRotationMatrix = Matrix3f().setColumn(0, newX).setColumn(1, newY).setColumn(2, newZ)
+                val newRotation = Quaternionf().setFromNormalized(newRotationMatrix)
+
+                newCameraVector.add(worldCentre)
+
+                val cx = if (abs(newCameraVector.x) < 0.0001) 0f else newCameraVector.x
+                val cy = if (abs(newCameraVector.y) < 0.0001) 0f else newCameraVector.y
+                val cz = if (abs(newCameraVector.z) < 0.0001) 0f else newCameraVector.z
+
+                val grey = round((0.1f + x * 0.8f / 24f) * 255f).toInt()
+
+                println(
+                    """
+                <point>
+                    point="($cx, $cy, $cz)"
+                    color="rgb($grey,$grey,$grey)"
+                    size="4"
+                    visible="true"
+                </point>
+            """.trimIndent()
+                )
+
+                camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
+                camera.setRotation(newRotation.x, newRotation.y, newRotation.z, newRotation.w)
+
+            }
         }
         plotFooter()
     }

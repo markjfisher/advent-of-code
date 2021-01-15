@@ -26,6 +26,8 @@ class MouseInput {
     var isMiddleButtonPressed = false
         private set
 
+    var scrollDirection: Int = 0
+
     fun init(window: Window) {
         glfwSetCursorPosCallback(window.windowHandle) { windowHandle: Long, xpos: Double, ypos: Double ->
             currentPos.x = xpos
@@ -39,7 +41,7 @@ class MouseInput {
         }
         GLFW.glfwSetScrollCallback(window.windowHandle) { windowHandle: Long, xOffset: Double, yOffset: Double ->
             // we only get a yOffset = +/- 1 for forward/backward
-            println("Got scroll: $xOffset, $yOffset")
+            scrollDirection = yOffset.toInt()
         }
     }
 

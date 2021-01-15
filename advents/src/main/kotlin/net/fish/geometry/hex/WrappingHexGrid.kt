@@ -3,7 +3,6 @@ package net.fish.geometry.hex
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import org.joml.Matrix3f
-import org.joml.Vector3d
 import org.joml.Vector3f
 import kotlin.math.PI
 import kotlin.math.cos
@@ -154,9 +153,10 @@ data class WrappingHexGrid(
 
     fun hexAxes(): List<HexAxis> {
         return hexes().map { hex ->
-            val cornersOnTorus = toroidCoordinates(hex)
+            // Change everything from Z up to Y up
+            val cornersOnTorus = toroidCoordinates(hex).map { p -> Point3D(p.y, p.z, p.x) }
             val centre = cornersOnTorus[6]
-            val (xP, yP) = when(layout.orientation) {
+            val (zP, xP) = when(layout.orientation) {
                 POINTY -> {
                     val midpoint01 = (cornersOnTorus[0] + cornersOnTorus[1]) * 0.5
                     val midpoint34 = (cornersOnTorus[3] + cornersOnTorus[4]) * 0.5
@@ -172,12 +172,13 @@ data class WrappingHexGrid(
                     Pair(xDir, yDir)
                 }
             }
+            val unitZ = Vector3f(zP.x.toFloat(), zP.y.toFloat(), zP.z.toFloat()).normalize()
             val unitX = Vector3f(xP.x.toFloat(), xP.y.toFloat(), xP.z.toFloat()).normalize()
-            val unitY = Vector3f(yP.x.toFloat(), yP.y.toFloat(), yP.z.toFloat()).normalize()
-            val unitZ = unitX.cross(unitY, Vector3f())
+            val unitY = unitZ.cross(unitX, Vector3f())
             HexAxis(
                 location = Vector3f(centre.x.toFloat(), centre.y.toFloat(), centre.z.toFloat()),
-                axes = Matrix3f(unitX, unitY, unitZ)
+                // I have NO idea why the unit vectors are this order
+                axes = Matrix3f(unitZ, unitX, unitY)
             )
         }
     }
