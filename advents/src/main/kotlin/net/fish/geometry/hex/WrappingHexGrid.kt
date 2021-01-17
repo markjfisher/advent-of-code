@@ -232,6 +232,7 @@ data class WrappingHexGrid(
         val lines = mutableListOf<String>()
         // Generate faces as follows to be more rounded than the 5 version by blender which doesn't bend well
         // 0/1/6, 1/2/6, 2/3/6, 3/4/6, 4/5/6, 5/0/6
+        // This uses my origin which is SE for pointy, E for flat
 
         val toroidalCoordinates = toroidCoordinates(hex)
 
@@ -241,9 +242,26 @@ data class WrappingHexGrid(
             lines += String.format("v %7f %7f %7f", c.x, c.y, c.z)
         }
 
-        // textures (unused)
-        for (i in (0..6)) {
-            lines += "vt 0.000000 0.000000"
+        // textures
+        when (layout.orientation) {
+            POINTY -> {
+                lines += "vt 1.0000 0.7500" // point 0
+                lines += "vt 1.0000 0.2500" // point 1
+                lines += "vt 0.5000 0.0000" // point 2
+                lines += "vt 0.0000 0.2500" // point 3
+                lines += "vt 0.0000 0.7500" // point 4
+                lines += "vt 0.5000 1.0000" // point 5
+                lines += "vt 0.5000 0.5000" // point 6
+            }
+            FLAT -> {
+                lines += "vt 1.0000 0.5000" // point 0
+                lines += "vt 0.7500 0.0000" // point 1
+                lines += "vt 0.2500 0.0000" // point 2
+                lines += "vt 0.0000 0.5000" // point 3
+                lines += "vt 0.2500 1.0000" // point 4
+                lines += "vt 0.7500 1.0000" // point 5
+                lines += "vt 0.5000 0.5000" // point 6
+            }
         }
 
         // normals (4)

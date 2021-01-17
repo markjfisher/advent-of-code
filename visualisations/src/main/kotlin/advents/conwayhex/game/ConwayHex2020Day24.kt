@@ -9,10 +9,15 @@ import advents.conwayhex.engine.graph.Camera
 import advents.conwayhex.engine.graph.OBJLoader.loadMesh
 import advents.conwayhex.engine.graph.OBJLoader.loadMeshFromFile
 import advents.conwayhex.engine.graph.Renderer
+import advents.conwayhex.engine.graph.Texture
 import advents.conwayhex.engine.item.GameItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.Layout
-import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.resourceLines
@@ -26,7 +31,9 @@ import org.joml.Vector3fc
 import org.lwjgl.glfw.GLFW.GLFW_KEY_0
 import org.lwjgl.glfw.GLFW.GLFW_KEY_A
 import org.lwjgl.glfw.GLFW.GLFW_KEY_D
+import org.lwjgl.glfw.GLFW.GLFW_KEY_EQUAL
 import org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT
+import org.lwjgl.glfw.GLFW.GLFW_KEY_MINUS
 import org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_SHIFT
 import org.lwjgl.glfw.GLFW.GLFW_KEY_S
 import org.lwjgl.glfw.GLFW.GLFW_KEY_SEMICOLON
@@ -41,11 +48,18 @@ class ConwayHex2020Day24 : GameLogic {
 
     val torusMinorRadius = 0.25
     val torusMajorRadius = 0.8
-    val gridWidth = 72
-    val gridHeight = 24
-    val gameItemScale = 1f
+    val gridWidth = 120
+    val gridHeight = 40
     val gridLayout = Layout(POINTY)
     val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout, torusMinorRadius, torusMajorRadius)
+
+    var conwayStepEvery = 30
+    var currentConwayDelay = 0
+    var changedConwaySpeedAt = 0.0
+    val conwaySpeedTimer = Timer()
+
+    lateinit var stoneW: Texture
+    lateinit var stoneB: Texture
 
     // make it read only by typing it as constant - ensures it's not changed
     private val globalY: Vector3fc = Vector3f(0f, 1f, 0f)
@@ -54,7 +68,8 @@ class ConwayHex2020Day24 : GameLogic {
     private val initialWorldCentre = Vector3f(0f, 0f, 0f)
     private val worldCentre = Vector3f(initialWorldCentre)
 
-    private val initialCameraPosition = Vector3f(0f, 1.2f, 1.25f)
+    private val initialCameraPosition = Vector3f(0f, 1.6f, -1.68f)
+    // private val initialCameraPosition = Vector3f(0.025f, 0.0136f, -1.241f)
     private val initialCameraRotation = Quaternionf().lookAlong(worldCentre.sub(initialCameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize().conjugate()
     private val camera = Camera(Vector3f(initialCameraPosition), Quaternionf(initialCameraRotation))
 
@@ -62,20 +77,23 @@ class ConwayHex2020Day24 : GameLogic {
 
     // The items to display
     private val gameItems = mutableListOf<GameItem>()
+    private val hexToGameItem = mutableMapOf<Hex, GameItem>()
+    private val alive = mutableSetOf<Hex>()
 
-    fun readInitialPosition(): List<Hex> {
-        val doubledCoords = Day24.walk(data)
+    fun readInitialPosition() {
+        val doubledCoords = Day24.walk(data).take(20)
         val hexes = doubledCoords.map { (col, row) ->
             val qc = col + row / 2 + row % 2
             val rc = -row
             val sc = 0 - qc - rc
             Hex(qc, rc, sc, hexGrid)
         }
-        println("hexes: $hexes")
-        return hexes
+        alive.addAll(hexes.map { hexGrid.constrain(it) })
     }
 
     override fun init(window: Window) {
+        readInitialPosition()
+        conwaySpeedTimer.init()
         val centreOfWorldMesh = loadMeshFromFile("/conwayhex/models/hexagon-debug.obj")
         val centreOfWorldItem = GameItem(centreOfWorldMesh)
         centreOfWorldItem.setPosition(Vector3f(worldCentre))
@@ -83,26 +101,15 @@ class ConwayHex2020Day24 : GameLogic {
         gameItems.add(centreOfWorldItem)
 
         // val hexagonMesh = loadMeshFromFile("/conwayhex/models/simple-hexagon.obj")
-
-        // texture loading isn't via resources, so is relative to project root dir
-        // mesh.texture = Texture("visualisations/textures/grassblock.png")
+        stoneB = Texture("visualisations/textures/stone3-b.png")
+        stoneW = Texture("visualisations/textures/stone3-w.png")
 
         val hexAxes = hexGrid.hexAxes() // don't inline this, it does calculations
         hexGrid.hexes().forEachIndexed { index, hex ->
-            val newMesh = loadMesh(hexGrid.hexObj2(hex))
-            val hexAxis = hexAxes[index]
-            // val location = hexAxis.location.add(0f, torusMinorRadius.toFloat(), 0f)
-            val axes = hexAxis.axes
+            val isAlive = alive.contains(hex)
 
-            // take the axes RGB values from the normal projections onto x/y/z axes
-            val ax = axes.getColumn(0, Vector3f()).x
-            val ay = axes.getColumn(1, Vector3f()).y
-            val az = axes.getColumn(2, Vector3f()).z
-            newMesh.colour = Vector3f(
-                ax,
-                ay,
-                az
-            )
+            val newMesh = loadMesh(hexGrid.hexObj2(hex))
+            newMesh.texture = if (isAlive) stoneB else stoneW
 
             val gameItem = GameItem(newMesh)
             // items are relative to world coords already in both position, scale and have axes same as world coords
@@ -114,6 +121,7 @@ class ConwayHex2020Day24 : GameLogic {
             gameItem.setRotation(q)
 
             gameItems += gameItem
+            hexToGameItem[hex] = gameItem
         }
 
         renderer.init(window)
@@ -165,9 +173,25 @@ class ConwayHex2020Day24 : GameLogic {
                 camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
             }
             window.isKeyPressed(GLFW_KEY_SEMICOLON) -> {
-
                 println("camera: $camera\nworld centre: $worldCentre")
             }
+            window.isKeyPressed(GLFW_KEY_EQUAL) -> {
+                val pressedAt = conwaySpeedTimer.time
+                if ((pressedAt - changedConwaySpeedAt) > 0.2) {
+                    changedConwaySpeedAt = pressedAt
+                    conwayStepEvery--
+                    if (conwayStepEvery == 0) conwayStepEvery = 1
+                }
+            }
+            window.isKeyPressed(GLFW_KEY_MINUS) -> {
+                val pressedAt = conwaySpeedTimer.time
+                if ((pressedAt - changedConwaySpeedAt) > 0.2) {
+                    changedConwaySpeedAt = pressedAt
+                    conwayStepEvery++
+                    if (conwayStepEvery == 0) conwayStepEvery = 1
+                }
+            }
+
             window.isKeyPressed(GLFW_KEY_0) -> with(camera) {
                 rotation.set(initialCameraRotation.x, initialCameraRotation.y, initialCameraRotation.z, initialCameraRotation.w)
                 position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z)
@@ -179,6 +203,25 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     override fun update(interval: Float, mouseInput: MouseInput, window: Window) {
+        currentConwayDelay += 1
+        if (currentConwayDelay % conwayStepEvery == 0) {
+            currentConwayDelay = 0
+            // get the new state for entire grid, then work out which have flipped
+            val newAlive = runConway()
+            val newOn = newAlive - alive
+            val newOff = alive - newAlive
+            alive.clear()
+            alive.addAll(newAlive)
+
+            newOn.forEach { hex ->
+                hexToGameItem[hex]!!.mesh.texture = stoneB
+            }
+
+            newOff.forEach { hex ->
+                hexToGameItem[hex]!!.mesh.texture = stoneW
+            }
+        }
+
         when {
             mouseInput.isMiddleButtonPressed && (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) -> {
                 // free camera move in its XY plane
@@ -231,7 +274,7 @@ class ConwayHex2020Day24 : GameLogic {
 
             mouseInput.scrollDirection != 0 -> {
                 // move camera a percentage closer/further from world centre.
-                val newDistanceToWorldCentre = distanceToWorldCentre * if(mouseInput.scrollDirection < 0) 1.05f else 0.95f
+                val newDistanceToWorldCentre = distanceToWorldCentre * if (mouseInput.scrollDirection < 0) 1.02f else 0.98f
                 if (newDistanceToWorldCentre > 0.05f) {
                     distanceToWorldCentre = newDistanceToWorldCentre
                 }
@@ -246,6 +289,44 @@ class ConwayHex2020Day24 : GameLogic {
             }
         }
         gameItems[0].position.set(worldCentre)
+    }
+
+    fun runConway(): Set<Hex> {
+        val allTouchingHexes = mutableSetOf<Hex>()
+        alive.forEach { hex ->
+            allTouchingHexes.addAll(hex.neighbours())
+        }
+
+        val splitSize = allTouchingHexes.size / 12
+        val blocks = allTouchingHexes.chunked(splitSize)
+        val newAlive = mutableSetOf<Hex>()
+        runBlocking {
+            val defs = blocks.map { hexList ->
+                async(Dispatchers.Default) { calculateAsync(hexList) }
+            }
+            defs.awaitAll().map { newAlive.addAll(it) }
+        }
+
+        return newAlive
+    }
+
+    suspend fun calculateAsync(hexes: List<Hex>): Set<Hex> = withContext(Dispatchers.Default) {
+        calculate(hexes)
+    }
+
+    fun calculate(hexes: List<Hex>): MutableSet<Hex> {
+        return hexes.fold(mutableSetOf()) { newAlive, hex ->
+            val neighbourCount = hex.neighbours().intersect(alive).count()
+            val isAlive = alive.contains(hex)
+
+            when {
+                isAlive && (neighbourCount == 0 || neighbourCount > 2) -> newAlive.remove(hex)
+                !isAlive && neighbourCount == 2 -> newAlive.add(hex)
+                isAlive -> newAlive.add(hex)
+            }
+
+            newAlive
+        }
     }
 
     override fun render(window: Window) {
