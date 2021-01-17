@@ -3,6 +3,7 @@ package advents.conwayhex.game
 import advents.conwayhex.engine.GameEngine
 import advents.conwayhex.engine.GameLogic
 import advents.conwayhex.engine.MouseInput
+import advents.conwayhex.engine.Timer
 import advents.conwayhex.engine.Window
 import advents.conwayhex.engine.graph.Camera
 import advents.conwayhex.engine.graph.OBJLoader.loadMesh
@@ -33,6 +34,9 @@ import org.lwjgl.glfw.GLFW.GLFW_KEY_Z
 
 class ConwayHex2020Day24 : GameLogic {
     private val data = resourceLines(2020, 24)
+    private val renderer = Renderer()
+    private val conwayTimer = Timer()
+
     val torusMinorRadius = 0.1
     val torusMajorRadius = 0.8
     val gridWidth = 260
@@ -44,20 +48,17 @@ class ConwayHex2020Day24 : GameLogic {
     // make it read only by typing it as constant - ensures it's not changed
     private val globalY: Vector3fc = Vector3f(0f, 1f, 0f)
 
-    // Scroll changes the zoom in / out of world centre, adjust it by 1% each zoom, min 10%, max unbound
-
-    private val renderer = Renderer()
-
+    // Camera and initial world positions and rotations
     private val initialWorldCentre = Vector3f(0f, 0f, 0f)
     private val worldCentre = Vector3f(initialWorldCentre)
 
     private val initialCameraPosition = Vector3f(0f, 1.2f, 1.25f)
     private val initialCameraRotation = Quaternionf().lookAlong(worldCentre.sub(initialCameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize().conjugate()
     private val camera = Camera(Vector3f(initialCameraPosition), Quaternionf(initialCameraRotation))
+
     var distanceToWorldCentre = initialCameraPosition.length()
 
-    private var cameraInc = Vector3f()
-    private var cameraRot = Vector3f()
+    // The items to display
     private val gameItems = mutableListOf<GameItem>()
 
     fun readInitialPosition(): List<Hex> {
@@ -84,9 +85,8 @@ class ConwayHex2020Day24 : GameLogic {
         // texture loading isn't via resources, so is relative to project root dir
         // mesh.texture = Texture("visualisations/textures/grassblock.png")
 
-        val hexAxes = hexGrid.hexAxes()
-        val hexes = hexGrid.hexes().mapIndexed { index, hex -> Pair(index, hex) }
-        hexes.forEach { (index, hex) ->
+        val hexAxes = hexGrid.hexAxes() // don't inline this, it does calculations
+        hexGrid.hexes().forEachIndexed { index, hex ->
             val hexAxis = hexAxes[index]
             val location = hexAxis.location.add(0f, torusMinorRadius.toFloat(), 0f)
             val axes = hexAxis.axes
@@ -109,11 +109,10 @@ class ConwayHex2020Day24 : GameLogic {
         }
 
         renderer.init(window)
+        conwayTimer.init()
     }
 
     override fun input(window: Window, mouseInput: MouseInput) {
-        cameraInc.set(0.0, 0.0, 0.0)
-        cameraRot.set(0.0, 0.0, 0.0)
         when {
             window.isKeyPressed(GLFW_KEY_W) -> {
                 val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
@@ -157,7 +156,10 @@ class ConwayHex2020Day24 : GameLogic {
                 worldCentre.add(upVector)
                 camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
             }
-            window.isKeyPressed(GLFW_KEY_SEMICOLON) -> println("camera: $camera")
+            window.isKeyPressed(GLFW_KEY_SEMICOLON) -> {
+
+                println("camera: $camera\nworld centre: $worldCentre")
+            }
             window.isKeyPressed(GLFW_KEY_0) -> with(camera) {
                 rotation.set(initialCameraRotation.x, initialCameraRotation.y, initialCameraRotation.z, initialCameraRotation.w)
                 position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z)
@@ -169,7 +171,6 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     override fun update(interval: Float, mouseInput: MouseInput, window: Window) {
-
         when {
             mouseInput.isMiddleButtonPressed && (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) -> {
                 // free camera move in its XY plane
@@ -221,7 +222,6 @@ class ConwayHex2020Day24 : GameLogic {
             }
 
             mouseInput.scrollDirection != 0 -> {
-                // TODO: need to move the camera towards the world centre
                 // move camera a percentage closer/further from world centre.
                 val newDistanceToWorldCentre = distanceToWorldCentre * if(mouseInput.scrollDirection < 0) 1.05f else 0.95f
                 if (newDistanceToWorldCentre > 0.05f) {

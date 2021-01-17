@@ -12,6 +12,7 @@ import org.lwjgl.opengl.GL11C.glViewport
 class Renderer {
     private val transformation: Transformation = Transformation()
     private var sceneShaderProgram: ShaderProgram = ShaderProgram()
+    private var gridShaderProgram: ShaderProgram = ShaderProgram()
 
     companion object {
         private val FOV = toRadians(60f)
@@ -21,6 +22,8 @@ class Renderer {
 
     fun init(window: Window) {
         setupSceneShader()
+        // This needs work as the vertex shader is for Vulkan...
+        // setupGridShader()
     }
 
     fun setupSceneShader() {
@@ -37,6 +40,13 @@ class Renderer {
         // Create uniform for default colour and the flag that controls it
         sceneShaderProgram.createUniform("colour")
         sceneShaderProgram.createUniform("useColour")
+    }
+
+    fun setupGridShader() {
+        gridShaderProgram.createProgram()
+        gridShaderProgram.createVertexShader(Utils.loadResource("/conwayhex/shaders/grid_vertex.vs"))
+        gridShaderProgram.createFragmentShader(Utils.loadResource("/conwayhex/shaders/grid_fragment.fs"))
+        gridShaderProgram.link()
 
     }
 

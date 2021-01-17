@@ -78,6 +78,7 @@ data class WrappingHexGrid(
     // return the coordinates of the hex corners on the torus described by the layout
     fun toroidCoordinates(hex: Hex): List<Point3D> {
         // See https://gamedev.stackexchange.com/questions/16845/how-do-i-generate-a-torus-mesh
+        // The coordinate system here is LH based on the solution from stack overflow
         fun w(theta: Double): Point3D = Point3D(cos(theta), sin(theta), 0.0)
         fun q(theta: Double, phi: Double): Point3D = w(theta) * r2 + w(theta) * cos(phi) * r1 + Point3D(0.0, 0.0, r1 * sin(phi))
 
@@ -86,7 +87,9 @@ data class WrappingHexGrid(
             val theta = 2.0 * PI * it.x / width()
             val phi = 2.0 * PI * (1.0 - it.y / height())
 
-            q(theta, phi)
+            val p = q(theta, phi)
+            // Convert to RH coordinates
+            Point3D(p.y, p.z, -p.x)
         }
     }
 
@@ -153,32 +156,30 @@ data class WrappingHexGrid(
 
     fun hexAxes(): List<HexAxis> {
         return hexes().map { hex ->
-            // Change everything from Z up to Y up
-            val cornersOnTorus = toroidCoordinates(hex).map { p -> Point3D(p.y, p.z, p.x) }
+            val cornersOnTorus = toroidCoordinates(hex)
             val centre = cornersOnTorus[6]
-            val (zP, xP) = when(layout.orientation) {
+            val (xP, yP) = when(layout.orientation) {
                 POINTY -> {
                     val midpoint01 = (cornersOnTorus[0] + cornersOnTorus[1]) * 0.5
                     val midpoint34 = (cornersOnTorus[3] + cornersOnTorus[4]) * 0.5
-                    val xDir = midpoint34 - midpoint01
-                    val yDir = cornersOnTorus[5] - cornersOnTorus[2]
+                    val xDir = midpoint01 - midpoint34
+                    val yDir = cornersOnTorus[2] - cornersOnTorus[5]
                     Pair(xDir, yDir)
                 }
                 FLAT -> {
-                    val xDir = cornersOnTorus[3] - cornersOnTorus[0]
+                    val xDir = cornersOnTorus[0] - cornersOnTorus[3]
                     val midpoint45 = (cornersOnTorus[4] + cornersOnTorus[5]) * 0.5
                     val midpoint21 = (cornersOnTorus[2] + cornersOnTorus[1]) * 0.5
-                    val yDir = midpoint45 - midpoint21
+                    val yDir = midpoint21 - midpoint45
                     Pair(xDir, yDir)
                 }
             }
-            val unitZ = Vector3f(zP.x.toFloat(), zP.y.toFloat(), zP.z.toFloat()).normalize()
             val unitX = Vector3f(xP.x.toFloat(), xP.y.toFloat(), xP.z.toFloat()).normalize()
-            val unitY = unitZ.cross(unitX, Vector3f())
+            val unitY = Vector3f(yP.x.toFloat(), yP.y.toFloat(), yP.z.toFloat()).normalize()
+            val unitZ = unitX.cross(unitY, Vector3f())
             HexAxis(
                 location = Vector3f(centre.x.toFloat(), centre.y.toFloat(), centre.z.toFloat()),
-                // I have NO idea why the unit vectors are this order
-                axes = Matrix3f(unitZ, unitX, unitY)
+                axes = Matrix3f(unitX, unitY, unitZ)
             )
         }
     }

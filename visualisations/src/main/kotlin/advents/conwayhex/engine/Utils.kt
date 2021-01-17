@@ -8,6 +8,7 @@ object Utils {
     fun loadResource(fileName: String): String {
         var result: String
         Utils::class.java.getResourceAsStream(fileName).use { inputStream ->
+            // \A is "beginining of input"
             Scanner(inputStream, StandardCharsets.UTF_8.name()).use { scanner -> result = scanner.useDelimiter("\\A").next() }
         }
         return result
