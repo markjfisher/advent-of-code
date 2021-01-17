@@ -6,8 +6,11 @@ import org.joml.Vector3f
 
 object OBJLoader {
 
-    fun loadMesh(fileName: String): Mesh {
-        val lines = Utils.readAllLines(fileName)
+    fun loadMeshFromFile(fileName: String): Mesh {
+        return loadMesh(Utils.readAllLines(fileName))
+    }
+
+    fun loadMesh(lines: List<String>): Mesh {
         val vertices = mutableListOf<Vector3f>()
         val textures = mutableListOf<Vector2f>()
         val normals = mutableListOf<Vector3f>()

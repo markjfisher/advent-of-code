@@ -7,6 +7,7 @@ import advents.conwayhex.engine.Timer
 import advents.conwayhex.engine.Window
 import advents.conwayhex.engine.graph.Camera
 import advents.conwayhex.engine.graph.OBJLoader.loadMesh
+import advents.conwayhex.engine.graph.OBJLoader.loadMeshFromFile
 import advents.conwayhex.engine.graph.Renderer
 import advents.conwayhex.engine.item.GameItem
 import net.fish.geometry.hex.Hex
@@ -39,9 +40,9 @@ class ConwayHex2020Day24 : GameLogic {
 
     val torusMinorRadius = 0.1
     val torusMajorRadius = 0.8
-    val gridWidth = 260
-    val gridHeight = 48
-    val gameItemScale = 0.0085f
+    val gridWidth = 192
+    val gridHeight = 40
+    val gameItemScale = 1f
     val gridLayout = Layout(POINTY)
     val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout, torusMinorRadius, torusMajorRadius)
 
@@ -74,35 +75,41 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     override fun init(window: Window) {
-        val triangleMesh = loadMesh("/conwayhex/models/hexagon-debug.obj")
-        val triangleItem = GameItem(triangleMesh)
-        triangleItem.setPosition(Vector3f(worldCentre))
-        triangleItem.scale = 0.002f
-        gameItems.add(triangleItem)
+        val centreOfWorldMesh = loadMeshFromFile("/conwayhex/models/hexagon-debug.obj")
+        val centreOfWorldItem = GameItem(centreOfWorldMesh)
+        centreOfWorldItem.setPosition(Vector3f(worldCentre))
+        centreOfWorldItem.scale = 0.002f
+        gameItems.add(centreOfWorldItem)
 
-        val hexagonMesh = loadMesh("/conwayhex/models/simple-hexagon.obj")
+        // val hexagonMesh = loadMeshFromFile("/conwayhex/models/simple-hexagon.obj")
 
         // texture loading isn't via resources, so is relative to project root dir
         // mesh.texture = Texture("visualisations/textures/grassblock.png")
 
         val hexAxes = hexGrid.hexAxes() // don't inline this, it does calculations
         hexGrid.hexes().forEachIndexed { index, hex ->
+            val newMesh = loadMesh(hexGrid.hexObj(hex))
             val hexAxis = hexAxes[index]
-            val location = hexAxis.location.add(0f, torusMinorRadius.toFloat(), 0f)
+            // val location = hexAxis.location.add(0f, torusMinorRadius.toFloat(), 0f)
             val axes = hexAxis.axes
 
             // take the axes RGB values from the normal projections onto x/y/z axes
-            hexagonMesh.colour = Vector3f(
-                axes.getColumn(0, Vector3f()).x,
-                axes.getColumn(1, Vector3f()).y,
-                axes.getColumn(2, Vector3f()).z
+            val ax = axes.getColumn(0, Vector3f()).x
+            val ay = axes.getColumn(1, Vector3f()).y
+            val az = axes.getColumn(2, Vector3f()).z
+            newMesh.colour = Vector3f(
+                ax,
+                ay,
+                az
             )
 
-            val gameItem = GameItem(hexagonMesh)
-            gameItem.setPosition(location)
-            gameItem.scale = gameItemScale // TODO: calculate this according to the torus size
-
-            val q = Quaternionf().setFromNormalized(axes)
+            val gameItem = GameItem(newMesh)
+            // items are relative to world coords already in both position, scale and have axes same as world coords
+            // Another way to do this is calculate N meshes for the minor circle, as they will be repeated around the major circle, but with different location and rotations
+            // which would make N mesh instead of NxM mesh
+            gameItem.setPosition(Vector3f(0f, 0f, 0f))
+            gameItem.scale = 1f
+            val q = Quaternionf().setFromNormalized(Matrix3f())
             gameItem.setRotation(q)
 
             gameItems += gameItem

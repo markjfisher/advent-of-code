@@ -116,6 +116,8 @@ data class WrappingHexGrid(
         }.asIterable()
     }
 
+    // This considers a single object for the entire torus, but isn't actually going to render this way
+    // (unless we want it as a surface for the other points to overlay)
     fun mesh(): HexGridMesh {
         val allPointsMap = mutableMapOf<Int, Point3D>()
         val indices = mutableListOf<Int>()
@@ -183,4 +185,92 @@ data class WrappingHexGrid(
             )
         }
     }
+
+    // Create OBJ compatible output for the given hex
+    fun hexObj(hex: Hex): List<String> {
+        val lines = mutableListOf<String>()
+        // To be "blender" output compatible, we want to do points in order:
+        // from: 2, 3, 4, 5, 0, 1
+        //   to: 1, 2, 3, 4, 5, 6
+        //    i: 0, 1, 2, 3, 4, 5
+        // The 4 faces are from points  6/1/3, 1/2/3, 3/4/5, 5/6/3
+        // which for our coordinates is 1/2/4, 2/3/4, 4/5/0, 0/1/4
+
+        val toroidalCoordinates = toroidCoordinates(hex)
+
+        // vetices
+        for(i in (0..5)) {
+            val corner = (i + 2) % 6 // convert from 0, 1, 2, .... to 2, 3, 4, ... as above.
+            val c = toroidalCoordinates[corner]
+            lines += String.format("v %7f %7f %7f", c.x, c.y, c.z)
+        }
+
+        // textures (unused)
+        for (i in (0..5)) {
+            lines += "vt 0.000000 0.000000"
+        }
+
+        // normals (4)
+        for (t in listOf(Triple(1,2,4), Triple(2,3,4), Triple(4,5,0), Triple(0,1,4))) {
+            val p1 = toroidalCoordinates[t.first]
+            val p2 = toroidalCoordinates[t.second]
+            val p3 = toroidalCoordinates[t.third]
+            val normal = normalFromPoints(p1.toVector3f(), p2.toVector3f(), p3.toVector3f())
+            lines += String.format("vn %5f %5f %5f", normal.x, normal.y, normal.z)
+        }
+
+        lines += "f 6/1/1 1/2/1 3/3/1"
+        lines += "f 1/2/2 2/4/2 3/3/2"
+        lines += "f 3/3/3 4/5/3 5/6/3"
+        lines += "f 5/6/4 6/1/4 3/3/4"
+
+        return lines.toList()
+    }
+
+    // Create OBJ compatible output for the given hex
+    fun hexObj2(hex: Hex): List<String> {
+        val lines = mutableListOf<String>()
+        // Generate faces as follows to be more rounded than the 5 version by blender which doesn't bend well
+        // 0/1/6, 1/2/6, 2/3/6, 3/4/6, 4/5/6, 5/0/6
+
+        val toroidalCoordinates = toroidCoordinates(hex)
+
+        // vetices (last one is the centre)
+        for(i in (0..6)) {
+            val c = toroidalCoordinates[i]
+            lines += String.format("v %7f %7f %7f", c.x, c.y, c.z)
+        }
+
+        // textures (unused)
+        for (i in (0..6)) {
+            lines += "vt 0.000000 0.000000"
+        }
+
+        // normals (4)
+        for (i in (0..5)) {
+            val p1 = toroidalCoordinates[i]
+            val p2 = toroidalCoordinates[(i + 1) % 6]
+            val p3 = toroidalCoordinates[6]
+            val normal = normalFromPoints(p1.toVector3f(), p2.toVector3f(), p3.toVector3f())
+            lines += String.format("vn %5f %5f %5f", normal.x, normal.y, normal.z)
+        }
+
+        // faces are +1 compared to point number. make texture and point same
+        lines += "f 1/1/1 2/2/1 7/7/1"
+        lines += "f 2/2/2 3/3/2 7/7/2"
+        lines += "f 3/3/3 4/4/3 7/7/3"
+        lines += "f 4/4/4 5/5/4 7/7/4"
+        lines += "f 5/5/5 6/6/5 7/7/5"
+        lines += "f 6/6/6 1/1/6 7/7/6"
+
+        return lines.toList()
+    }
+
+    companion object {
+        fun normalFromPoints(p1: Vector3f, p2: Vector3f, p3: Vector3f): Vector3f {
+            // Blender does normal = (p1-p2)x(p2-p3)
+            return (p1.sub(p2, Vector3f()).cross(p2.sub(p3, Vector3f()))).normalize()
+        }
+    }
+
 }

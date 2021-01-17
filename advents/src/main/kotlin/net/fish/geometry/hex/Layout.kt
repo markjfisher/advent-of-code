@@ -1,6 +1,7 @@
 package net.fish.geometry.hex
 
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
+import org.joml.Vector3f
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -32,6 +33,8 @@ data class Point3D(
     fun subtract(other: Point3D) = Point3D(x - other.x, y - other.y, z - other.z)
     fun scale(k: Double) = Point3D(k * x, k * y, k * z)
     fun length(): Double = sqrt(x*x + y*y + z*z)
+
+    fun toVector3f(): Vector3f = Vector3f(x.toFloat(), y.toFloat(), z.toFloat())
 }
 
 data class Layout(

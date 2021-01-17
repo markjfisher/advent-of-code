@@ -2,12 +2,14 @@ package net.fish.geometry.hex
 
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
+import net.fish.geometry.hex.WrappingHexGrid.Companion.normalFromPoints
 import org.assertj.core.api.Assertions.assertThat
 import org.joml.Math.toRadians
 import org.joml.Matrix3f
 import org.joml.Quaternionf
 import org.joml.Vector3f
 import org.junit.jupiter.api.Test
+import java.io.File
 import kotlin.math.abs
 import kotlin.math.round
 import kotlin.math.sqrt
@@ -175,11 +177,22 @@ class WrappingHexGridTest {
         val hex1 = pointyGrid.hex(0, 0, 0)
         val c1 = pointyGrid.toroidCoordinates(hex1)
         assertThat(c1).hasSize(7)
-        // The centre point of 0,0,0 is at [r1+r2, 0, 0]
+        println("c1 -----------------------------")
         c1.forEach { p ->
             println(String.format("%.6f, %6f, %6f", p.x, p.y, p.z))
         }
+        // The centre point of 0,0,0 is at [-(r2+r1), 0, 0]
         assertThat((c1[6] - Point3D(0.0, 0.0, -3.0)).length()).isLessThan(0.001)
+
+        val hex2 = pointyGrid.hex(1, -2, 1)
+        val c2 = pointyGrid.toroidCoordinates(hex2)
+        println("c2 -----------------------------")
+        c2.forEach { p ->
+            println(String.format("%.6f, %6f, %6f", p.x, p.y, p.z))
+        }
+
+        // The opposite of centre point is at [-(r2-r1), 0, 0]
+        assertThat((c2[6] - Point3D(0.0, 0.0, -1.0)).length()).isLessThan(0.001)
     }
 
     @Test
@@ -357,6 +370,39 @@ class WrappingHexGridTest {
         assertThat((centres[1] - Point3D(0.0, 1.0, 2.0)).length()).isLessThan(0.0001)
         assertThat((centres[2] - Point3D(0.0, 0.0, -1.0)).length()).isLessThan(0.0001)
         assertThat((centres[3] - Point3D(0.0, -1.0, 2.0)).length()).isLessThan(0.0001)
+    }
+
+    @Test
+    fun `can calculate normal from 3 points in blender output order`() {
+        // From a hexagon with lifted points these are the 6 points output:
+        val sqrt3div2 = sqrt(3f) / 2f
+        val p1 = Vector3f(0f, 0.1f, -1f)
+        val p2 = Vector3f(-sqrt3div2, 0f, -0.5f)
+        val p3 = Vector3f(-sqrt3div2, 0f, 0.5f)
+        val p4 = Vector3f(0f, 0.1f, 1f)
+        val p5 = Vector3f(sqrt3div2, 0f, 0.5f)
+        val p6 = Vector3f(sqrt3div2, 0f, -0.5f)
+
+        // Now verify the given faces with points in given order generate the normals as output also by blender
+        assertHasNormal(Vector3f(0.0574f, 0.9934f, 0.0993f), normalFromPoints(p6, p1, p3))
+        assertHasNormal(Vector3f(-0.1147f, 0.9934f, 0.0000f), normalFromPoints(p1, p2, p3))
+        assertHasNormal(Vector3f(0f, 0.9806f, -0.1961f), normalFromPoints(p3, p4, p5))
+        assertHasNormal(Vector3f(0f, 1f, 0f), normalFromPoints(p5, p6, p3))
+    }
+
+    @Test
+    fun `can create obj from hex`() {
+        val grid = WrappingHexGrid(m = 12, n = 6, layout = pointyLayout, r1 = 1.0, r2 = 5.0)
+
+        grid.hexes().forEachIndexed { i, hex ->
+            val obj = grid.hexObj2(hex)
+            File(String.format("/home/markf/Documents/blender/h%04d.obj", i)).writeText(obj.joinToString("\n"))
+        }
+
+    }
+
+    private fun assertHasNormal(expectedNormal: Vector3f, normal: Vector3f) {
+        assertThat(abs(expectedNormal.sub(normal).length())).isLessThan(0.0001f)
     }
 
     fun roundClose(v: Float): Float {
