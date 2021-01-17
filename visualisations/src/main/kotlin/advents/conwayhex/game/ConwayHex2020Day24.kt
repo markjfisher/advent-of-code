@@ -12,6 +12,7 @@ import advents.conwayhex.engine.graph.Renderer
 import advents.conwayhex.engine.item.GameItem
 import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.Layout
+import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.resourceLines
@@ -38,10 +39,10 @@ class ConwayHex2020Day24 : GameLogic {
     private val renderer = Renderer()
     private val conwayTimer = Timer()
 
-    val torusMinorRadius = 0.1
+    val torusMinorRadius = 0.25
     val torusMajorRadius = 0.8
-    val gridWidth = 192
-    val gridHeight = 40
+    val gridWidth = 72
+    val gridHeight = 24
     val gameItemScale = 1f
     val gridLayout = Layout(POINTY)
     val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout, torusMinorRadius, torusMajorRadius)
@@ -88,7 +89,7 @@ class ConwayHex2020Day24 : GameLogic {
 
         val hexAxes = hexGrid.hexAxes() // don't inline this, it does calculations
         hexGrid.hexes().forEachIndexed { index, hex ->
-            val newMesh = loadMesh(hexGrid.hexObj(hex))
+            val newMesh = loadMesh(hexGrid.hexObj2(hex))
             val hexAxis = hexAxes[index]
             // val location = hexAxis.location.add(0f, torusMinorRadius.toFloat(), 0f)
             val axes = hexAxis.axes

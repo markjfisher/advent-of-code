@@ -186,7 +186,7 @@ data class WrappingHexGrid(
         }
     }
 
-    // Create OBJ compatible output for the given hex
+    // Create OBJ compatible output for the given hex, this is the 4 face bender style hex, minimizing faces, but they get bent on turns
     fun hexObj(hex: Hex): List<String> {
         val lines = mutableListOf<String>()
         // To be "blender" output compatible, we want to do points in order:
