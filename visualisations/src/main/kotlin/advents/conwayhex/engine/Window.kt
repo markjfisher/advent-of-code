@@ -10,6 +10,7 @@ import org.lwjgl.glfw.GLFW.GLFW_OPENGL_PROFILE
 import org.lwjgl.glfw.GLFW.GLFW_PRESS
 import org.lwjgl.glfw.GLFW.GLFW_RELEASE
 import org.lwjgl.glfw.GLFW.GLFW_RESIZABLE
+import org.lwjgl.glfw.GLFW.GLFW_SAMPLES
 import org.lwjgl.glfw.GLFW.GLFW_VISIBLE
 import org.lwjgl.glfw.GLFW.glfwCreateWindow
 import org.lwjgl.glfw.GLFW.glfwDefaultWindowHints
@@ -31,10 +32,16 @@ import org.lwjgl.glfw.GLFWErrorCallback.createPrint
 import org.lwjgl.opengl.GL.createCapabilities
 import org.lwjgl.opengl.GL11C.GL_DEPTH_TEST
 import org.lwjgl.opengl.GL11C.GL_FALSE
+import org.lwjgl.opengl.GL11C.GL_STENCIL_TEST
 import org.lwjgl.opengl.GL11C.GL_TRUE
 import org.lwjgl.opengl.GL11C.glClearColor
 import org.lwjgl.opengl.GL11C.glEnable
 import org.lwjgl.system.MemoryUtil
+import gln.glEnable
+import org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA
+import org.lwjgl.opengl.GL11C.GL_SRC_ALPHA
+import org.lwjgl.opengl.GL11C.glBlendFunc
+
 
 data class Window(
     val title: String,
@@ -55,11 +62,12 @@ data class Window(
         glfwDefaultWindowHints() // optional, the current window hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE) // the window will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, GL_TRUE) // the window will be resizable
+        glfwWindowHint(GLFW.GLFW_MAXIMIZED, GLFW.GLFW_TRUE)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
-        // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE)
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
+        glfwWindowHint(GLFW_SAMPLES, 4)
 
         // Create the window
         windowHandle = glfwCreateWindow(width, height, title, MemoryUtil.NULL, MemoryUtil.NULL)
@@ -104,6 +112,7 @@ data class Window(
         // Set the clear color
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
         glEnable(GL_DEPTH_TEST)
+        glEnable(GL_STENCIL_TEST)
 
         // DEBUG: Polygon mode
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
@@ -132,5 +141,11 @@ data class Window(
     fun update() {
         glfwSwapBuffers(windowHandle)
         glfwPollEvents()
+    }
+
+    fun restoreState() {
+        glEnable(GL_DEPTH_TEST)
+        glEnable(GL_STENCIL_TEST)
+        // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     }
 }

@@ -6,6 +6,7 @@ import advents.conwayhex.engine.item.GameItem
 import org.joml.Math.toRadians
 import org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT
 import org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT
+import org.lwjgl.opengl.GL11C.GL_STENCIL_BUFFER_BIT
 import org.lwjgl.opengl.GL11C.glClear
 import org.lwjgl.opengl.GL11C.glViewport
 
@@ -51,7 +52,7 @@ class Renderer {
     }
 
     fun clear() {
-        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT or GL_STENCIL_BUFFER_BIT)
     }
 
     fun render(window: Window, camera: Camera, gameItems: List<GameItem>) {
