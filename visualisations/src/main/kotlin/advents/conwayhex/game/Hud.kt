@@ -13,6 +13,8 @@ import java.nio.DoubleBuffer
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Date
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.pow
 
 class Hud {
@@ -106,7 +108,18 @@ class Hud {
         NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT or NanoVG.NVG_ALIGN_TOP)
         NanoVG.nvgFillColor(vg, rgba(0xe6, 0xea, 0xed, 255, colour))
         nvgText(vg, window.width - 180f, window.height - 95f, dateFormat.format(Date()))
+
+
+        // Render flash text
+        if (data.flashMessage != "") {
+            NanoVG.nvgFontSize(vg, 200.0f)
+            NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_CENTER or NanoVG.NVG_ALIGN_TOP)
+            NanoVG.nvgFillColor(vg, rgba(0x23, 0xa1, 0xf1, (255 * cos((100 - data.flashPercentage) * PI / 200f)).toInt(), colour))
+            nvgText(vg, window.width / 2f, window.height / 4f, data.flashMessage)
+        }
+
         NanoVG.nvgEndFrame(vg)
+
 
         // Restore state
         window.restoreState()

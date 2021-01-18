@@ -68,11 +68,15 @@ class ConwayHex2020Day24 : GameLogic {
     private val gameItems = mutableListOf<GameItem>()
     private val hexToGameItem = mutableMapOf<Hex, GameItem>()
     private val alive = mutableSetOf<Hex>()
-    private val initialPoints = 20 // we have up to 597 initial points from the original game
+    private val initialPoints = 600 // we have up to 597 initial points from the original game
 
     // keyboard timer handling
     private val keyPressedTimer = Timer()
     private var lastPressedAt = 0.0
+
+    // text flashing
+    private var flashPercentage: Int = 0
+    private var flashMessage: String = ""
 
     // Textures
     lateinit var emptyTexture: Texture
@@ -146,7 +150,7 @@ class ConwayHex2020Day24 : GameLogic {
             window.isKeyPressed(GLFW_KEY_EQUAL) -> changeState(IncreaseSpeed)
             window.isKeyPressed(GLFW_KEY_MINUS) -> changeState(DecreaseSpeed)
             window.isKeyPressed(GLFW_KEY_R) -> changeState(ResetGame)
-            window.isKeyPressed(GLFW_KEY_P) -> changeState(PauseGame)
+            window.isKeyPressed(GLFW_KEY_P) -> changeState(TogglePause)
             window.isKeyPressed(GLFW_KEY_1) -> changeState(SingleStep)
             window.isKeyPressed(GLFW_KEY_0) -> changeState(ResetCamera)
         }
@@ -232,13 +236,15 @@ class ConwayHex2020Day24 : GameLogic {
                 return
             }
             lastPressedAt = pressedAt
+            flashMessage = command.toString()
+            flashPercentage = 100
         }
 
         when (command) {
             DecreaseSpeed -> conwayStepDelay++
             IncreaseSpeed -> conwayStepDelay = max(conwayStepDelay - 1, 1)
             ResetGame -> resetGame()
-            PauseGame -> isPaused = !isPaused
+            TogglePause -> isPaused = !isPaused
             PrintState -> printGameState()
             SingleStep -> if (isPaused) performStep()
             ResetCamera -> resetCamera()
@@ -259,6 +265,8 @@ class ConwayHex2020Day24 : GameLogic {
                 performStep()
             }
         }
+        flashPercentage = max(flashPercentage - 5, 0)
+        if (flashPercentage == 0) flashMessage = ""
 
         when {
             mouseInput.isMiddleButtonPressed && (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) -> {
@@ -387,7 +395,14 @@ class ConwayHex2020Day24 : GameLogic {
 
     override fun render(window: Window) {
         renderer.render(window, camera, gameItems)
-        val hudData = HudData(speed = conwayStepDelay, iteration = conwayIteration, isPaused = isPaused, liveCount = alive.count())
+        val hudData = HudData(
+            speed = conwayStepDelay,
+            iteration = conwayIteration,
+            isPaused = isPaused,
+            liveCount = alive.count(),
+            flashMessage = flashMessage,
+            flashPercentage = flashPercentage
+        )
         hud.render(window, hudData)
     }
 
@@ -412,11 +427,15 @@ class ConwayHex2020Day24 : GameLogic {
 
 sealed class KeyCommand
 
-sealed class SingleKeyPressCommand: KeyCommand()
+sealed class SingleKeyPressCommand: KeyCommand() {
+    override fun toString(): String {
+        return this.javaClass.simpleName
+    }
+}
 
 object DecreaseSpeed: SingleKeyPressCommand()
 object IncreaseSpeed: SingleKeyPressCommand()
-object PauseGame: SingleKeyPressCommand()
+object TogglePause: SingleKeyPressCommand()
 object ResetGame: SingleKeyPressCommand()
 object SingleStep: SingleKeyPressCommand()
 object PrintState: SingleKeyPressCommand()
