@@ -39,20 +39,30 @@ class Hud {
         counter = 0
     }
 
-    fun render(window: Window, conwayStepEvery: Int, conwayIteration: Int, isPaused: Boolean) {
+    fun render(window: Window, data: HudData) {
         NanoVG.nvgBeginFrame(vg, window.width.toFloat(), window.height.toFloat(), 1f)
 
         // Upper ribbon
+        when {
+            data.isPaused -> rgba(0xf1, 0x61, 0x23, 200, colour)
+            else -> rgba(0x23, 0xa1, 0xf1, 200, colour)
+        }
         NanoVG.nvgBeginPath(vg)
         NanoVG.nvgRect(vg, 0f, window.height.toFloat() - 100f, window.width.toFloat(), 50f)
-        NanoVG.nvgFillColor(vg, rgba(0x23, 0xa1, 0xf1, 200, colour))
+        NanoVG.nvgFillColor(vg, colour)
         NanoVG.nvgFill(vg)
 
         // Lower ribbon
+        when {
+            data.isPaused -> rgba(0xf9, 0xc1, 0xa3, 200, colour)
+            else -> rgba(0xc1, 0xe3, 0xf9, 200, colour)
+        }
         NanoVG.nvgBeginPath(vg)
         NanoVG.nvgRect(vg, 0f, window.height.toFloat() - 50f, window.width.toFloat(), 10f)
-        NanoVG.nvgFillColor(vg, rgba(0xc1, 0xe3, 0xf9, 200, colour))
+        NanoVG.nvgFillColor(vg, colour)
         NanoVG.nvgFill(vg)
+
+        // calculate the mouse position and if it's in a small circle for hover detection. cute.
         glfwGetCursorPos(window.windowHandle, posx, posy)
         val xcenter = 110
         val ycenter: Int = window.height - 75
@@ -67,31 +77,28 @@ class Hud {
         NanoVG.nvgFillColor(vg, rgba(0xc1, 0xe3, 0xf9, 200, colour))
         NanoVG.nvgFill(vg)
 
-        // Conway Speed Text
+        // Speed Text
         NanoVG.nvgFontSize(vg, 25.0f)
         NanoVG.nvgFontFace(vg, FONT_NAME)
-        NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_CENTER or NanoVG.NVG_ALIGN_TOP)
-        nvgText(vg, 50f, window.height - 87f, "Speed")
+        NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT or NanoVG.NVG_ALIGN_TOP)
+        nvgText(vg, 10f, window.height - 87f, "Speed")
 
+        // Doesn't really do anything on hover, but worth knowing
         if (hover) {
             NanoVG.nvgFillColor(vg, rgba(0x00, 0x00, 0x00, 255, colour))
         } else {
             NanoVG.nvgFillColor(vg, rgba(0x23, 0xa1, 0xf1, 255, colour))
         }
-        nvgText(vg, 110f, window.height - 87f, String.format("%02d", conwayStepEvery))
+        NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_CENTER or NanoVG.NVG_ALIGN_TOP)
+        nvgText(vg, 110f, window.height - 87f, String.format("%02d", data.speed))
 
         // Iteration
-        NanoVG.nvgFillColor(vg, rgba(0xc1, 0xe3, 0xf9, 200, colour))
-        nvgText(vg, 220f, window.height - 87f, "Iteration")
         NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT or NanoVG.NVG_ALIGN_TOP)
-        nvgText(vg, 290f, window.height - 87f, String.format("%d", conwayIteration))
+        NanoVG.nvgFillColor(vg, rgba(0xc1, 0xe3, 0xf9, 200, colour))
+        nvgText(vg, 180f, window.height - 87f, String.format("Iteration: %d", data.iteration))
 
-        // Paused status
-        if (isPaused) {
-            NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_CENTER or NanoVG.NVG_ALIGN_TOP)
-            NanoVG.nvgFillColor(vg, rgba(0xff, 0x00, 0x00, 255, colour))
-            nvgText(vg, window.width / 2f, window.height - 87f, "Paused!")
-        }
+        // Live count
+        nvgText(vg, 450f, window.height - 87f, String.format("Live: %d", data.liveCount))
 
         // Render hour text
         NanoVG.nvgFontSize(vg, 40.0f)

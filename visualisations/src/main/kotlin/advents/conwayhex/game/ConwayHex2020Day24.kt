@@ -7,7 +7,6 @@ import advents.conwayhex.engine.Timer
 import advents.conwayhex.engine.Window
 import advents.conwayhex.engine.graph.Camera
 import advents.conwayhex.engine.graph.OBJLoader.loadMesh
-import advents.conwayhex.engine.graph.OBJLoader.loadMeshFromFile
 import advents.conwayhex.engine.graph.Renderer
 import advents.conwayhex.engine.graph.Texture
 import advents.conwayhex.engine.item.GameItem
@@ -23,14 +22,17 @@ import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.resourceLines
 import net.fish.y2020.Day24
 import org.joml.Math.abs
+import org.joml.Math.max
 import org.joml.Matrix3f
 import org.joml.Quaternionf
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector3fc
 import org.lwjgl.glfw.GLFW.GLFW_KEY_0
+import org.lwjgl.glfw.GLFW.GLFW_KEY_1
 import org.lwjgl.glfw.GLFW.GLFW_KEY_A
 import org.lwjgl.glfw.GLFW.GLFW_KEY_D
+import org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN
 import org.lwjgl.glfw.GLFW.GLFW_KEY_EQUAL
 import org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT
 import org.lwjgl.glfw.GLFW.GLFW_KEY_MINUS
@@ -39,58 +41,60 @@ import org.lwjgl.glfw.GLFW.GLFW_KEY_R
 import org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_SHIFT
 import org.lwjgl.glfw.GLFW.GLFW_KEY_S
 import org.lwjgl.glfw.GLFW.GLFW_KEY_SEMICOLON
+import org.lwjgl.glfw.GLFW.GLFW_KEY_UP
 import org.lwjgl.glfw.GLFW.GLFW_KEY_W
-import org.lwjgl.glfw.GLFW.GLFW_KEY_X
-import org.lwjgl.glfw.GLFW.GLFW_KEY_Z
 
 class ConwayHex2020Day24 : GameLogic {
-    private val data = resourceLines(2020, 24)
+    // Gfx helpers
     private val renderer = Renderer()
     private val hud = Hud()
-    private val conwayTimer = Timer()
-    private val startTimer = Timer()
-    private var startedAt = 0.0
-    val initialDelay = 5.0
 
-    val torusMinorRadius = 0.25
-    val torusMajorRadius = 0.8
-    val gridWidth = 120
-    val gridHeight = 40
-    val gridLayout = Layout(POINTY)
-    val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout, torusMinorRadius, torusMajorRadius)
+    // Input from the original puzzle!
+    private val data = resourceLines(2020, 24)
 
-    var conwayStepEvery = 30
-    var currentConwayDelay = 0
-    var changedConwaySpeedAt = 0.0
-    val conwaySpeedTimer = Timer()
-    var conwayIteration = 0
-    var isPaused = false
+    // Hex grid config
+    private val torusMinorRadius = 0.25
+    private val torusMajorRadius = 0.8
+    private val gridWidth = 120
+    private val gridHeight = 40
+    private val gridLayout = Layout(POINTY)
+    private val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout, torusMinorRadius, torusMajorRadius)
 
-    lateinit var stoneW: Texture
-    lateinit var stoneB: Texture
+    // Game state
+    private var conwayStepDelay = 15
+    private var currentStepDelay = 0
+    private var conwayIteration = 0
+    private var isPaused = true
+    private val gameItems = mutableListOf<GameItem>()
+    private val hexToGameItem = mutableMapOf<Hex, GameItem>()
+    private val alive = mutableSetOf<Hex>()
+    private val initialPoints = 20 // we have up to 597 initial points from the original game
+
+    // keyboard timer handling
+    private val keyPressedTimer = Timer()
+    private var lastPressedAt = 0.0
+
+    // Textures
+    lateinit var emptyTexture: Texture
+    lateinit var aliveTexture: Texture
 
     // make it read only by typing it as constant - ensures it's not changed
     private val globalY: Vector3fc = Vector3f(0f, 1f, 0f)
 
     // Camera and initial world positions and rotations
-    private val initialWorldCentre = Vector3f(0.08395f, 1.296f, -1.223f)
+    // private val initialWorldCentre = Vector3f(0f, 0f, 0f)
+    private val initialWorldCentre = Vector3f(5.357e-3f, -2.461e-1f, -2.243e-1f)
+    // private val initialWorldCentre = Vector3f(0.08395f, 1.296f, -1.223f)
     private val worldCentre = Vector3f(initialWorldCentre)
 
-    private val initialCameraPosition = Vector3f(0.08982f, 1.430f, -1.307f)
-    // private val initialCameraPosition = Vector3f(0f, 1.155f, -2.012f)
-    // private val initialCameraPosition = Vector3f(0.025f, 0.0136f, -1.241f)
+    private val initialCameraPosition = Vector3f(3.463E-2f,  1.245E+0f, -1.464E+0f)
     private val initialCameraRotation = Quaternionf().lookAlong(worldCentre.sub(initialCameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize().conjugate()
     private val camera = Camera(Vector3f(initialCameraPosition), Quaternionf(initialCameraRotation))
 
     var distanceToWorldCentre = initialCameraPosition.sub(worldCentre, Vector3f()).length()
 
-    // The items to display
-    private val gameItems = mutableListOf<GameItem>()
-    private val hexToGameItem = mutableMapOf<Hex, GameItem>()
-    private val alive = mutableSetOf<Hex>()
-
-    fun readInitialPosition() {
-        val doubledCoords = Day24.walk(data).take(80)
+    private fun readInitialPosition() {
+        val doubledCoords = Day24.walk(data).take(initialPoints)
         val hexes = doubledCoords.map { (col, row) ->
             val qc = col + row / 2 + row % 2
             val rc = -row
@@ -102,16 +106,15 @@ class ConwayHex2020Day24 : GameLogic {
 
     override fun init(window: Window) {
         readInitialPosition()
-        conwaySpeedTimer.init()
 
-        stoneB = Texture("visualisations/textures/stone3-b.png")
-        stoneW = Texture("visualisations/textures/stone3-w.png")
+        aliveTexture = Texture("visualisations/textures/stone3-b.png")
+        emptyTexture = Texture("visualisations/textures/stone3-w.png")
 
         hexGrid.hexes().forEachIndexed { index, hex ->
             val isAlive = alive.contains(hex)
 
             val newMesh = loadMesh(hexGrid.hexObj2(hex))
-            newMesh.texture = if (isAlive) stoneB else stoneW
+            newMesh.texture = if (isAlive) aliveTexture else emptyTexture
 
             val gameItem = GameItem(newMesh)
             // items are relative to world coords already in both position, scale and have axes same as world coords
@@ -128,119 +131,132 @@ class ConwayHex2020Day24 : GameLogic {
 
         hud.init(window)
         renderer.init(window)
-        conwayTimer.init()
-        startTimer.init()
-        startedAt = startTimer.time
+        keyPressedTimer.init()
     }
 
     override fun input(window: Window, mouseInput: MouseInput) {
         when {
-            window.isKeyPressed(GLFW_KEY_W) -> {
-                val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
-                val forwardVector = inverseCameraRotation.positiveZ(Vector3f()).mul(CAMERA_POS_STEP)
-                val newCameraPosition = camera.position.sub(forwardVector, Vector3f())
-                worldCentre.sub(forwardVector)
-                camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
-            }
-            window.isKeyPressed(GLFW_KEY_S) -> {
-                val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
-                val forwardVector = inverseCameraRotation.positiveZ(Vector3f()).mul(CAMERA_POS_STEP)
-                val newCameraPosition = camera.position.add(forwardVector, Vector3f())
-                worldCentre.add(forwardVector)
-                camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
-            }
-            window.isKeyPressed(GLFW_KEY_A) -> {
-                val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
-                val leftVector = inverseCameraRotation.positiveX(Vector3f()).mul(CAMERA_POS_STEP)
-                val newCameraPosition = camera.position.sub(leftVector, Vector3f())
-                worldCentre.sub(leftVector)
-                camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
-            }
-            window.isKeyPressed(GLFW_KEY_D) -> {
-                val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
-                val leftVector = inverseCameraRotation.positiveX(Vector3f()).mul(CAMERA_POS_STEP)
-                val newCameraPosition = camera.position.add(leftVector, Vector3f())
-                worldCentre.add(leftVector)
-                camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
-            }
-            window.isKeyPressed(GLFW_KEY_Z) -> {
-                val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
-                val upVector = inverseCameraRotation.positiveY(Vector3f()).mul(CAMERA_POS_STEP)
-                val newCameraPosition = camera.position.sub(upVector, Vector3f())
-                worldCentre.sub(upVector)
-                camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
-            }
-            window.isKeyPressed(GLFW_KEY_X) -> {
-                val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
-                val upVector = inverseCameraRotation.positiveY(Vector3f()).mul(CAMERA_POS_STEP)
-                val newCameraPosition = camera.position.add(upVector, Vector3f())
-                worldCentre.add(upVector)
-                camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
-            }
-            window.isKeyPressed(GLFW_KEY_SEMICOLON) -> {
-                println("camera: $camera\nworld centre: $worldCentre")
-            }
-            window.isKeyPressed(GLFW_KEY_EQUAL) -> {
-                val pressedAt = conwaySpeedTimer.time
-                if ((pressedAt - changedConwaySpeedAt) > 0.08) {
-                    changedConwaySpeedAt = pressedAt
-                    conwayStepEvery--
-                    if (conwayStepEvery == 0) conwayStepEvery = 1
-                }
-            }
-            window.isKeyPressed(GLFW_KEY_MINUS) -> {
-                val pressedAt = conwaySpeedTimer.time
-                if ((pressedAt - changedConwaySpeedAt) > 0.08) {
-                    changedConwaySpeedAt = pressedAt
-                    conwayStepEvery++
-                    if (conwayStepEvery == 0) conwayStepEvery = 1
-                }
-            }
+            window.isKeyPressed(GLFW_KEY_W) -> changeState(MoveForward)
+            window.isKeyPressed(GLFW_KEY_S) -> changeState(MoveBackward)
+            window.isKeyPressed(GLFW_KEY_A) -> changeState(MoveLeft)
+            window.isKeyPressed(GLFW_KEY_D) -> changeState(MoveRight)
+            window.isKeyPressed(GLFW_KEY_DOWN) -> changeState(MoveDown)
+            window.isKeyPressed(GLFW_KEY_UP) -> changeState(MoveUp)
+            window.isKeyPressed(GLFW_KEY_SEMICOLON) -> changeState(PrintState)
+            window.isKeyPressed(GLFW_KEY_EQUAL) -> changeState(IncreaseSpeed)
+            window.isKeyPressed(GLFW_KEY_MINUS) -> changeState(DecreaseSpeed)
+            window.isKeyPressed(GLFW_KEY_R) -> changeState(ResetGame)
+            window.isKeyPressed(GLFW_KEY_P) -> changeState(PauseGame)
+            window.isKeyPressed(GLFW_KEY_1) -> changeState(SingleStep)
+            window.isKeyPressed(GLFW_KEY_0) -> changeState(ResetCamera)
+        }
+    }
 
-            window.isKeyPressed(GLFW_KEY_R) -> {
-                alive.clear()
-                readInitialPosition()
-                conwayIteration = 0
-                hexGrid.hexes().forEach { hex -> hexToGameItem[hex]!!.mesh.texture = stoneW }
-            }
+    private fun moveUp() {
+        val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
+        val upVector = inverseCameraRotation.positiveY(Vector3f()).mul(CAMERA_POS_STEP)
+        val newCameraPosition = camera.position.add(upVector, Vector3f())
+        worldCentre.add(upVector)
+        camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
+    }
 
-            window.isKeyPressed(GLFW_KEY_P) -> {
-                val pressedAt = conwaySpeedTimer.time
-                if ((pressedAt - changedConwaySpeedAt) > 0.2) {
-                    changedConwaySpeedAt = pressedAt
-                    isPaused = !isPaused
-                }
+    private fun moveDown() {
+        val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
+        val upVector = inverseCameraRotation.positiveY(Vector3f()).mul(CAMERA_POS_STEP)
+        val newCameraPosition = camera.position.sub(upVector, Vector3f())
+        worldCentre.sub(upVector)
+        camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
+    }
 
-            }
+    private fun moveRight() {
+        val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
+        val leftVector = inverseCameraRotation.positiveX(Vector3f()).mul(CAMERA_POS_STEP)
+        val newCameraPosition = camera.position.add(leftVector, Vector3f())
+        worldCentre.add(leftVector)
+        camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
+    }
 
-            window.isKeyPressed(GLFW_KEY_0) -> with(camera) {
-                rotation.set(initialCameraRotation.x, initialCameraRotation.y, initialCameraRotation.z, initialCameraRotation.w)
-                position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z)
-                worldCentre.set(initialWorldCentre.x, initialWorldCentre.y, initialWorldCentre.z)
-                distanceToWorldCentre = initialCameraPosition.length()
+    private fun moveLeft() {
+        val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
+        val leftVector = inverseCameraRotation.positiveX(Vector3f()).mul(CAMERA_POS_STEP)
+        val newCameraPosition = camera.position.sub(leftVector, Vector3f())
+        worldCentre.sub(leftVector)
+        camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
+    }
+
+    private fun moveBackward() {
+        val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
+        val forwardVector = inverseCameraRotation.positiveZ(Vector3f()).mul(CAMERA_POS_STEP)
+        val newCameraPosition = camera.position.add(forwardVector, Vector3f())
+        worldCentre.add(forwardVector)
+        camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
+    }
+
+    private fun moveForward() {
+        val inverseCameraRotation = camera.rotation.conjugate(Quaternionf())
+        val forwardVector = inverseCameraRotation.positiveZ(Vector3f()).mul(CAMERA_POS_STEP)
+        val newCameraPosition = camera.position.sub(forwardVector, Vector3f())
+        worldCentre.sub(forwardVector)
+        camera.setPosition(newCameraPosition.x, newCameraPosition.y, newCameraPosition.z)
+    }
+
+    private fun resetCamera() = with(camera) {
+        rotation.set(initialCameraRotation.x, initialCameraRotation.y, initialCameraRotation.z, initialCameraRotation.w)
+        position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z)
+        worldCentre.set(initialWorldCentre.x, initialWorldCentre.y, initialWorldCentre.z)
+        distanceToWorldCentre = initialCameraPosition.length()
+    }
+
+    private fun resetGame() {
+        alive.clear()
+        readInitialPosition()
+        conwayIteration = 0
+        hexGrid.hexes().forEach { hex -> hexToGameItem[hex]!!.mesh.texture = emptyTexture }
+        alive.forEach { hex ->
+            hexToGameItem[hex]!!.mesh.texture = aliveTexture
+        }
+    }
+
+    private fun printGameState() {
+        println("""
+            camera: $camera
+            world centre: $worldCentre
+        """.trimIndent())
+    }
+
+    private fun changeState(command: KeyCommand) {
+        if (command is SingleKeyPressCommand) {
+            // Stop key repeats when this is meant to be a 1 shot press
+            val pressedAt = keyPressedTimer.time
+            if ((pressedAt - lastPressedAt) < KEYBOARD_BOUNCE_DELAY) {
+                return
             }
+            lastPressedAt = pressedAt
+        }
+
+        when (command) {
+            DecreaseSpeed -> conwayStepDelay++
+            IncreaseSpeed -> conwayStepDelay = max(conwayStepDelay - 1, 1)
+            ResetGame -> resetGame()
+            PauseGame -> isPaused = !isPaused
+            PrintState -> printGameState()
+            SingleStep -> if (isPaused) performStep()
+            ResetCamera -> resetCamera()
+            MoveForward -> moveForward()
+            MoveBackward -> moveBackward()
+            MoveLeft -> moveLeft()
+            MoveRight -> moveRight()
+            MoveDown -> moveDown()
+            MoveUp -> moveUp()
         }
     }
 
     override fun update(interval: Float, mouseInput: MouseInput, window: Window) {
-        if (!isPaused && (startTimer.time - startedAt) > initialDelay) {
-            currentConwayDelay += 1
-            if (currentConwayDelay % conwayStepEvery == 0) {
-                currentConwayDelay = 0
-                // get the new state for entire grid, then work out which have flipped
-                val newAlive = runConway()
-                val newOn = newAlive - alive
-                val newOff = alive - newAlive
-                alive.clear()
-                alive.addAll(newAlive)
-
-                newOn.forEach { hex ->
-                    hexToGameItem[hex]!!.mesh.texture = stoneB
-                }
-
-                newOff.forEach { hex ->
-                    hexToGameItem[hex]!!.mesh.texture = stoneW
-                }
+        if (!isPaused) {
+            currentStepDelay += 1
+            if (currentStepDelay % conwayStepDelay == 0) {
+                currentStepDelay = 0
+                performStep()
             }
         }
 
@@ -249,8 +265,8 @@ class ConwayHex2020Day24 : GameLogic {
                 // free camera move in its XY plane
                 val moveVec: Vector2f = mouseInput.displVec
                 val unitVectorsForCameraOrientation = camera.rotation.get(Matrix3f())
-                val upVector = unitVectorsForCameraOrientation.getColumn(1, Vector3f()).mul(CAMERA_POS_STEP * moveVec.x * MOUSE_SENSITIVITY)
-                val leftVector = unitVectorsForCameraOrientation.getColumn(0, Vector3f()).mul(CAMERA_POS_STEP * moveVec.y * MOUSE_SENSITIVITY)
+                val upVector = unitVectorsForCameraOrientation.getColumn(1, Vector3f()).mul(moveVec.x * MOUSE_SENSITIVITY)
+                val leftVector = unitVectorsForCameraOrientation.getColumn(0, Vector3f()).mul(moveVec.y * MOUSE_SENSITIVITY)
                 val newCameraPosition = camera.position.add(upVector, Vector3f()).sub(leftVector)
                 val delta = newCameraPosition.sub(camera.position, Vector3f())
                 if (abs(delta.length()) > 0.001f) {
@@ -312,7 +328,24 @@ class ConwayHex2020Day24 : GameLogic {
         }
     }
 
-    fun runConway(): Set<Hex> {
+    private fun performStep() {
+        // get the new state for entire grid, then work out which have flipped
+        val newAlive = runConway()
+        val newOn = newAlive - alive
+        val newOff = alive - newAlive
+        alive.clear()
+        alive.addAll(newAlive)
+
+        newOn.forEach { hex ->
+            hexToGameItem[hex]!!.mesh.texture = aliveTexture
+        }
+
+        newOff.forEach { hex ->
+            hexToGameItem[hex]!!.mesh.texture = emptyTexture
+        }
+    }
+
+    private fun runConway(): Set<Hex> {
         conwayIteration++
         if (alive.size == 0) return emptySet()
         val allTouchingHexes = mutableSetOf<Hex>()
@@ -333,11 +366,11 @@ class ConwayHex2020Day24 : GameLogic {
         return newAlive
     }
 
-    suspend fun calculateAsync(hexes: List<Hex>): Set<Hex> = withContext(Dispatchers.Default) {
+    private suspend fun calculateAsync(hexes: List<Hex>): Set<Hex> = withContext(Dispatchers.Default) {
         calculate(hexes)
     }
 
-    fun calculate(hexes: List<Hex>): MutableSet<Hex> {
+    private fun calculate(hexes: List<Hex>): MutableSet<Hex> {
         return hexes.fold(mutableSetOf()) { newAlive, hex ->
             val neighbourCount = hex.neighbours().intersect(alive).count()
             val isAlive = alive.contains(hex)
@@ -354,7 +387,8 @@ class ConwayHex2020Day24 : GameLogic {
 
     override fun render(window: Window) {
         renderer.render(window, camera, gameItems)
-        hud.render(window, conwayStepEvery, conwayIteration, isPaused)
+        val hudData = HudData(speed = conwayStepDelay, iteration = conwayIteration, isPaused = isPaused, liveCount = alive.count())
+        hud.render(window, hudData)
     }
 
     override fun cleanup() {
@@ -365,6 +399,7 @@ class ConwayHex2020Day24 : GameLogic {
     companion object {
         const val CAMERA_POS_STEP = 0.015f
         const val MOUSE_SENSITIVITY = 0.003f
+        const val KEYBOARD_BOUNCE_DELAY = 0.2
 
         @JvmStatic
         fun main(args: Array<String>) {
@@ -374,3 +409,24 @@ class ConwayHex2020Day24 : GameLogic {
         }
     }
 }
+
+sealed class KeyCommand
+
+sealed class SingleKeyPressCommand: KeyCommand()
+
+object DecreaseSpeed: SingleKeyPressCommand()
+object IncreaseSpeed: SingleKeyPressCommand()
+object PauseGame: SingleKeyPressCommand()
+object ResetGame: SingleKeyPressCommand()
+object SingleStep: SingleKeyPressCommand()
+object PrintState: SingleKeyPressCommand()
+object ResetCamera: SingleKeyPressCommand()
+
+sealed class MovementCommand: KeyCommand()
+
+object MoveForward: MovementCommand()
+object MoveBackward: MovementCommand()
+object MoveLeft: MovementCommand()
+object MoveRight: MovementCommand()
+object MoveDown: MovementCommand()
+object MoveUp: MovementCommand()
