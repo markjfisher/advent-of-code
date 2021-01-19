@@ -21,15 +21,8 @@ class Transformation {
         val rotation = camera.rotation
         viewMatrix.identity()
 
-        // First do the rotation so camera rotates over its position, then translation.
-//        val eulers = rotation.getEulerAnglesXYZ(Vector3f())
-//        return viewMatrix
-//            .rotate(toRadians(eulers.x), Vector3f(1f, 0f, 0f))
-//            .rotate(toRadians(eulers.y), Vector3f(0f, 1f, 0f))
-//            .rotate(toRadians(eulers.z), Vector3f(0f, 0f, 1f))
-//            .translate(-cameraPos.x, -cameraPos.y, -cameraPos.z)
         return viewMatrix
-            .rotate(rotation.conjugate(Quaternionf()))
+            .rotate(rotation)
             .translate(-cameraPos.x, -cameraPos.y, -cameraPos.z)
     }
 

@@ -245,22 +245,23 @@ data class WrappingHexGrid(
         // textures
         when (layout.orientation) {
             POINTY -> {
-                lines += "vt 1.0000 0.7500" // point 0
-                lines += "vt 1.0000 0.2500" // point 1
-                lines += "vt 0.5000 0.0000" // point 2
+                lines += "vt 0.8660 0.7500" // point 0
+                lines += "vt 0.8660 0.2500" // point 1
+                lines += "vt 0.4330 0.0000" // point 2
                 lines += "vt 0.0000 0.2500" // point 3
                 lines += "vt 0.0000 0.7500" // point 4
-                lines += "vt 0.5000 1.0000" // point 5
-                lines += "vt 0.5000 0.5000" // point 6
+                lines += "vt 0.4330 1.0000" // point 5
+                lines += "vt 0.4330 0.5000" // point 6
             }
             FLAT -> {
-                lines += "vt 1.0000 0.5000" // point 0
-                lines += "vt 0.7500 0.0000" // point 1
-                lines += "vt 0.2500 0.0000" // point 2
-                lines += "vt 0.0000 0.5000" // point 3
+                // The y coordinate is shifted down by (1-sqrt(3)/2) as the 0,0 isn't top left it seems.
+                lines += "vt 1.0000 0.5670" // point 0
+                lines += "vt 0.7500 0.1340" // point 1
+                lines += "vt 0.2500 0.1340" // point 2
+                lines += "vt 0.0000 0.5670" // point 3
                 lines += "vt 0.2500 1.0000" // point 4
                 lines += "vt 0.7500 1.0000" // point 5
-                lines += "vt 0.5000 0.5000" // point 6
+                lines += "vt 0.5000 0.5670" // point 6
             }
         }
 
