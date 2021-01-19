@@ -1,10 +1,7 @@
-package advents.conwayhex.engine.graph
+package engine.graph
 
-import advents.conwayhex.engine.item.GameItem
-import org.joml.Math.toRadians
+import engine.item.GameItem
 import org.joml.Matrix4f
-import org.joml.Quaternionf
-import org.joml.Vector3f
 
 class Transformation {
     private val projectionMatrix: Matrix4f = Matrix4f()

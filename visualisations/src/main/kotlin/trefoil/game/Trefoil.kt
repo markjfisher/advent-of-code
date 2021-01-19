@@ -1,15 +1,5 @@
-package advents.conwayhex.game
+package trefoil.game
 
-import engine.GameEngine
-import engine.GameLogic
-import engine.MouseInput
-import engine.Timer
-import engine.Window
-import engine.graph.Camera
-import engine.graph.OBJLoader.loadMesh
-import engine.graph.Renderer
-import engine.graph.Texture
-import engine.item.GameItem
 import commands.DecreaseSpeed
 import commands.IncreaseSpeed
 import commands.KeyCommand
@@ -21,22 +11,17 @@ import commands.MoveRight
 import commands.MoveUp
 import commands.PrintState
 import commands.ResetCamera
-import commands.ResetGame
 import commands.SingleKeyPressCommand
 import commands.SingleStep
 import commands.TogglePause
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import net.fish.geometry.hex.Hex
-import net.fish.geometry.hex.Layout
-import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
-import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
-import net.fish.geometry.hex.WrappingHexGrid
-import net.fish.resourceLines
-import net.fish.y2020.Day24
+import engine.GameEngine
+import engine.GameLogic
+import engine.MouseInput
+import engine.Timer
+import engine.Window
+import engine.graph.Camera
+import engine.graph.Renderer
+import engine.item.GameItem
 import org.joml.Math.abs
 import org.joml.Math.max
 import org.joml.Matrix3f
@@ -53,40 +38,20 @@ import org.lwjgl.glfw.GLFW.GLFW_KEY_EQUAL
 import org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT
 import org.lwjgl.glfw.GLFW.GLFW_KEY_MINUS
 import org.lwjgl.glfw.GLFW.GLFW_KEY_P
-import org.lwjgl.glfw.GLFW.GLFW_KEY_R
 import org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_SHIFT
 import org.lwjgl.glfw.GLFW.GLFW_KEY_S
 import org.lwjgl.glfw.GLFW.GLFW_KEY_SEMICOLON
 import org.lwjgl.glfw.GLFW.GLFW_KEY_UP
 import org.lwjgl.glfw.GLFW.GLFW_KEY_W
 
-class ConwayHex2020Day24 : GameLogic {
+class Trefoil : GameLogic {
     // Gfx helpers
     private val renderer = Renderer()
     private val hud = Hud()
 
-    // Input from the original puzzle!
-    private val data = resourceLines(2020, 24)
-
-    // Hex grid config
-    private val torusMinorRadius = 0.25
-    private val torusMajorRadius = 0.8
-    private val gridWidth = 160
-    private val gridHeight = 40
-    private val gridLayout = Layout(FLAT)
-    private val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout, torusMinorRadius, torusMajorRadius)
-
     // Game state
-    private var conwayStepDelay = 15
-    private var currentStepDelay = 0
-    private var conwayIteration = 0
     private var isPaused = true
     private val gameItems = mutableListOf<GameItem>()
-    private val hexToGameItem = mutableMapOf<Hex, GameItem>()
-    private val alive = mutableSetOf<Hex>()
-    private val initialPoints = 600 // we have up to 597 initial points from the original game
-    private var createdCount = 0
-    private var destroyedCount = 0
 
     // keyboard timer handling
     private val keyPressedTimer = Timer()
@@ -97,69 +62,29 @@ class ConwayHex2020Day24 : GameLogic {
     private var flashMessage: String = ""
 
     // Textures
-    lateinit var emptyTexture: Texture
-    lateinit var aliveTexture: Texture
 
     // make it read only by typing it as constant - ensures it's not changed
     private val globalY: Vector3fc = Vector3f(0f, 1f, 0f)
 
     // Camera and initial world positions and rotations
     private val initialWorldCentre = Vector3f(0f, 0f, 0f)
-    // private val initialWorldCentre = Vector3f(5.357e-3f, -2.461e-1f, -2.243e-1f)
-    // private val initialWorldCentre = Vector3f(0.08395f, 1.296f, -1.223f)
     private val worldCentre = Vector3f(initialWorldCentre)
 
-    private val initialCameraPosition = Vector3f(3.463E-2f,  1.245E+0f, -1.464E+0f)
-    private val initialCameraRotation = Quaternionf().lookAlong(worldCentre.sub(initialCameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize()//.conjugate()
+    private val initialCameraPosition = Vector3f(0f, 2f, 2f)
+    private val initialCameraRotation = Quaternionf().lookAlong(worldCentre.sub(initialCameraPosition, Vector3f()), globalY).normalize()
     private val camera = Camera(Vector3f(initialCameraPosition), Quaternionf(initialCameraRotation))
 
     var distanceToWorldCentre = initialCameraPosition.sub(worldCentre, Vector3f()).length()
 
     // calculation values so they aren't created every loop
-    val cameraX = Vector3f()
-    val cameraY = Vector3f()
-    val cameraZ = Vector3f()
-    val newCameraVector = Vector3f()
-    val cameraDelta = Vector3f()
-
-    private fun readInitialPosition() {
-        val doubledCoords = Day24.walk(data).take(initialPoints)
-        val hexes = doubledCoords.map { (col, row) ->
-            val qc = col + row / 2 + row % 2
-            val rc = -row
-            val sc = 0 - qc - rc
-            Hex(qc, rc, sc, hexGrid)
-        }
-        alive.addAll(hexes.map { hexGrid.constrain(it) })
-    }
+    private val cameraX = Vector3f()
+    private val cameraY = Vector3f()
+    private val cameraZ = Vector3f()
+    private val newCameraVector = Vector3f()
+    private val cameraDelta = Vector3f()
 
     override fun init(window: Window) {
-        readInitialPosition()
-
-        aliveTexture = Texture("visualisations/textures/stone3-b.png")
-        emptyTexture = when (hexGrid.layout.orientation) {
-            POINTY -> Texture("visualisations/textures/stone3-wl-pointy.png")
-            else -> Texture("visualisations/textures/stone3-wl-flat.png")
-        }
-
-        hexGrid.hexes().forEachIndexed { index, hex ->
-            val isAlive = alive.contains(hex)
-
-            val newMesh = loadMesh(hexGrid.hexObj2(hex))
-            newMesh.texture = if (isAlive) aliveTexture else emptyTexture
-
-            val gameItem = GameItem(newMesh)
-            // items are relative to world coords already in both position, scale and have axes same as world coords
-            // Another way to do this is calculate N meshes for the minor circle, as they will be repeated around the major circle, but with different location and rotations
-            // which would make N mesh instead of NxM mesh
-            gameItem.setPosition(Vector3f(0f, 0f, 0f))
-            gameItem.scale = 1f
-            val q = Quaternionf().setFromNormalized(Matrix3f())
-            gameItem.setRotation(q)
-
-            gameItems += gameItem
-            hexToGameItem[hex] = gameItem
-        }
+        // Load any meshes here...
 
         hud.init(window)
         renderer.init(window)
@@ -177,7 +102,6 @@ class ConwayHex2020Day24 : GameLogic {
             window.isKeyPressed(GLFW_KEY_SEMICOLON) -> changeState(PrintState)
             window.isKeyPressed(GLFW_KEY_EQUAL) -> changeState(IncreaseSpeed)
             window.isKeyPressed(GLFW_KEY_MINUS) -> changeState(DecreaseSpeed)
-            window.isKeyPressed(GLFW_KEY_R) -> changeState(ResetGame)
             window.isKeyPressed(GLFW_KEY_P) -> changeState(TogglePause)
             window.isKeyPressed(GLFW_KEY_1) -> changeState(SingleStep)
             window.isKeyPressed(GLFW_KEY_0) -> changeState(ResetCamera)
@@ -233,16 +157,6 @@ class ConwayHex2020Day24 : GameLogic {
         distanceToWorldCentre = initialCameraPosition.length()
     }
 
-    private fun resetGame() {
-        alive.clear()
-        readInitialPosition()
-        conwayIteration = 0
-        hexGrid.hexes().forEach { hex -> hexToGameItem[hex]!!.mesh.texture = emptyTexture }
-        alive.forEach { hex ->
-            hexToGameItem[hex]!!.mesh.texture = aliveTexture
-        }
-    }
-
     private fun printGameState() {
         println("""
             camera: $camera
@@ -263,12 +177,8 @@ class ConwayHex2020Day24 : GameLogic {
         }
 
         when (command) {
-            DecreaseSpeed -> conwayStepDelay++
-            IncreaseSpeed -> conwayStepDelay = max(conwayStepDelay - 1, 1)
-            ResetGame -> resetGame()
             TogglePause -> isPaused = !isPaused
             PrintState -> printGameState()
-            SingleStep -> if (isPaused) performStep()
             ResetCamera -> resetCamera()
             MoveForward -> moveForward()
             MoveBackward -> moveBackward()
@@ -276,17 +186,11 @@ class ConwayHex2020Day24 : GameLogic {
             MoveRight -> moveRight()
             MoveDown -> moveDown()
             MoveUp -> moveUp()
+            else -> throw Exception("Unknown command: $command")
         }
     }
 
     override fun update(interval: Float, mouseInput: MouseInput, window: Window) {
-        if (!isPaused) {
-            currentStepDelay += 1
-            if (currentStepDelay % conwayStepDelay == 0) {
-                currentStepDelay = 0
-                performStep()
-            }
-        }
         flashPercentage = max(flashPercentage - 5, 0)
         if (flashPercentage == 0) flashMessage = ""
 
@@ -351,77 +255,13 @@ class ConwayHex2020Day24 : GameLogic {
         }
     }
 
-    private fun performStep() {
-        // get the new state for entire grid, then work out which have flipped
-        val newAlive = runConway()
-        val newOn = newAlive - alive
-        val newOff = alive - newAlive
-        createdCount = newOn.count()
-        destroyedCount = newOff.count()
-
-        alive.clear()
-        alive.addAll(newAlive)
-
-        newOn.forEach { hex ->
-            hexToGameItem[hex]!!.mesh.texture = aliveTexture
-        }
-
-        newOff.forEach { hex ->
-            hexToGameItem[hex]!!.mesh.texture = emptyTexture
-        }
-    }
-
-    private fun runConway(): Set<Hex> {
-        conwayIteration++
-        if (alive.size == 0) return emptySet()
-        val allTouchingHexes = mutableSetOf<Hex>()
-        alive.forEach { hex ->
-            allTouchingHexes.addAll(hex.neighbours())
-        }
-
-        val splitSize = allTouchingHexes.size / 12
-        val blocks = allTouchingHexes.chunked(splitSize)
-        val newAlive = mutableSetOf<Hex>()
-        runBlocking {
-            val defs = blocks.map { hexList ->
-                async(Dispatchers.Default) { calculateAsync(hexList) }
-            }
-            defs.awaitAll().map { newAlive.addAll(it) }
-        }
-
-        return newAlive
-    }
-
-    private suspend fun calculateAsync(hexes: List<Hex>): Set<Hex> = withContext(Dispatchers.Default) {
-        calculate(hexes)
-    }
-
-    private fun calculate(hexes: List<Hex>): MutableSet<Hex> {
-        return hexes.fold(mutableSetOf()) { newAlive, hex ->
-            val neighbourCount = hex.neighbours().intersect(alive).count()
-            val isAlive = alive.contains(hex)
-
-            when {
-                isAlive && (neighbourCount == 0 || neighbourCount > 2) -> newAlive.remove(hex)
-                !isAlive && neighbourCount == 2 -> newAlive.add(hex)
-                isAlive -> newAlive.add(hex)
-            }
-
-            newAlive
-        }
-    }
 
     override fun render(window: Window) {
         renderer.render(window, camera, gameItems)
         val hudData = HudData(
-            speed = conwayStepDelay,
-            iteration = conwayIteration,
             isPaused = isPaused,
-            liveCount = alive.count(),
             flashMessage = flashMessage,
             flashPercentage = flashPercentage,
-            createdCount = createdCount,
-            destroyedCount = destroyedCount
         )
         hud.render(window, hudData)
     }
@@ -438,8 +278,8 @@ class ConwayHex2020Day24 : GameLogic {
 
         @JvmStatic
         fun main(args: Array<String>) {
-            val logic = ConwayHex2020Day24()
-            val engine = GameEngine("Conway Hex", 1200, 800, true, logic)
+            val logic = Trefoil()
+            val engine = GameEngine("Trefoil Render", 1200, 800, true, logic)
             engine.run()
         }
     }

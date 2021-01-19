@@ -1,4 +1,4 @@
-package advents.conwayhex.engine.graph
+package engine.graph
 
 import org.joml.Matrix4f
 import org.lwjgl.opengl.GL20C.GL_COMPILE_STATUS

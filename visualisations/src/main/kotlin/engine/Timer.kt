@@ -1,4 +1,4 @@
-package advents.conwayhex.engine
+package engine
 
 class Timer {
     var lastLoopTime = 0.0

@@ -1,8 +1,7 @@
-package advents.conwayhex.game
+package trefoil.game
 
 import engine.Utils
 import engine.Window
-import org.lwjgl.glfw.GLFW.glfwGetCursorPos
 import org.lwjgl.nanovg.NVGColor
 import org.lwjgl.nanovg.NanoVG
 import org.lwjgl.nanovg.NanoVG.nvgText
@@ -15,7 +14,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.math.PI
 import kotlin.math.cos
-import kotlin.math.pow
 
 class Hud {
     private var vg: Long = 0
@@ -24,7 +22,6 @@ class Hud {
     private val dateFormat: DateFormat = SimpleDateFormat("HH:mm:ss")
     private lateinit var posx: DoubleBuffer
     private lateinit var posy: DoubleBuffer
-    private var counter = 0
 
     fun init(window: Window) {
         vg = NanoVGGL3.nvgCreate(NanoVGGL3.NVG_ANTIALIAS or NanoVGGL3.NVG_STENCIL_STROKES)
@@ -38,7 +35,6 @@ class Hud {
         colour = NVGColor.create()
         posx = MemoryUtil.memAllocDouble(1)
         posy = MemoryUtil.memAllocDouble(1)
-        counter = 0
     }
 
     fun render(window: Window, data: HudData) {
@@ -64,55 +60,12 @@ class Hud {
         NanoVG.nvgFillColor(vg, colour)
         NanoVG.nvgFill(vg)
 
-        // calculate the mouse position and if it's in a small circle for hover detection. cute.
-        glfwGetCursorPos(window.windowHandle, posx, posy)
-        val xcenter = 110
-        val ycenter: Int = window.height - 75
-        val radius = 20
-        val x = posx[0].toInt()
-        val y = posy[0].toInt()
-        val hover = (x - xcenter).toDouble().pow(2.0) + (y - ycenter).toDouble().pow(2.0) < radius.toDouble().pow(2.0)
-
-        // Circle for speed
-        NanoVG.nvgBeginPath(vg)
-        NanoVG.nvgCircle(vg, xcenter.toFloat(), ycenter.toFloat(), radius.toFloat())
-        NanoVG.nvgFillColor(vg, rgba(0xc1, 0xe3, 0xf9, 200, colour))
-        NanoVG.nvgFill(vg)
-
-        // Speed Text
-        NanoVG.nvgFontSize(vg, 25.0f)
-        NanoVG.nvgFontFace(vg, FONT_NAME)
-        NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT or NanoVG.NVG_ALIGN_TOP)
-        nvgText(vg, 10f, window.height - 87f, "Speed")
-
-        // Doesn't really do anything on hover, but worth knowing
-        if (hover) {
-            NanoVG.nvgFillColor(vg, rgba(0x00, 0x00, 0x00, 255, colour))
-        } else {
-            NanoVG.nvgFillColor(vg, rgba(0x23, 0xa1, 0xf1, 255, colour))
-        }
-        NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_CENTER or NanoVG.NVG_ALIGN_TOP)
-        nvgText(vg, 110f, window.height - 87f, String.format("%02d", data.speed))
-
-        // Iteration
-        NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT or NanoVG.NVG_ALIGN_TOP)
-        NanoVG.nvgFillColor(vg, rgba(0xc1, 0xe3, 0xf9, 200, colour))
-        nvgText(vg, 180f, window.height - 87f, String.format("Iteration: %d", data.iteration))
-
-        // Live count
-        nvgText(vg, 450f, window.height - 87f, String.format("Live: %d", data.liveCount))
-
-        nvgText(vg, 620f, window.height - 87f, String.format("On: %d", data.createdCount))
-        nvgText(vg, 750f, window.height - 87f, String.format("Off: %d", data.destroyedCount))
-
-
         // Render hour text
         NanoVG.nvgFontSize(vg, 40.0f)
         NanoVG.nvgFontFace(vg, FONT_NAME)
         NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT or NanoVG.NVG_ALIGN_TOP)
         NanoVG.nvgFillColor(vg, rgba(0xe6, 0xea, 0xed, 255, colour))
         nvgText(vg, window.width - 180f, window.height - 95f, dateFormat.format(Date()))
-
 
         // Render flash text
         if (data.flashMessage != "") {
@@ -124,16 +77,8 @@ class Hud {
 
         NanoVG.nvgEndFrame(vg)
 
-
         // Restore state
         window.restoreState()
-    }
-
-    fun incCounter() {
-        counter++
-        if (counter > 99) {
-            counter = 0
-        }
     }
 
     private fun rgba(r: Int, g: Int, b: Int, a: Int, colour: NVGColor): NVGColor {

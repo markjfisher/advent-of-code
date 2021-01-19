@@ -1,6 +1,6 @@
-package advents.conwayhex.engine.graph
+package engine.graph
 
-import advents.conwayhex.engine.Utils
+import engine.Utils
 import org.joml.Vector2f
 import org.joml.Vector3f
 

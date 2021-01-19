@@ -1,4 +1,4 @@
-package advents.conwayhex.engine
+package engine
 
 interface GameLogic {
     fun init(window: Window)

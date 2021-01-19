@@ -1,4 +1,4 @@
-package advents.conwayhex.engine.graph
+package engine.graph
 
 import org.joml.Quaternionf
 import org.joml.Vector3f

@@ -1,4 +1,4 @@
-package advents.conwayhex.engine.graph
+package engine.graph
 
 import org.lwjgl.opengl.GL11C.GL_RGBA
 import org.lwjgl.opengl.GL11C.GL_TEXTURE_2D

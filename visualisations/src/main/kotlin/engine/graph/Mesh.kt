@@ -1,4 +1,4 @@
-package advents.conwayhex.engine.graph
+package engine.graph
 
 import org.joml.Vector3f
 import org.lwjgl.opengl.GL11C.GL_FLOAT

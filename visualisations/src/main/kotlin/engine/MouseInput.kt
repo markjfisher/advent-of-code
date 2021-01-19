@@ -1,4 +1,4 @@
-package advents.conwayhex.engine
+package engine
 
 import org.joml.Vector2d
 import org.joml.Vector2f

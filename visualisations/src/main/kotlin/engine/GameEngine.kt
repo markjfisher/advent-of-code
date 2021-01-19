@@ -1,4 +1,4 @@
-package advents.conwayhex.engine
+package engine
 
 import java.lang.Exception
 

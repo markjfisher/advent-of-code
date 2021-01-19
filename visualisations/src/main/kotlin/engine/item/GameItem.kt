@@ -1,6 +1,6 @@
-package advents.conwayhex.engine.item
+package engine.item
 
-import advents.conwayhex.engine.graph.Mesh
+import engine.graph.Mesh
 import org.joml.Quaternionf
 import org.joml.Vector3f
 

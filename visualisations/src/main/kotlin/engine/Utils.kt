@@ -1,21 +1,12 @@
-package advents.conwayhex.engine
+package engine
 
 import java.nio.charset.StandardCharsets
 import java.util.Scanner
 import java.util.stream.Collectors
 import org.lwjgl.BufferUtils.createByteBuffer
 
-import java.nio.channels.ReadableByteChannel
-
-import java.io.InputStream
-
-import org.lwjgl.BufferUtils
-
-import java.nio.channels.SeekableByteChannel
-
 import java.nio.file.Path
 
-import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.file.Files

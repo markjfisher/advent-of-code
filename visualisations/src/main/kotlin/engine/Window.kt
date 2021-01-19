@@ -1,4 +1,4 @@
-package advents.conwayhex.engine
+package engine
 
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR
@@ -37,10 +37,6 @@ import org.lwjgl.opengl.GL11C.GL_TRUE
 import org.lwjgl.opengl.GL11C.glClearColor
 import org.lwjgl.opengl.GL11C.glEnable
 import org.lwjgl.system.MemoryUtil
-import gln.glEnable
-import org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA
-import org.lwjgl.opengl.GL11C.GL_SRC_ALPHA
-import org.lwjgl.opengl.GL11C.glBlendFunc
 
 
 data class Window(
