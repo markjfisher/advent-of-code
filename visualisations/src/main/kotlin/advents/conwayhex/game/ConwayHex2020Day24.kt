@@ -70,6 +70,8 @@ class ConwayHex2020Day24 : GameLogic {
     private val hexToGameItem = mutableMapOf<Hex, GameItem>()
     private val alive = mutableSetOf<Hex>()
     private val initialPoints = 600 // we have up to 597 initial points from the original game
+    private var createdCount = 0
+    private var destroyedCount = 0
 
     // keyboard timer handling
     private val keyPressedTimer = Timer()
@@ -339,6 +341,9 @@ class ConwayHex2020Day24 : GameLogic {
         val newAlive = runConway()
         val newOn = newAlive - alive
         val newOff = alive - newAlive
+        createdCount = newOn.count()
+        destroyedCount = newOff.count()
+
         alive.clear()
         alive.addAll(newAlive)
 
@@ -399,7 +404,9 @@ class ConwayHex2020Day24 : GameLogic {
             isPaused = isPaused,
             liveCount = alive.count(),
             flashMessage = flashMessage,
-            flashPercentage = flashPercentage
+            flashPercentage = flashPercentage,
+            createdCount = createdCount,
+            destroyedCount = destroyedCount
         )
         hud.render(window, hudData)
     }

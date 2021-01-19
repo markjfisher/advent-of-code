@@ -102,6 +102,10 @@ class Hud {
         // Live count
         nvgText(vg, 450f, window.height - 87f, String.format("Live: %d", data.liveCount))
 
+        nvgText(vg, 620f, window.height - 87f, String.format("On: %d", data.createdCount))
+        nvgText(vg, 750f, window.height - 87f, String.format("Off: %d", data.destroyedCount))
+
+
         // Render hour text
         NanoVG.nvgFontSize(vg, 40.0f)
         NanoVG.nvgFontFace(vg, FONT_NAME)
