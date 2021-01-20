@@ -1,16 +1,10 @@
 package net.fish.geometry.hex
 
-import net.fish.geometry.hex.DoubledCoord
-import net.fish.geometry.hex.FractionalHex
-import net.fish.geometry.hex.Hex
-import net.fish.geometry.hex.Layout
-import net.fish.geometry.hex.OffsetCoord
 import net.fish.geometry.hex.OffsetCoord.Companion.EVEN
 import net.fish.geometry.hex.OffsetCoord.Companion.ODD
-import net.fish.geometry.hex.Orientation
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
-import net.fish.geometry.hex.Point2D
+import net.fish.geometry.Point2D
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

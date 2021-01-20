@@ -1,5 +1,7 @@
 package net.fish.maths
 
+import org.joml.Vector3f
+
 inline fun <reified R> rotateMatrix(mat: Array<Array<R>>): Array<Array<R>> {
     // only allow nxn matrix
     check(mat.size == mat[0].size)
@@ -64,3 +66,8 @@ inline fun <reified R> flipMatrixByVertical(mat: Array<Array<R>>): Array<Array<R
 }
 
 inline fun <reified T> Pair<Int, Int>.createArray(initialValue: T) = Array(this.first) { Array(this.second) { initialValue } }
+
+fun normalFromPoints(p1: Vector3f, p2: Vector3f, p3: Vector3f): Vector3f {
+    // Blender does normal = (p1-p2)x(p2-p3)
+    return (p1.sub(p2, Vector3f()).cross(p2.sub(p3, Vector3f()))).normalize()
+}

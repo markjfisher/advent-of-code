@@ -20,8 +20,10 @@ import engine.MouseInput
 import engine.Timer
 import engine.Window
 import engine.graph.Camera
+import engine.graph.OBJLoader.loadMeshFromFile
 import engine.graph.Renderer
 import engine.item.GameItem
+import net.fish.geometry.knots.Knots
 import org.joml.Math.abs
 import org.joml.Math.max
 import org.joml.Matrix3f
@@ -44,7 +46,7 @@ import org.lwjgl.glfw.GLFW.GLFW_KEY_SEMICOLON
 import org.lwjgl.glfw.GLFW.GLFW_KEY_UP
 import org.lwjgl.glfw.GLFW.GLFW_KEY_W
 
-class Trefoil : GameLogic {
+class TrefoilGame : GameLogic {
     // Gfx helpers
     private val renderer = Renderer()
     private val hud = Hud()
@@ -70,7 +72,7 @@ class Trefoil : GameLogic {
     private val initialWorldCentre = Vector3f(0f, 0f, 0f)
     private val worldCentre = Vector3f(initialWorldCentre)
 
-    private val initialCameraPosition = Vector3f(0f, 2f, 2f)
+    private val initialCameraPosition = Vector3f(0f, 0f, 7f)
     private val initialCameraRotation = Quaternionf().lookAlong(worldCentre.sub(initialCameraPosition, Vector3f()), globalY).normalize()
     private val camera = Camera(Vector3f(initialCameraPosition), Quaternionf(initialCameraRotation))
 
@@ -84,7 +86,27 @@ class Trefoil : GameLogic {
     private val cameraDelta = Vector3f()
 
     override fun init(window: Window) {
-        // Load any meshes here...
+        val triangleMesh = loadMeshFromFile("/conwayhex/models/simple-arrow.obj")
+
+        // val knotData = Knots.torusKnot(2, 5, 0.4, 720)
+        val knotData = Knots.wikiTrefoilCoordinates(720)
+        knotData.forEach { data ->
+            val curvePoint = GameItem(triangleMesh)
+            curvePoint.setPosition(data.point)
+            val binormal = data.normal.cross(data.tangent, Vector3f())
+            val q = Quaternionf().setFromNormalized(Matrix3f(binormal, data.normal, data.tangent))
+            curvePoint.setRotation(q)
+
+            curvePoint.colour = Vector3f(abs(binormal.x) + 0.1f, abs(data.normal.y) + 0.1f, abs(data.tangent.z) + 0.1f)
+            curvePoint.scale = 0.05f
+            gameItems.add(curvePoint)
+        }
+
+        val triangleItem = GameItem(triangleMesh)
+        triangleItem.setPosition(Vector3f(worldCentre))
+        triangleItem.scale = 0.02f
+        gameItems.add(triangleItem)
+
 
         hud.init(window)
         renderer.init(window)
@@ -278,7 +300,7 @@ class Trefoil : GameLogic {
 
         @JvmStatic
         fun main(args: Array<String>) {
-            val logic = Trefoil()
+            val logic = TrefoilGame()
             val engine = GameEngine("Trefoil Render", 1200, 800, true, logic)
             engine.run()
         }

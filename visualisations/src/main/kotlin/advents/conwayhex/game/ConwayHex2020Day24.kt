@@ -34,6 +34,7 @@ import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.Layout
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
+import net.fish.geometry.hex.TorusMappedWrappingHexGrid
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.resourceLines
 import net.fish.y2020.Day24
@@ -74,7 +75,8 @@ class ConwayHex2020Day24 : GameLogic {
     private val gridWidth = 160
     private val gridHeight = 40
     private val gridLayout = Layout(FLAT)
-    private val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout, torusMinorRadius, torusMajorRadius)
+    private val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout)
+    private val torus = TorusMappedWrappingHexGrid(hexGrid, torusMinorRadius, torusMajorRadius)
 
     // Game state
     private var conwayStepDelay = 15
@@ -145,7 +147,7 @@ class ConwayHex2020Day24 : GameLogic {
         hexGrid.hexes().forEachIndexed { index, hex ->
             val isAlive = alive.contains(hex)
 
-            val newMesh = loadMesh(hexGrid.hexObj2(hex))
+            val newMesh = loadMesh(torus.toroidalHexObj(hex))
             newMesh.texture = if (isAlive) aliveTexture else emptyTexture
 
             val gameItem = GameItem(newMesh)
@@ -154,8 +156,6 @@ class ConwayHex2020Day24 : GameLogic {
             // which would make N mesh instead of NxM mesh
             gameItem.setPosition(Vector3f(0f, 0f, 0f))
             gameItem.scale = 1f
-            val q = Quaternionf().setFromNormalized(Matrix3f())
-            gameItem.setRotation(q)
 
             gameItems += gameItem
             hexToGameItem[hex] = gameItem
@@ -336,7 +336,7 @@ class ConwayHex2020Day24 : GameLogic {
 
             mouseInput.scrollDirection != 0 -> {
                 // move camera a percentage closer/further from world centre.
-                val newDistanceToWorldCentre = distanceToWorldCentre * if (mouseInput.scrollDirection < 0) 1.05f else 0.94f
+                val newDistanceToWorldCentre = distanceToWorldCentre * if (mouseInput.scrollDirection < 0) 1.015f else 0.985f
                 if (newDistanceToWorldCentre > 0.05f) {
                     distanceToWorldCentre = newDistanceToWorldCentre
                 }
