@@ -33,7 +33,6 @@ class Mesh(
     val indices: IntArray,
     var texture: Texture? = null,
     var colour: Vector3f = DEFAULT_COLOUR
-    // var updateTexture: Boolean = false
 ) {
     var vaoId = 0
         private set
@@ -49,13 +48,6 @@ class Mesh(
             glActiveTexture(GL_TEXTURE0)
             // Bind the texture
             glBindTexture(GL_TEXTURE_2D, it)
-
-            // private hack of texture coordinates - TODO: Come up with something better
-//            if (updateTexture) {
-//                updateTexture = false
-//                glBindBuffer(GL_ARRAY_BUFFER, vboIdList[1])
-//                glBufferSubData(GL_ARRAY_BUFFER, 0, textCoords)
-//            }
         }
 
         // Draw the mesh

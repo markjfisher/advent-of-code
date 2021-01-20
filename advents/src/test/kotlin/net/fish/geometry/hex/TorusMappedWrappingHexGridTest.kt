@@ -1,6 +1,7 @@
 package net.fish.geometry.hex
 
 import net.fish.geometry.Point3D
+import net.fish.geometry.hex.projection.TorusMappedWrappingHexGrid
 import net.fish.maths.normalFromPoints
 import org.assertj.core.api.Assertions.assertThat
 import org.joml.Math
@@ -25,7 +26,7 @@ internal class TorusMappedWrappingHexGridTest {
     @Test
     fun `torus coordinates are 7 points with centre as last coordinate`() {
         val hex1 = pointyGrid.hex(0, 0, 0)
-        val c1 = pointyTorus.toroidCoordinates(hex1)
+        val c1 = pointyTorus.coordinates(hex1)
         assertThat(c1).hasSize(7)
         println("c1 -----------------------------")
         c1.forEach { p ->
@@ -35,7 +36,7 @@ internal class TorusMappedWrappingHexGridTest {
         assertThat((c1[6] - Point3D(0.0, 0.0, -3.0)).length()).isLessThan(0.001)
 
         val hex2 = pointyGrid.hex(1, -2, 1)
-        val c2 = pointyTorus.toroidCoordinates(hex2)
+        val c2 = pointyTorus.coordinates(hex2)
         println("c2 -----------------------------")
         c2.forEach { p ->
             println(String.format("%.6f, %6f, %6f", p.x, p.y, p.z))
@@ -94,10 +95,10 @@ internal class TorusMappedWrappingHexGridTest {
         assertThat(abs(diff.y - pointyGrid.height())).isLessThan(0.001)
 
         // Convert to torus coordinates
-        val c1 = pointyTorus.toroidCoordinates(hex1)
-        val c2 = pointyTorus.toroidCoordinates(hex2)
-        val c3 = pointyTorus.toroidCoordinates(hex3)
-        val c4 = pointyTorus.toroidCoordinates(hex4)
+        val c1 = pointyTorus.coordinates(hex1)
+        val c2 = pointyTorus.coordinates(hex2)
+        val c3 = pointyTorus.coordinates(hex3)
+        val c4 = pointyTorus.coordinates(hex4)
 
         // check coordinates are same by taking length of their difference
         assertThat((c1[0] - c2[2]).length()).isLessThan(0.001)
@@ -120,10 +121,10 @@ internal class TorusMappedWrappingHexGridTest {
         val hex2 = flatGrid.hex(0, -3, 3)
         val hex3 = flatGrid.hex(7, -7, 0)
         val hex4 = flatGrid.hex(7, -4, -3)
-        val c1 = flatTorus.toroidCoordinates(hex1)
-        val c2 = flatTorus.toroidCoordinates(hex2)
-        val c3 = flatTorus.toroidCoordinates(hex3)
-        val c4 = flatTorus.toroidCoordinates(hex4)
+        val c1 = flatTorus.coordinates(hex1)
+        val c2 = flatTorus.coordinates(hex2)
+        val c3 = flatTorus.coordinates(hex3)
+        val c4 = flatTorus.coordinates(hex4)
 
         // check coordinates are same by taking length of their difference
         assertThat((c1[4] - c2[2]).length()).isLessThan(0.001)
@@ -138,30 +139,6 @@ internal class TorusMappedWrappingHexGridTest {
         assertThat((c3[2] - c4[4]).length()).isLessThan(0.001)
         assertThat((c3[1] - c4[5]).length()).isLessThan(0.001)
 
-    }
-
-    @Test
-    fun `getting pointy hex centres`() {
-        val grid = WrappingHexGrid(m = 2, n = 2, layout = pointyLayout)
-        val torus = TorusMappedWrappingHexGrid(grid, 1.0, 2.0)
-        val centres = torus.centres()
-        // freaky shape!
-        assertThat((centres[0] - Point3D(0.0, 0.0, -3.0)).length()).isLessThan(0.0001)
-        assertThat((centres[1] - Point3D(0.0, 0.0, 3.0)).length()).isLessThan(0.0001)
-        assertThat((centres[2] - Point3D(1.0, 0.0, 0.0)).length()).isLessThan(0.0001)
-        assertThat((centres[3] - Point3D(-1.0, 0.0, 0.0)).length()).isLessThan(0.0001)
-    }
-
-    @Test
-    fun `getting flat hex centres`() {
-        val grid = WrappingHexGrid(m = 2, n = 2, layout = flatLayout)
-        val torus = TorusMappedWrappingHexGrid(grid, 1.0, 2.0)
-        val centres = torus.centres()
-        // freaky shape!
-        assertThat((centres[0] - Point3D(0.0, 0.0, -3.0)).length()).isLessThan(0.0001)
-        assertThat((centres[1] - Point3D(0.0, 1.0, 2.0)).length()).isLessThan(0.0001)
-        assertThat((centres[2] - Point3D(0.0, 0.0, -1.0)).length()).isLessThan(0.0001)
-        assertThat((centres[3] - Point3D(0.0, -1.0, 2.0)).length()).isLessThan(0.0001)
     }
 
     @Test
@@ -188,7 +165,7 @@ internal class TorusMappedWrappingHexGridTest {
         val torus = TorusMappedWrappingHexGrid(grid, 1.0, 5.0)
 
         grid.hexes().forEachIndexed { i, hex ->
-            val obj = torus.toroidalHexObj(hex)
+            val obj = torus.hexToObj(hex)
             File(String.format("/home/markf/Documents/blender/h%04d.obj", i)).writeText(obj.joinToString("\n"))
         }
 

@@ -1,15 +1,5 @@
 package advents.conwayhex.game
 
-import engine.GameEngine
-import engine.GameLogic
-import engine.MouseInput
-import engine.Timer
-import engine.Window
-import engine.graph.Camera
-import engine.graph.OBJLoader.loadMesh
-import engine.graph.Renderer
-import engine.graph.Texture
-import engine.item.GameItem
 import commands.DecreaseSpeed
 import commands.IncreaseSpeed
 import commands.KeyCommand
@@ -25,6 +15,16 @@ import commands.ResetGame
 import commands.SingleKeyPressCommand
 import commands.SingleStep
 import commands.TogglePause
+import engine.GameEngine
+import engine.GameLogic
+import engine.MouseInput
+import engine.Timer
+import engine.Window
+import engine.graph.Camera
+import engine.graph.OBJLoader.loadMesh
+import engine.graph.Renderer
+import engine.graph.Texture
+import engine.item.GameItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -32,10 +32,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.Layout
-import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
-import net.fish.geometry.hex.TorusMappedWrappingHexGrid
 import net.fish.geometry.hex.WrappingHexGrid
+import net.fish.geometry.hex.projection.TorusMappedWrappingHexGrid
 import net.fish.resourceLines
 import net.fish.y2020.Day24
 import org.joml.Math.abs
@@ -74,7 +73,7 @@ class ConwayHex2020Day24 : GameLogic {
     private val torusMajorRadius = 0.8
     private val gridWidth = 160
     private val gridHeight = 40
-    private val gridLayout = Layout(FLAT)
+    private val gridLayout = Layout(POINTY)
     private val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout)
     private val torus = TorusMappedWrappingHexGrid(hexGrid, torusMinorRadius, torusMajorRadius)
 
@@ -147,7 +146,7 @@ class ConwayHex2020Day24 : GameLogic {
         hexGrid.hexes().forEachIndexed { index, hex ->
             val isAlive = alive.contains(hex)
 
-            val newMesh = loadMesh(torus.toroidalHexObj(hex))
+            val newMesh = loadMesh(torus.hexToObj(hex))
             newMesh.texture = if (isAlive) aliveTexture else emptyTexture
 
             val gameItem = GameItem(newMesh)

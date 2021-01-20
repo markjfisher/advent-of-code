@@ -20,9 +20,16 @@ import engine.MouseInput
 import engine.Timer
 import engine.Window
 import engine.graph.Camera
+import engine.graph.OBJLoader
 import engine.graph.OBJLoader.loadMeshFromFile
 import engine.graph.Renderer
+import engine.graph.Texture
 import engine.item.GameItem
+import net.fish.geometry.hex.Layout
+import net.fish.geometry.hex.Orientation
+import net.fish.geometry.hex.WrappingHexGrid
+import net.fish.geometry.hex.projection.TorusKnotMappedWrappingHexGrid
+import net.fish.geometry.hex.projection.TorusMappedWrappingHexGrid
 import net.fish.geometry.knots.Knots
 import org.joml.Math.abs
 import org.joml.Math.max
@@ -45,11 +52,17 @@ import org.lwjgl.glfw.GLFW.GLFW_KEY_S
 import org.lwjgl.glfw.GLFW.GLFW_KEY_SEMICOLON
 import org.lwjgl.glfw.GLFW.GLFW_KEY_UP
 import org.lwjgl.glfw.GLFW.GLFW_KEY_W
+import kotlin.math.PI
 
 class TrefoilGame : GameLogic {
     // Gfx helpers
     private val renderer = Renderer()
     private val hud = Hud()
+
+    // Grid and space
+    private val gridLayout = Layout(Orientation.ORIENTATION.POINTY)
+    private val hexGrid = WrappingHexGrid(500, 24, gridLayout)
+    private val knot = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.15)
 
     // Game state
     private var isPaused = true
@@ -64,15 +77,18 @@ class TrefoilGame : GameLogic {
     private var flashMessage: String = ""
 
     // Textures
+    lateinit var emptyTexture: Texture
 
     // make it read only by typing it as constant - ensures it's not changed
     private val globalY: Vector3fc = Vector3f(0f, 1f, 0f)
 
     // Camera and initial world positions and rotations
     private val initialWorldCentre = Vector3f(0f, 0f, 0f)
+    // private val initialWorldCentre = Vector3f(9.434E-1f, -2.849E-1f,  5.293E-1f)
     private val worldCentre = Vector3f(initialWorldCentre)
 
     private val initialCameraPosition = Vector3f(0f, 0f, 7f)
+    // private val initialCameraPosition = Vector3f(1.884E+0f, -2.336E-1f,  4.033E-1f)
     private val initialCameraRotation = Quaternionf().lookAlong(worldCentre.sub(initialCameraPosition, Vector3f()), globalY).normalize()
     private val camera = Camera(Vector3f(initialCameraPosition), Quaternionf(initialCameraRotation))
 
@@ -86,20 +102,31 @@ class TrefoilGame : GameLogic {
     private val cameraDelta = Vector3f()
 
     override fun init(window: Window) {
+        emptyTexture = Texture("visualisations/textures/stone3-wl-pointy.png")
         val triangleMesh = loadMeshFromFile("/conwayhex/models/simple-arrow.obj")
 
-        // val knotData = Knots.torusKnot(2, 5, 0.4, 720)
-        val knotData = Knots.wikiTrefoilCoordinates(720)
-        knotData.forEach { data ->
-            val curvePoint = GameItem(triangleMesh)
-            curvePoint.setPosition(data.point)
-            val binormal = data.normal.cross(data.tangent, Vector3f())
-            val q = Quaternionf().setFromNormalized(Matrix3f(binormal, data.normal, data.tangent))
-            curvePoint.setRotation(q)
+        // val knotData = Knots.torusKnot(3, 2, 1.8, 0.6, 1.0, 360 * 3)
+//        val knotData = Knots.wikiTrefoilCoordinates(360 * 5)
+//        knotData.forEach { data ->
+//            val curvePoint = GameItem(triangleMesh)
+//            curvePoint.setPosition(data.point)
+//            val binormal = data.normal.cross(data.tangent, Vector3f())
+//            val q = Quaternionf().setFromNormalized(Matrix3f(binormal, data.normal, data.tangent))
+//            curvePoint.setRotation(q)
+//
+//            curvePoint.colour = Vector3f(abs(binormal.x) + 0.1f, abs(data.normal.y) + 0.1f, abs(data.tangent.z) + 0.1f)
+//            curvePoint.scale = 0.05f
+//            gameItems.add(curvePoint)
+//    }
 
-            curvePoint.colour = Vector3f(abs(binormal.x) + 0.1f, abs(data.normal.y) + 0.1f, abs(data.tangent.z) + 0.1f)
-            curvePoint.scale = 0.05f
-            gameItems.add(curvePoint)
+        hexGrid.hexes().forEachIndexed { index, hex ->
+            val newMesh = OBJLoader.loadMesh(knot.hexToObj(hex))
+            newMesh.texture = emptyTexture
+            val gameItem = GameItem(newMesh)
+            gameItem.setPosition(Vector3f(0f, 0f, 0f))
+            gameItem.scale = 1f
+
+            gameItems += gameItem
         }
 
         val triangleItem = GameItem(triangleMesh)
