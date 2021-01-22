@@ -29,8 +29,6 @@ import net.fish.geometry.hex.Layout
 import net.fish.geometry.hex.Orientation
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.geometry.hex.projection.TorusKnotMappedWrappingHexGrid
-import net.fish.geometry.hex.projection.TorusMappedWrappingHexGrid
-import net.fish.geometry.knots.Knots
 import org.joml.Math.abs
 import org.joml.Math.max
 import org.joml.Matrix3f
@@ -52,7 +50,6 @@ import org.lwjgl.glfw.GLFW.GLFW_KEY_S
 import org.lwjgl.glfw.GLFW.GLFW_KEY_SEMICOLON
 import org.lwjgl.glfw.GLFW.GLFW_KEY_UP
 import org.lwjgl.glfw.GLFW.GLFW_KEY_W
-import kotlin.math.PI
 
 class TrefoilGame : GameLogic {
     // Gfx helpers
@@ -61,8 +58,8 @@ class TrefoilGame : GameLogic {
 
     // Grid and space
     private val gridLayout = Layout(Orientation.ORIENTATION.POINTY)
-    private val hexGrid = WrappingHexGrid(500, 24, gridLayout)
-    private val knot = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.15)
+    private val hexGrid = WrappingHexGrid(800, 16, gridLayout)
+    private val knot = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.25, scale = 5.0)
 
     // Game state
     private var isPaused = true

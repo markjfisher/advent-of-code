@@ -7,13 +7,13 @@ import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.maths.normalFromPoints
 import org.joml.Matrix3f
 import org.joml.Vector3f
+import java.io.OutputStream
 
 abstract class ProjectionMapper(open val hexGrid: WrappingHexGrid) {
     // return the coordinates of the hex corners on the torus described by the layout
     abstract fun coordinates(hex: Hex): List<Vector3f>
 
-    // This was needed before creating mesh objects for every hexagon individually. But the resultant hexagons did not fit together
-    fun hexAxes(): List<HexAxis> {
+    fun hexAxes(): Map<Hex, HexAxis> {
         return hexGrid.hexes().map { hex ->
             val cornersOnTorus = coordinates(hex)
             val centre = cornersOnTorus[6]
@@ -36,11 +36,11 @@ abstract class ProjectionMapper(open val hexGrid: WrappingHexGrid) {
             val unitX = xP.normalize()
             val unitY = yP.normalize()
             val unitZ = unitX.cross(unitY, Vector3f())
-            HexAxis(
+            hex to HexAxis(
                 location = centre,
                 axes = Matrix3f(unitX, unitY, unitZ)
             )
-        }
+        }.toMap()
     }
 
     // Create OBJ compatible output for the given hex using 6 faces, with texture coordinates
@@ -92,7 +92,8 @@ abstract class ProjectionMapper(open val hexGrid: WrappingHexGrid) {
             lines += String.format("vn %5f %5f %5f", normal.x, normal.y, normal.z)
         }
 
-        // faces are +1 compared to point number. make texture and point same
+        // faces are +1 compared to point number. make texture and point same.
+        // These are: Vertex Index / Texture Index / Normal Index (all 1 based)
         lines += "f 1/1/1 2/2/1 7/7/1"
         lines += "f 2/2/2 3/3/2 7/7/2"
         lines += "f 3/3/3 4/4/3 7/7/3"
@@ -103,4 +104,92 @@ abstract class ProjectionMapper(open val hexGrid: WrappingHexGrid) {
         return lines.toList()
     }
 
+    // create a full obj file for our entire grid for the given coordinate provider
+    fun gridToObj(os: OutputStream) {
+        val writer = os.bufferedWriter()
+        val allPointsMap = mutableMapOf<Int, Vector3f>()
+        var pointIndex = 1
+        val faces = mutableListOf<Face>()
+        val normals = mutableListOf<Vector3f>()
+        var faceIndex = 1
+        hexGrid.hexes().forEach { hex ->
+            // accumulate 7 unique points of the hex into a list, with their indexes in the global points map
+            val hexPointIndices = mutableListOf<Int>()
+            coordinates(hex).forEach { hexPoint ->
+                // we don't deal with duplicates here, blender can remove them in seconds. This was adding minutes to the output
+                val theIndex = pointIndex++
+                allPointsMap[theIndex] = hexPoint
+
+                hexPointIndices += theIndex
+            }
+            // we now have 7 points and their indexes into the global points map
+            // we can create 6 new faces for the hex
+            val newFaces = (0..5).map { i ->
+                createFace(hexPointIndices, i, (i + 1) % 6, 6, faceIndex)
+            }
+            faces.addAll(newFaces)
+            faceIndex++
+
+            // Create the normals from the points
+            val newNormals = (0..5).map { i ->
+                val p1 = allPointsMap[hexPointIndices[i]]!!
+                val p2 = allPointsMap[hexPointIndices[(i + 1) % 6]]!!
+                val p3 = allPointsMap[hexPointIndices[6]]!!
+                normalFromPoints(p1, p2, p3)
+            }
+            normals.addAll(newNormals)
+        }
+
+        val points = allPointsMap.toSortedMap().values.toList()
+
+        // Points
+        points.forEach { point ->
+            writer.write(String.format("v %7f %7f %7f", point.x, point.y, point.z))
+            writer.newLine()
+        }
+
+        // Textures are not used, but need to have same number as points
+        points.forEach { _ ->
+            writer.write("vt 0.0 0.0 0.0")
+            writer.newLine()
+        }
+
+        // Normals
+        normals.forEach { normal ->
+            writer.write(String.format("vn %5f %5f %5f", normal.x, normal.y, normal.z))
+            writer.newLine()
+        }
+
+        // Faces
+        faces.forEach { face ->
+            val line = String.format("f %d/%d/%d %d/%d/%d %d/%d/%d",
+                face.p1.textureIndex, face.p1.textureIndex, face.p1.normalIndex,
+                face.p2.textureIndex, face.p2.textureIndex, face.p2.normalIndex,
+                face.p3.textureIndex, face.p3.textureIndex, face.p3.normalIndex
+            )
+            writer.write(line)
+            writer.newLine()
+        }
+        writer.close()
+    }
+
+    private fun createFace(hexPointIndices: MutableList<Int>, i1: Int, i2: Int, i3: Int, fidx: Int): Face {
+        return Face(
+            p1 = FacePoint(hexPointIndices[i1], hexPointIndices[i1], fidx),
+            p2 = FacePoint(hexPointIndices[i2], hexPointIndices[i2], fidx),
+            p3 = FacePoint(hexPointIndices[i3], hexPointIndices[i3], fidx)
+        )
+    }
+
+    data class Face(
+        val p1: FacePoint,
+        val p2: FacePoint,
+        val p3: FacePoint
+    )
+
+    data class FacePoint(
+        val vertexIndex: Int,
+        val textureIndex: Int,
+        val normalIndex: Int
+    )
 }

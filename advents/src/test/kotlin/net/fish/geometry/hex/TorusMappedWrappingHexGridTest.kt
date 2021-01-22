@@ -1,6 +1,5 @@
 package net.fish.geometry.hex
 
-import net.fish.geometry.Point3D
 import net.fish.geometry.hex.projection.TorusMappedWrappingHexGrid
 import net.fish.maths.normalFromPoints
 import org.assertj.core.api.Assertions.assertThat
@@ -8,6 +7,7 @@ import org.joml.Math
 import org.joml.Matrix3f
 import org.joml.Quaternionf
 import org.joml.Vector3f
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.math.abs
@@ -33,7 +33,7 @@ internal class TorusMappedWrappingHexGridTest {
             println(String.format("%.6f, %6f, %6f", p.x, p.y, p.z))
         }
         // The centre point of 0,0,0 is at [-(r2+r1), 0, 0]
-        assertThat((c1[6] - Point3D(0.0, 0.0, -3.0)).length()).isLessThan(0.001)
+        assertThat((c1[6].sub(Vector3f(0f, 0f, -3f))).length()).isLessThan(0.001f)
 
         val hex2 = pointyGrid.hex(1, -2, 1)
         val c2 = pointyTorus.coordinates(hex2)
@@ -43,7 +43,7 @@ internal class TorusMappedWrappingHexGridTest {
         }
 
         // The opposite of centre point is at [-(r2-r1), 0, 0]
-        assertThat((c2[6] - Point3D(0.0, 0.0, -1.0)).length()).isLessThan(0.001)
+        assertThat((c2[6].sub(Vector3f(0f, 0f, -1f))).length()).isLessThan(0.001f)
     }
 
     @Test
@@ -101,17 +101,16 @@ internal class TorusMappedWrappingHexGridTest {
         val c4 = pointyTorus.coordinates(hex4)
 
         // check coordinates are same by taking length of their difference
-        assertThat((c1[0] - c2[2]).length()).isLessThan(0.001)
-        assertThat((c1[5] - c2[3]).length()).isLessThan(0.001)
-        assertThat((c1[4] - c4[0]).length()).isLessThan(0.001)
-        assertThat((c1[3] - c4[1]).length()).isLessThan(0.001)
-        assertThat((c1[5] - c3[1]).length()).isLessThan(0.001)
-        assertThat((c1[4] - c3[2]).length()).isLessThan(0.001)
-
-        assertThat((c2[4] - c3[0]).length()).isLessThan(0.001)
-        assertThat((c2[3] - c3[1]).length()).isLessThan(0.001)
-        assertThat((c3[3] - c4[5]).length()).isLessThan(0.001)
-        assertThat((c3[2] - c4[0]).length()).isLessThan(0.001)
+        assertThat((c1[0].sub(c2[2], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c1[5].sub(c2[3], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c1[4].sub(c4[0], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c1[3].sub(c4[1], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c1[5].sub(c3[1], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c1[4].sub(c3[2], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c2[4].sub(c3[0], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c2[3].sub(c3[1], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c3[3].sub(c4[5], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c3[2].sub(c4[0], Vector3f())).length()).isLessThan(0.001f)
 
     }
 
@@ -127,17 +126,16 @@ internal class TorusMappedWrappingHexGridTest {
         val c4 = flatTorus.coordinates(hex4)
 
         // check coordinates are same by taking length of their difference
-        assertThat((c1[4] - c2[2]).length()).isLessThan(0.001)
-        assertThat((c1[5] - c2[1]).length()).isLessThan(0.001)
-        assertThat((c1[3] - c4[5]).length()).isLessThan(0.001)
-        assertThat((c1[2] - c4[0]).length()).isLessThan(0.001)
-        assertThat((c1[4] - c3[0]).length()).isLessThan(0.001)
-        assertThat((c1[3] - c3[1]).length()).isLessThan(0.001)
-
-        assertThat((c2[3] - c3[5]).length()).isLessThan(0.001)
-        assertThat((c2[2] - c3[0]).length()).isLessThan(0.001)
-        assertThat((c3[2] - c4[4]).length()).isLessThan(0.001)
-        assertThat((c3[1] - c4[5]).length()).isLessThan(0.001)
+        assertThat((c1[4].sub(c2[2], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c1[5].sub(c2[1], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c1[3].sub(c4[5], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c1[2].sub(c4[0], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c1[4].sub(c3[0], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c1[3].sub(c3[1], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c2[3].sub(c3[5], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c2[2].sub(c3[0], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c3[2].sub(c4[4], Vector3f())).length()).isLessThan(0.001f)
+        assertThat((c3[1].sub(c4[5], Vector3f())).length()).isLessThan(0.001f)
 
     }
 
@@ -159,6 +157,7 @@ internal class TorusMappedWrappingHexGridTest {
         assertHasNormal(Vector3f(0f, 1f, 0f), normalFromPoints(p5, p6, p3))
     }
 
+    @Disabled("doesn't test, just outputs")
     @Test
     fun `can create obj from hex`() {
         val grid = WrappingHexGrid(m = 12, n = 6, layout = pointyLayout)
@@ -190,7 +189,7 @@ internal class TorusMappedWrappingHexGridTest {
     fun `getting axes of flat hexes`() {
         val grid = WrappingHexGrid(m = 4, n = 4, layout = flatLayout)
         val torus = TorusMappedWrappingHexGrid(grid, 1.0, 2.0)
-        val axes = torus.hexAxes()
+        val axes = torus.hexAxes().values.toList()
 
 /*
         grid.hexes().forEachIndexed { i, hex ->
@@ -239,7 +238,7 @@ internal class TorusMappedWrappingHexGridTest {
     fun `getting axes of pointy hexes`() {
         val grid = WrappingHexGrid(m = 4, n = 4, layout = pointyLayout)
         val torus = TorusMappedWrappingHexGrid(grid, 1.0, 2.0)
-        val axes = torus.hexAxes()
+        val axes = torus.hexAxes().values.toList()
 
         checkHexAxes(axes[0], Vector3f(0.0f, 0.0f, -3.0f), Matrix3f(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f))
         checkHexAxes(axes[1], Vector3f(3.0f, 0.0f, 0.0f), Matrix3f(0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f))

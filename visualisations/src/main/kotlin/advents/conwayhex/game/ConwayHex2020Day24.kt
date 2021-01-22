@@ -31,10 +31,11 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.fish.geometry.hex.Hex
+import net.fish.geometry.hex.HexAxis
 import net.fish.geometry.hex.Layout
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
-import net.fish.geometry.hex.projection.TorusMappedWrappingHexGrid
+import net.fish.geometry.hex.projection.TorusKnotMappedWrappingHexGrid
 import net.fish.resourceLines
 import net.fish.y2020.Day24
 import org.joml.Math.abs
@@ -71,14 +72,28 @@ class ConwayHex2020Day24 : GameLogic {
     // Hex grid config
     private val torusMinorRadius = 0.25
     private val torusMajorRadius = 0.8
-    private val gridWidth = 160
-    private val gridHeight = 40
+//    private val gridWidth = 160
+//    private val gridHeight = 40
+//    private val gridLayout = Layout(POINTY)
+//    private val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout)
+//    private val torus = TorusMappedWrappingHexGrid(hexGrid, torusMinorRadius, torusMajorRadius)
+    private val gridWidth = 800
+    private val gridHeight = 16
     private val gridLayout = Layout(POINTY)
     private val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout)
-    private val torus = TorusMappedWrappingHexGrid(hexGrid, torusMinorRadius, torusMajorRadius)
+
+    // private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 5, r = 0.05)
+    // p/q settings: private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 5, r = 0.05)
+    // 4d settings: private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.05)
+    // 8c settings: private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.05)
+    private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.25, scale = 5.0)
+    // wiki tri settings: private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.15)
+    // private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.15)
+    private lateinit var hexAxes: Map<Hex, HexAxis>
+
 
     // Game state
-    private var conwayStepDelay = 15
+    private var conwayStepDelay = 1
     private var currentStepDelay = 0
     private var conwayIteration = 0
     private var isPaused = true
@@ -89,9 +104,10 @@ class ConwayHex2020Day24 : GameLogic {
     private var createdCount = 0
     private var destroyedCount = 0
 
-    // keyboard timer handling
+    // keyboard handling
     private val keyPressedTimer = Timer()
     private var lastPressedAt = 0.0
+    private var turboMove = false
 
     // text flashing
     private var flashPercentage: Int = 0
@@ -110,7 +126,8 @@ class ConwayHex2020Day24 : GameLogic {
     // private val initialWorldCentre = Vector3f(0.08395f, 1.296f, -1.223f)
     private val worldCentre = Vector3f(initialWorldCentre)
 
-    private val initialCameraPosition = Vector3f(3.463E-2f,  1.245E+0f, -1.464E+0f)
+    // private val initialCameraPosition = Vector3f(3.463E-2f,  1.245E+0f, -1.464E+0f)
+    private val initialCameraPosition = Vector3f(0f,  0f, 8f)
     private val initialCameraRotation = Quaternionf().lookAlong(worldCentre.sub(initialCameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize()//.conjugate()
     private val camera = Camera(Vector3f(initialCameraPosition), Quaternionf(initialCameraRotation))
 
@@ -123,7 +140,7 @@ class ConwayHex2020Day24 : GameLogic {
     val newCameraVector = Vector3f()
     val cameraDelta = Vector3f()
 
-    private fun readInitialPosition() {
+    private fun readInitialPosition(): Set<Hex> {
         val doubledCoords = Day24.walk(data).take(initialPoints)
         val hexes = doubledCoords.map { (col, row) ->
             val qc = col + row / 2 + row % 2
@@ -131,23 +148,23 @@ class ConwayHex2020Day24 : GameLogic {
             val sc = 0 - qc - rc
             Hex(qc, rc, sc, hexGrid)
         }
-        alive.addAll(hexes.map { hexGrid.constrain(it) })
+        return hexes.map { hexGrid.constrain(it) }.toSet()
     }
 
     override fun init(window: Window) {
-        readInitialPosition()
-
-        aliveTexture = Texture("visualisations/textures/stone3-b.png")
+        // aliveTexture = Texture("visualisations/textures/stone3-b.png")
+        aliveTexture = Texture("visualisations/textures/new-white-pointy.png")
+        // aliveTexture = Texture("visualisations/textures/jc-head.png")
         emptyTexture = when (hexGrid.layout.orientation) {
             POINTY -> Texture("visualisations/textures/stone3-wl-pointy.png")
             else -> Texture("visualisations/textures/stone3-wl-flat.png")
         }
 
+        hexAxes = torus.hexAxes()
         hexGrid.hexes().forEachIndexed { index, hex ->
-            val isAlive = alive.contains(hex)
-
             val newMesh = loadMesh(torus.hexToObj(hex))
-            newMesh.texture = if (isAlive) aliveTexture else emptyTexture
+            val hexColour = hexToColour(hex)
+            newMesh.colour = hexColour
 
             val gameItem = GameItem(newMesh)
             // items are relative to world coords already in both position, scale and have axes same as world coords
@@ -165,7 +182,17 @@ class ConwayHex2020Day24 : GameLogic {
         keyPressedTimer.init()
     }
 
+    private fun hexToColour(hex: Hex): Vector3f {
+        val hexAxis = hexAxes[hex]!!
+        return Vector3f(
+            hexAxis.axes.m00 * 0.7f + 0.05f,
+            hexAxis.axes.m11 * 0.7f + 0.05f,
+            hexAxis.axes.m22 * 0.7f + 0.05f
+        )
+    }
+
     override fun input(window: Window, mouseInput: MouseInput) {
+        turboMove = window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)
         when {
             window.isKeyPressed(GLFW_KEY_W) -> changeState(MoveForward)
             window.isKeyPressed(GLFW_KEY_S) -> changeState(MoveBackward)
@@ -184,42 +211,42 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     private fun moveUp() {
-        camera.rotation.positiveY(cameraY).mul(CAMERA_POS_STEP)
+        camera.rotation.positiveY(cameraY).mul(CAMERA_POS_STEP * if(turboMove) 5f else 1f)
         camera.position.add(cameraY, newCameraVector)
         worldCentre.add(cameraY)
         camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
     }
 
     private fun moveDown() {
-        camera.rotation.positiveY(cameraY).mul(CAMERA_POS_STEP)
+        camera.rotation.positiveY(cameraY).mul(CAMERA_POS_STEP * if(turboMove) 5f else 1f)
         camera.position.sub(cameraY, newCameraVector)
         worldCentre.sub(cameraY)
         camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
     }
 
     private fun moveRight() {
-        camera.rotation.positiveX(cameraX).mul(CAMERA_POS_STEP)
+        camera.rotation.positiveX(cameraX).mul(CAMERA_POS_STEP * if(turboMove) 5f else 1f)
         camera.position.add(cameraX, newCameraVector)
         worldCentre.add(cameraX)
         camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
     }
 
     private fun moveLeft() {
-        camera.rotation.positiveX(cameraX).mul(CAMERA_POS_STEP)
+        camera.rotation.positiveX(cameraX).mul(CAMERA_POS_STEP * if(turboMove) 5f else 1f)
         camera.position.sub(cameraX, newCameraVector)
         worldCentre.sub(cameraX)
         camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
     }
 
     private fun moveBackward() {
-        camera.rotation.positiveZ(cameraZ).mul(CAMERA_POS_STEP)
+        camera.rotation.positiveZ(cameraZ).mul(CAMERA_POS_STEP * if(turboMove) 5f else 1f)
         camera.position.add(cameraZ, newCameraVector)
         worldCentre.add(cameraZ)
         camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
     }
 
     private fun moveForward() {
-        camera.rotation.positiveZ(cameraZ).mul(CAMERA_POS_STEP)
+        camera.rotation.positiveZ(cameraZ).mul(CAMERA_POS_STEP * if(turboMove) 5f else 1f)
         camera.position.sub(cameraZ, newCameraVector)
         worldCentre.sub(cameraZ)
         camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
@@ -234,11 +261,10 @@ class ConwayHex2020Day24 : GameLogic {
 
     private fun resetGame() {
         alive.clear()
-        readInitialPosition()
         conwayIteration = 0
-        hexGrid.hexes().forEach { hex -> hexToGameItem[hex]!!.mesh.texture = emptyTexture }
-        alive.forEach { hex ->
-            hexToGameItem[hex]!!.mesh.texture = aliveTexture
+        hexGrid.hexes().forEach {
+            hexToGameItem[it]!!.mesh.colour = hexToColour(it)
+            hexToGameItem[it]!!.mesh.texture = null
         }
     }
 
@@ -286,7 +312,7 @@ class ConwayHex2020Day24 : GameLogic {
                 performStep()
             }
         }
-        flashPercentage = max(flashPercentage - 5, 0)
+        flashPercentage = max(flashPercentage - 7, 0)
         if (flashPercentage == 0) flashMessage = ""
 
         when {
@@ -335,8 +361,10 @@ class ConwayHex2020Day24 : GameLogic {
 
             mouseInput.scrollDirection != 0 -> {
                 // move camera a percentage closer/further from world centre.
-                val newDistanceToWorldCentre = distanceToWorldCentre * if (mouseInput.scrollDirection < 0) 1.015f else 0.985f
-                if (newDistanceToWorldCentre > 0.05f) {
+                val percentageChange = if (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) 0.10f else 0.02f
+
+                val newDistanceToWorldCentre = distanceToWorldCentre * if (mouseInput.scrollDirection < 0) (1f + percentageChange) else (1f - percentageChange)
+                if (newDistanceToWorldCentre > 0.04f) {
                     distanceToWorldCentre = newDistanceToWorldCentre
                 }
 
@@ -363,16 +391,20 @@ class ConwayHex2020Day24 : GameLogic {
 
         newOn.forEach { hex ->
             hexToGameItem[hex]!!.mesh.texture = aliveTexture
+            // hexToGameItem[hex]!!.mesh.colour = Vector3f(1f, 1f, 1f)
         }
 
         newOff.forEach { hex ->
-            hexToGameItem[hex]!!.mesh.texture = emptyTexture
+            hexToGameItem[hex]!!.mesh.texture = null
+            hexToGameItem[hex]!!.mesh.colour = hexToColour(hex)
         }
     }
 
     private fun runConway(): Set<Hex> {
         conwayIteration++
-        if (alive.size == 0) return emptySet()
+        if (alive.size == 0) {
+            alive.addAll(readInitialPosition())
+        }
         val allTouchingHexes = mutableSetOf<Hex>()
         alive.forEach { hex ->
             allTouchingHexes.addAll(hex.neighbours())

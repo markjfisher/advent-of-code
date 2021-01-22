@@ -1,6 +1,5 @@
 package net.fish.geometry.hex.projection
 
-import net.fish.geometry.Point3D
 import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.geometry.knots.Knots
@@ -18,10 +17,14 @@ data class TorusKnotMappedWrappingHexGrid(
     val q: Int,
     val a: Double = 1.0,
     val b: Double = 0.5,
-    val r: Double = 0.2
+    val r: Double = 0.2,
+    val scale: Double = 1.0
 ): ProjectionMapper(hexGrid) {
-    // private val knotCoordinates = Knots.torusKnot(p, q, a, b, 1.0, hexGrid.m * 2)
-    private val knotCoordinates = Knots.wikiTrefoilCoordinates(hexGrid.m * 2)
+    private val knotCoordinates = Knots.torusKnot(p, q, a, b, scale, hexGrid.m * 2)
+    // private val knotCoordinates = Knots.wikiTrefoilCoordinates(hexGrid.m * 2)
+    // private val knotCoordinates = Knots.decoratedKnot4d(hexGrid.m * 2)
+    // private val knotCoordinates = Knots.decoratedKnot7a(hexGrid.m * 2)
+    // private val knotCoordinates = Knots.decoratedKnot13c(hexGrid.m * 2)
     private val hexCentres = mutableMapOf<Hex, Vector3f>()
 
     init {

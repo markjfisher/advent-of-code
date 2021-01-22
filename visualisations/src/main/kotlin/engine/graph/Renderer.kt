@@ -81,7 +81,7 @@ class Renderer {
             val mesh = gameItem.mesh
             val modelViewMatrix = transformation.buildModelViewMatrix(gameItem, viewMatrix)
             sceneShaderProgram.setUniform("modelViewMatrix", modelViewMatrix)
-            sceneShaderProgram.setUniform("colour", gameItem.colour)
+            sceneShaderProgram.setUniform("colour", mesh.colour)
             sceneShaderProgram.setUniform("useColour", if (mesh.isTextured()) 0 else 1)
             gameItem.mesh.render()
         }
