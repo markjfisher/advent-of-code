@@ -31,11 +31,14 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.fish.geometry.hex.Hex
-import net.fish.geometry.hex.HexAxis
 import net.fish.geometry.hex.Layout
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
-import net.fish.geometry.hex.projection.TorusKnotMappedWrappingHexGrid
+import net.fish.geometry.hex.projection.PathMappedWrappingHexGrid
+import net.fish.geometry.hex.projection.TorusMappedWrappingHexGrid
+import net.fish.geometry.paths.DecoratedTorusKnotPathCreator
+import net.fish.geometry.paths.TorusKnotPathCreator
+import net.fish.geometry.paths.TrefoilPathCreator
 import net.fish.resourceLines
 import net.fish.y2020.Day24
 import org.joml.Math.abs
@@ -69,27 +72,41 @@ class ConwayHex2020Day24 : GameLogic {
     // Input from the original puzzle!
     private val data = resourceLines(2020, 24)
 
-    // Hex grid config
-    private val torusMinorRadius = 0.25
-    private val torusMajorRadius = 0.8
-//    private val gridWidth = 160
-//    private val gridHeight = 40
-//    private val gridLayout = Layout(POINTY)
-//    private val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout)
-//    private val torus = TorusMappedWrappingHexGrid(hexGrid, torusMinorRadius, torusMajorRadius)
-    private val gridWidth = 800
-    private val gridHeight = 16
-    private val gridLayout = Layout(POINTY)
-    private val hexGrid = WrappingHexGrid(gridWidth, gridHeight, gridLayout)
+//    // Torus
+//    private val surface = TorusMappedWrappingHexGrid(
+//        hexGrid = WrappingHexGrid(m = 160, n = 40, layout = Layout(POINTY)),
+//        r1 = 1.5,
+//        r2 = 8.0
+//    )
 
-    // private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 5, r = 0.05)
-    // p/q settings: private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 5, r = 0.05)
-    // 4d settings: private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.05)
-    // 8c settings: private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.05)
-    private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.25, scale = 5.0)
-    // wiki tri settings: private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.15)
-    // private val torus = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.15)
-    private lateinit var hexAxes: Map<Hex, HexAxis>
+//     // trefoil:
+    private val surface = PathMappedWrappingHexGrid(
+        hexGrid = WrappingHexGrid(600, 26, Layout(POINTY)),
+        pathCreator = TrefoilPathCreator(scale = 3.0, segments = 1200),
+        r = 0.6
+    )
+
+//    // TorusKnot
+//    private val surface = PathMappedWrappingHexGrid(
+//        hexGrid = WrappingHexGrid(900, 16, Layout(POINTY)),
+//        pathCreator = TorusKnotPathCreator(p = 3, q = 7, scale = 5.0, segments = 1800),
+//        r = 0.25
+//    )
+
+//    // Dense TorusKnot
+//    private val surface = PathMappedWrappingHexGrid(
+//        hexGrid = WrappingHexGrid(1300, 12, Layout(POINTY)),
+//        pathCreator = TorusKnotPathCreator(p = 11, q = 17, b = 0.2, scale = 5.0, segments = 2600),
+//        r = 0.20
+//    )
+
+    // Decorated Torus Knot
+//    private val surface = PathMappedWrappingHexGrid(
+//        hexGrid = WrappingHexGrid(900, 16, Layout(POINTY)),
+//        // Valid patterns: 4b, 7a, 7b, 10b, 11c
+//        pathCreator = DecoratedTorusKnotPathCreator(pattern = "11c", scale = 5.0, segments = 1800),
+//        r = 0.25
+//    )
 
 
     // Game state
@@ -114,7 +131,6 @@ class ConwayHex2020Day24 : GameLogic {
     private var flashMessage: String = ""
 
     // Textures
-    lateinit var emptyTexture: Texture
     lateinit var aliveTexture: Texture
 
     // make it read only by typing it as constant - ensures it's not changed
@@ -127,7 +143,7 @@ class ConwayHex2020Day24 : GameLogic {
     private val worldCentre = Vector3f(initialWorldCentre)
 
     // private val initialCameraPosition = Vector3f(3.463E-2f,  1.245E+0f, -1.464E+0f)
-    private val initialCameraPosition = Vector3f(0f,  0f, 8f)
+    private val initialCameraPosition = Vector3f(0f,  0f, 16f)
     private val initialCameraRotation = Quaternionf().lookAlong(worldCentre.sub(initialCameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize()//.conjugate()
     private val camera = Camera(Vector3f(initialCameraPosition), Quaternionf(initialCameraRotation))
 
@@ -146,23 +162,16 @@ class ConwayHex2020Day24 : GameLogic {
             val qc = col + row / 2 + row % 2
             val rc = -row
             val sc = 0 - qc - rc
-            Hex(qc, rc, sc, hexGrid)
+            Hex(qc, rc, sc, surface.hexGrid)
         }
-        return hexes.map { hexGrid.constrain(it) }.toSet()
+        return hexes.map { surface.hexGrid.constrain(it) }.toSet()
     }
 
     override fun init(window: Window) {
-        // aliveTexture = Texture("visualisations/textures/stone3-b.png")
         aliveTexture = Texture("visualisations/textures/new-white-pointy.png")
-        // aliveTexture = Texture("visualisations/textures/jc-head.png")
-        emptyTexture = when (hexGrid.layout.orientation) {
-            POINTY -> Texture("visualisations/textures/stone3-wl-pointy.png")
-            else -> Texture("visualisations/textures/stone3-wl-flat.png")
-        }
 
-        hexAxes = torus.hexAxes()
-        hexGrid.hexes().forEachIndexed { index, hex ->
-            val newMesh = loadMesh(torus.hexToObj(hex))
+        surface.hexGrid.hexes().forEachIndexed { _, hex ->
+            val newMesh = loadMesh(surface.hexToObj(hex))
             val hexColour = hexToColour(hex)
             newMesh.colour = hexColour
 
@@ -183,11 +192,11 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     private fun hexToColour(hex: Hex): Vector3f {
-        val hexAxis = hexAxes[hex]!!
+        val hexAxis = surface.hexAxis(hex)
         return Vector3f(
-            hexAxis.axes.m00 * 0.7f + 0.05f,
-            hexAxis.axes.m11 * 0.7f + 0.05f,
-            hexAxis.axes.m22 * 0.7f + 0.05f
+            hexAxis.axes.m00 * 0.65f + 0.1f,
+            hexAxis.axes.m11 * 0.65f + 0.1f,
+            hexAxis.axes.m22 * 0.65f + 0.1f
         )
     }
 
@@ -262,7 +271,7 @@ class ConwayHex2020Day24 : GameLogic {
     private fun resetGame() {
         alive.clear()
         conwayIteration = 0
-        hexGrid.hexes().forEach {
+        surface.hexGrid.hexes().forEach {
             hexToGameItem[it]!!.mesh.colour = hexToColour(it)
             hexToGameItem[it]!!.mesh.texture = null
         }

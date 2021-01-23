@@ -11,7 +11,6 @@ import org.lwjgl.opengl.GL11C.glPixelStorei
 import org.lwjgl.opengl.GL11C.glTexImage2D
 import org.lwjgl.opengl.GL30C.glGenerateMipmap
 import org.lwjgl.stb.STBImage
-import org.lwjgl.system.MemoryStack
 import java.lang.Exception
 import java.nio.ByteBuffer
 
@@ -28,20 +27,17 @@ class Texture(val id: Int) {
 
     companion object {
         private fun loadTexture(fileName: String): Int {
-            var width: Int
-            var height: Int
-            var buf: ByteBuffer
+            val width: Int
+            val height: Int
+            val buf: ByteBuffer
 
-            MemoryStack.stackPush().use { stack ->
-                val w = stack.mallocInt(1)
-                val h = stack.mallocInt(1)
-                val channels = stack.mallocInt(1)
-                buf = STBImage.stbi_load(fileName, w, h, channels, 4)
-                    ?: throw Exception("Image file [" + fileName + "] not loaded: " + STBImage.stbi_failure_reason())
+            val w = IntArray(1)
+            val h = IntArray(1)
+            buf = STBImage.stbi_load(fileName, w, h, IntArray(1), 4)
+                ?: throw Exception("Image file [" + fileName + "] not loaded: " + STBImage.stbi_failure_reason())
 
-                width = w.get()
-                height = h.get()
-            }
+            width = w[0]
+            height = h[0]
 
             // Create a new OpenGL texture
             val textureId = glGenTextures()

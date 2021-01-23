@@ -9,38 +9,43 @@ import org.joml.Matrix3f
 import org.joml.Vector3f
 import java.io.OutputStream
 
-abstract class ProjectionMapper(open val hexGrid: WrappingHexGrid) {
+abstract class SurfaceMapper(open val hexGrid: WrappingHexGrid) {
     // return the coordinates of the hex corners on the torus described by the layout
     abstract fun coordinates(hex: Hex): List<Vector3f>
 
+    // Returns a map of all hexes in the grid to HexAxis (which contain their location and Unit axes for x/y/z in matrix format)
     fun hexAxes(): Map<Hex, HexAxis> {
         return hexGrid.hexes().map { hex ->
-            val cornersOnTorus = coordinates(hex)
-            val centre = cornersOnTorus[6]
-            val (xP, yP) = when(hexGrid.layout.orientation) {
-                Orientation.ORIENTATION.POINTY -> {
-                    val midpoint01 = cornersOnTorus[0].add(cornersOnTorus[1], Vector3f()).mul(0.5f)
-                    val midpoint34 = cornersOnTorus[3].add(cornersOnTorus[4], Vector3f()).mul(0.5f)
-                    val xDir = midpoint01.sub(midpoint34)
-                    val yDir = cornersOnTorus[2].sub(cornersOnTorus[5])
-                    Pair(xDir, yDir)
-                }
-                Orientation.ORIENTATION.FLAT -> {
-                    val xDir = cornersOnTorus[0].sub(cornersOnTorus[3], Vector3f())
-                    val midpoint45 = cornersOnTorus[4].add(cornersOnTorus[5], Vector3f()).mul(0.5f)
-                    val midpoint21 = cornersOnTorus[2].add(cornersOnTorus[1], Vector3f()).mul(0.5f)
-                    val yDir = midpoint21.sub(midpoint45)
-                    Pair(xDir, yDir)
-                }
-            }
-            val unitX = xP.normalize()
-            val unitY = yP.normalize()
-            val unitZ = unitX.cross(unitY, Vector3f())
-            hex to HexAxis(
-                location = centre,
-                axes = Matrix3f(unitX, unitY, unitZ)
-            )
+            hex to hexAxis(hex)
         }.toMap()
+    }
+
+    fun hexAxis(hex: Hex): HexAxis {
+        val cornersOnTorus = coordinates(hex)
+        val centre = cornersOnTorus[6]
+        val (xP, yP) = when (hexGrid.layout.orientation) {
+            Orientation.ORIENTATION.POINTY -> {
+                val midpoint01 = cornersOnTorus[0].add(cornersOnTorus[1], Vector3f()).mul(0.5f)
+                val midpoint34 = cornersOnTorus[3].add(cornersOnTorus[4], Vector3f()).mul(0.5f)
+                val xDir = midpoint01.sub(midpoint34)
+                val yDir = cornersOnTorus[2].sub(cornersOnTorus[5])
+                Pair(xDir, yDir)
+            }
+            Orientation.ORIENTATION.FLAT -> {
+                val xDir = cornersOnTorus[0].sub(cornersOnTorus[3], Vector3f())
+                val midpoint45 = cornersOnTorus[4].add(cornersOnTorus[5], Vector3f()).mul(0.5f)
+                val midpoint21 = cornersOnTorus[2].add(cornersOnTorus[1], Vector3f()).mul(0.5f)
+                val yDir = midpoint21.sub(midpoint45)
+                Pair(xDir, yDir)
+            }
+        }
+        val unitX = xP.normalize()
+        val unitY = yP.normalize()
+        val unitZ = unitX.cross(unitY, Vector3f())
+        return HexAxis(
+            location = centre,
+            axes = Matrix3f(unitX, unitY, unitZ)
+        )
     }
 
     // Create OBJ compatible output for the given hex using 6 faces, with texture coordinates

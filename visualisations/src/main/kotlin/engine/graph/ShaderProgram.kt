@@ -1,6 +1,7 @@
 package engine.graph
 
 import org.joml.Matrix4f
+import org.joml.Vector3f
 import org.lwjgl.opengl.GL20C.GL_COMPILE_STATUS
 import org.lwjgl.opengl.GL20C.GL_FRAGMENT_SHADER
 import org.lwjgl.opengl.GL20C.GL_LINK_STATUS
@@ -20,13 +21,10 @@ import org.lwjgl.opengl.GL20C.glGetUniformLocation
 import org.lwjgl.opengl.GL20C.glLinkProgram
 import org.lwjgl.opengl.GL20C.glShaderSource
 import org.lwjgl.opengl.GL20C.glUniform1i
+import org.lwjgl.opengl.GL20C.glUniform3f
 import org.lwjgl.opengl.GL20C.glUniformMatrix4fv
 import org.lwjgl.opengl.GL20C.glUseProgram
 import org.lwjgl.opengl.GL20C.glValidateProgram
-import org.lwjgl.system.MemoryStack
-import org.joml.Vector3f
-import org.lwjgl.opengl.GL20C.glUniform3f
-
 
 class ShaderProgram {
     private var programId: Int = 0
@@ -57,9 +55,7 @@ class ShaderProgram {
 
     fun setUniform(uniformName: String?, value: Matrix4f) {
         // Dump the matrix into a float buffer
-        MemoryStack.stackPush().use { stack ->
-            uniforms[uniformName]?.let { glUniformMatrix4fv(it, false, value[stack.mallocFloat(16)]) }
-        }
+        uniforms[uniformName]?.let { glUniformMatrix4fv(it, false, value[FloatArray(16)]) }
     }
 
     fun setUniform(uniformName: String, value: Int) {

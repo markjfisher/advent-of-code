@@ -4,7 +4,6 @@ import net.fish.geometry.hex.OffsetCoord.Companion.EVEN
 import net.fish.geometry.hex.OffsetCoord.Companion.ODD
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
-import net.fish.geometry.Point2D
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

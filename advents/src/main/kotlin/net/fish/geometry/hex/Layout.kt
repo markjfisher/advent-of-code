@@ -1,6 +1,5 @@
 package net.fish.geometry.hex
 
-import net.fish.geometry.Point2D
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import kotlin.math.cos
 import kotlin.math.sin
@@ -39,4 +38,17 @@ data class Layout(
         return corners
     }
 
+}
+
+data class Point2D(
+    val x: Double,
+    val y: Double
+) {
+    operator fun plus(other: Point2D) = add(other)
+    operator fun minus(other: Point2D) = subtract(other)
+    operator fun times(k: Double) = scale(k)
+
+    fun add(other: Point2D) = Point2D(x + other.x, y + other.y)
+    fun subtract(other: Point2D) = Point2D(x - other.x, y - other.y)
+    fun scale(k: Double) = Point2D(k * x, k * y)
 }

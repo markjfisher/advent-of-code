@@ -21,14 +21,14 @@ import engine.Timer
 import engine.Window
 import engine.graph.Camera
 import engine.graph.OBJLoader
-import engine.graph.OBJLoader.loadMeshFromFile
 import engine.graph.Renderer
 import engine.graph.Texture
 import engine.item.GameItem
 import net.fish.geometry.hex.Layout
 import net.fish.geometry.hex.Orientation
 import net.fish.geometry.hex.WrappingHexGrid
-import net.fish.geometry.hex.projection.TorusKnotMappedWrappingHexGrid
+import net.fish.geometry.hex.projection.PathMappedWrappingHexGrid
+import net.fish.geometry.paths.TorusKnotPathCreator
 import org.joml.Math.abs
 import org.joml.Math.max
 import org.joml.Matrix3f
@@ -58,8 +58,9 @@ class TrefoilGame : GameLogic {
 
     // Grid and space
     private val gridLayout = Layout(Orientation.ORIENTATION.POINTY)
-    private val hexGrid = WrappingHexGrid(800, 16, gridLayout)
-    private val knot = TorusKnotMappedWrappingHexGrid(hexGrid = hexGrid, p = 3, q = 7, r = 0.25, scale = 5.0)
+    private val hexGrid = WrappingHexGrid(1200, 12, gridLayout)
+    private val pather = TorusKnotPathCreator(p = 3, q = 7, scale = 5.0, segments = hexGrid.m * 2)
+    private val knot = PathMappedWrappingHexGrid(hexGrid = hexGrid, pathCreator = pather, r = 0.15)
 
     // Game state
     private var isPaused = true
@@ -98,23 +99,10 @@ class TrefoilGame : GameLogic {
     private val newCameraVector = Vector3f()
     private val cameraDelta = Vector3f()
 
+    private val grey = Vector3f(0.6f, 0.6f, 0.6f)
+
     override fun init(window: Window) {
         emptyTexture = Texture("visualisations/textures/stone3-wl-pointy.png")
-        val triangleMesh = loadMeshFromFile("/conwayhex/models/simple-arrow.obj")
-
-        // val knotData = Knots.torusKnot(3, 2, 1.8, 0.6, 1.0, 360 * 3)
-//        val knotData = Knots.wikiTrefoilCoordinates(360 * 5)
-//        knotData.forEach { data ->
-//            val curvePoint = GameItem(triangleMesh)
-//            curvePoint.setPosition(data.point)
-//            val binormal = data.normal.cross(data.tangent, Vector3f())
-//            val q = Quaternionf().setFromNormalized(Matrix3f(binormal, data.normal, data.tangent))
-//            curvePoint.setRotation(q)
-//
-//            curvePoint.colour = Vector3f(abs(binormal.x) + 0.1f, abs(data.normal.y) + 0.1f, abs(data.tangent.z) + 0.1f)
-//            curvePoint.scale = 0.05f
-//            gameItems.add(curvePoint)
-//    }
 
         hexGrid.hexes().forEachIndexed { index, hex ->
             val newMesh = OBJLoader.loadMesh(knot.hexToObj(hex))
@@ -125,12 +113,6 @@ class TrefoilGame : GameLogic {
 
             gameItems += gameItem
         }
-
-        val triangleItem = GameItem(triangleMesh)
-        triangleItem.setPosition(Vector3f(worldCentre))
-        triangleItem.scale = 0.02f
-        gameItems.add(triangleItem)
-
 
         hud.init(window)
         renderer.init(window)
