@@ -16,7 +16,7 @@ class Renderer {
     private var gridShaderProgram: ShaderProgram = ShaderProgram()
 
     companion object {
-        private val FOV = toRadians(60f)
+        private val FOV = toRadians(35f)
         private const val Z_NEAR = 0.01f
         private const val Z_FAR = 1000f
     }

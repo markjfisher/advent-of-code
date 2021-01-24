@@ -1,22 +1,40 @@
 package net.fish.geometry.hex.projection
 
 import net.fish.geometry.hex.Layout
-import net.fish.geometry.hex.Orientation
+import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
+import net.fish.geometry.paths.DecoratedTorusKnotPathCreator
 import net.fish.geometry.paths.TorusKnotPathCreator
-import org.junit.jupiter.api.Disabled
+import net.fish.geometry.paths.TrefoilPathCreator
 import org.junit.jupiter.api.Test
 import java.io.File
 
 internal class SurfaceMapperTest {
-    @Disabled("just for creating files")
+
+    private val decoratedSurface = PathMappedWrappingHexGrid(
+        hexGrid = WrappingHexGrid(900, 16, Layout(POINTY)),
+        // Valid patterns: 4b, 7a, 7b, 10b, 11c
+        pathCreator = DecoratedTorusKnotPathCreator(pattern = "11c", scale = 5.0, segments = 1800),
+        r = 0.25
+    )
+
+    private val trefoilSurface = PathMappedWrappingHexGrid(
+        hexGrid = WrappingHexGrid(600, 26, Layout(POINTY)),
+        pathCreator = TrefoilPathCreator(scale = 3.0, segments = 1200),
+        r = 0.6
+    )
+
+    private val torusKnotSurface = PathMappedWrappingHexGrid(
+        hexGrid = WrappingHexGrid(900, 16, Layout(POINTY)),
+        pathCreator = TorusKnotPathCreator(p = 3, q = 7, scale = 5.0, segments = 1800),
+        r = 0.25
+    )
+
+    // @Disabled("just for creating files")
     @Test
     fun `can output projection as obj file`() {
-        val gridLayout = Layout(Orientation.ORIENTATION.POINTY)
-        val hexGrid = WrappingHexGrid(800, 16, gridLayout)
-        val knot = PathMappedWrappingHexGrid(hexGrid = hexGrid, TorusKnotPathCreator(p = 3, q = 7, scale = 5.0, segments = hexGrid.m * 2), r = 0.25)
-
-        knot.gridToObj(File("/tmp/knot.obj").outputStream())
+        val surface = decoratedSurface
+        surface.gridToObj(File("/home/markf/Documents/blender/surface.obj").outputStream())
     }
 
     @Test

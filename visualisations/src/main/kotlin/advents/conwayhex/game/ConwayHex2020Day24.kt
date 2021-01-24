@@ -3,17 +3,21 @@ package advents.conwayhex.game
 import commands.DecreaseSpeed
 import commands.IncreaseSpeed
 import commands.KeyCommand
+import commands.RunCamera
 import commands.MoveBackward
 import commands.MoveDown
 import commands.MoveForward
 import commands.MoveLeft
 import commands.MoveRight
 import commands.MoveUp
+import commands.NextCamera
 import commands.PrintState
 import commands.ResetCamera
 import commands.ResetGame
 import commands.SingleKeyPressCommand
 import commands.SingleStep
+import commands.ToggleHud
+import commands.ToggleMessages
 import commands.TogglePause
 import engine.GameEngine
 import engine.GameLogic
@@ -21,6 +25,7 @@ import engine.MouseInput
 import engine.Timer
 import engine.Window
 import engine.graph.Camera
+import engine.graph.CameraLoader
 import engine.graph.OBJLoader.loadMesh
 import engine.graph.Renderer
 import engine.graph.Texture
@@ -35,10 +40,7 @@ import net.fish.geometry.hex.Layout
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.geometry.hex.projection.PathMappedWrappingHexGrid
-import net.fish.geometry.hex.projection.TorusMappedWrappingHexGrid
 import net.fish.geometry.paths.DecoratedTorusKnotPathCreator
-import net.fish.geometry.paths.TorusKnotPathCreator
-import net.fish.geometry.paths.TrefoilPathCreator
 import net.fish.resourceLines
 import net.fish.y2020.Day24
 import org.joml.Math.abs
@@ -51,11 +53,15 @@ import org.joml.Vector3fc
 import org.lwjgl.glfw.GLFW.GLFW_KEY_0
 import org.lwjgl.glfw.GLFW.GLFW_KEY_1
 import org.lwjgl.glfw.GLFW.GLFW_KEY_A
+import org.lwjgl.glfw.GLFW.GLFW_KEY_C
 import org.lwjgl.glfw.GLFW.GLFW_KEY_D
 import org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN
 import org.lwjgl.glfw.GLFW.GLFW_KEY_EQUAL
+import org.lwjgl.glfw.GLFW.GLFW_KEY_H
 import org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT
+import org.lwjgl.glfw.GLFW.GLFW_KEY_M
 import org.lwjgl.glfw.GLFW.GLFW_KEY_MINUS
+import org.lwjgl.glfw.GLFW.GLFW_KEY_N
 import org.lwjgl.glfw.GLFW.GLFW_KEY_P
 import org.lwjgl.glfw.GLFW.GLFW_KEY_R
 import org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_SHIFT
@@ -68,6 +74,7 @@ class ConwayHex2020Day24 : GameLogic {
     // Gfx helpers
     private val renderer = Renderer()
     private val hud = Hud()
+    private var showHud = false
 
     // Input from the original puzzle!
     private val data = resourceLines(2020, 24)
@@ -79,12 +86,12 @@ class ConwayHex2020Day24 : GameLogic {
 //        r2 = 8.0
 //    )
 
-//     // trefoil:
-    private val surface = PathMappedWrappingHexGrid(
-        hexGrid = WrappingHexGrid(600, 26, Layout(POINTY)),
-        pathCreator = TrefoilPathCreator(scale = 3.0, segments = 1200),
-        r = 0.6
-    )
+    // trefoil:
+//    private val surface = PathMappedWrappingHexGrid(
+//        hexGrid = WrappingHexGrid(600, 26, Layout(POINTY)),
+//        pathCreator = TrefoilPathCreator(scale = 3.0, segments = 1200),
+//        r = 0.6
+//    )
 
 //    // TorusKnot
 //    private val surface = PathMappedWrappingHexGrid(
@@ -101,12 +108,12 @@ class ConwayHex2020Day24 : GameLogic {
 //    )
 
     // Decorated Torus Knot
-//    private val surface = PathMappedWrappingHexGrid(
-//        hexGrid = WrappingHexGrid(900, 16, Layout(POINTY)),
-//        // Valid patterns: 4b, 7a, 7b, 10b, 11c
-//        pathCreator = DecoratedTorusKnotPathCreator(pattern = "11c", scale = 5.0, segments = 1800),
-//        r = 0.25
-//    )
+    private val surface = PathMappedWrappingHexGrid(
+        hexGrid = WrappingHexGrid(900, 16, Layout(POINTY)),
+        // Valid patterns: 4b, 7a, 7b, 10b, 11c
+        pathCreator = DecoratedTorusKnotPathCreator(pattern = "11c", scale = 5.0, segments = 1800),
+        r = 0.25
+    )
 
 
     // Game state
@@ -117,7 +124,7 @@ class ConwayHex2020Day24 : GameLogic {
     private val gameItems = mutableListOf<GameItem>()
     private val hexToGameItem = mutableMapOf<Hex, GameItem>()
     private val alive = mutableSetOf<Hex>()
-    private val initialPoints = 600 // we have up to 597 initial points from the original game
+    private val initialPoints = 25 // we have up to 597 initial points from the original game
     private var createdCount = 0
     private var destroyedCount = 0
 
@@ -129,6 +136,7 @@ class ConwayHex2020Day24 : GameLogic {
     // text flashing
     private var flashPercentage: Int = 0
     private var flashMessage: String = ""
+    private var showMessage = false
 
     // Textures
     lateinit var aliveTexture: Texture
@@ -138,13 +146,19 @@ class ConwayHex2020Day24 : GameLogic {
 
     // Camera and initial world positions and rotations
     private val initialWorldCentre = Vector3f(0f, 0f, 0f)
-    // private val initialWorldCentre = Vector3f(5.357e-3f, -2.461e-1f, -2.243e-1f)
-    // private val initialWorldCentre = Vector3f(0.08395f, 1.296f, -1.223f)
     private val worldCentre = Vector3f(initialWorldCentre)
+    private var currentCameraPath = -1
+    private val cameraPaths = listOf(
+        CameraLoader.loadCamera("/conwayhex/simple-circle-path.txt"),
+        CameraLoader.loadCamera("/conwayhex/fly-by-11c.txt"),
+        CameraLoader.loadCamera("/conwayhex/fly-by-11c-2.txt")
+    )
+    private var cameraFrameNumber = 0
+    private var movingCamera = false
+    private val cameraMovementTimer = Timer()
 
-    // private val initialCameraPosition = Vector3f(3.463E-2f,  1.245E+0f, -1.464E+0f)
-    private val initialCameraPosition = Vector3f(0f,  0f, 16f)
-    private val initialCameraRotation = Quaternionf().lookAlong(worldCentre.sub(initialCameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize()//.conjugate()
+    private val initialCameraPosition = Vector3f(0f, 0f, 16f)
+    private val initialCameraRotation = Quaternionf().lookAlong(worldCentre.sub(initialCameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize()
     private val camera = Camera(Vector3f(initialCameraPosition), Quaternionf(initialCameraRotation))
 
     var distanceToWorldCentre = initialCameraPosition.sub(worldCentre, Vector3f()).length()
@@ -188,7 +202,8 @@ class ConwayHex2020Day24 : GameLogic {
 
         hud.init(window)
         renderer.init(window)
-        keyPressedTimer.init()
+        keyPressedTimer.set()
+        cameraMovementTimer.set()
     }
 
     private fun hexToColour(hex: Hex): Vector3f {
@@ -216,46 +231,50 @@ class ConwayHex2020Day24 : GameLogic {
             window.isKeyPressed(GLFW_KEY_P) -> changeState(TogglePause)
             window.isKeyPressed(GLFW_KEY_1) -> changeState(SingleStep)
             window.isKeyPressed(GLFW_KEY_0) -> changeState(ResetCamera)
+            window.isKeyPressed(GLFW_KEY_C) -> changeState(RunCamera)
+            window.isKeyPressed(GLFW_KEY_M) -> changeState(ToggleMessages)
+            window.isKeyPressed(GLFW_KEY_H) -> changeState(ToggleHud)
+            window.isKeyPressed(GLFW_KEY_N) -> changeState(NextCamera)
         }
     }
 
     private fun moveUp() {
-        camera.rotation.positiveY(cameraY).mul(CAMERA_POS_STEP * if(turboMove) 5f else 1f)
+        camera.rotation.positiveY(cameraY).mul(CAMERA_POS_STEP * if (turboMove) 5f else 1f)
         camera.position.add(cameraY, newCameraVector)
         worldCentre.add(cameraY)
         camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
     }
 
     private fun moveDown() {
-        camera.rotation.positiveY(cameraY).mul(CAMERA_POS_STEP * if(turboMove) 5f else 1f)
+        camera.rotation.positiveY(cameraY).mul(CAMERA_POS_STEP * if (turboMove) 5f else 1f)
         camera.position.sub(cameraY, newCameraVector)
         worldCentre.sub(cameraY)
         camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
     }
 
     private fun moveRight() {
-        camera.rotation.positiveX(cameraX).mul(CAMERA_POS_STEP * if(turboMove) 5f else 1f)
+        camera.rotation.positiveX(cameraX).mul(CAMERA_POS_STEP * if (turboMove) 5f else 1f)
         camera.position.add(cameraX, newCameraVector)
         worldCentre.add(cameraX)
         camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
     }
 
     private fun moveLeft() {
-        camera.rotation.positiveX(cameraX).mul(CAMERA_POS_STEP * if(turboMove) 5f else 1f)
+        camera.rotation.positiveX(cameraX).mul(CAMERA_POS_STEP * if (turboMove) 5f else 1f)
         camera.position.sub(cameraX, newCameraVector)
         worldCentre.sub(cameraX)
         camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
     }
 
     private fun moveBackward() {
-        camera.rotation.positiveZ(cameraZ).mul(CAMERA_POS_STEP * if(turboMove) 5f else 1f)
+        camera.rotation.positiveZ(cameraZ).mul(CAMERA_POS_STEP * if (turboMove) 5f else 1f)
         camera.position.add(cameraZ, newCameraVector)
         worldCentre.add(cameraZ)
         camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
     }
 
     private fun moveForward() {
-        camera.rotation.positiveZ(cameraZ).mul(CAMERA_POS_STEP * if(turboMove) 5f else 1f)
+        camera.rotation.positiveZ(cameraZ).mul(CAMERA_POS_STEP * if (turboMove) 5f else 1f)
         camera.position.sub(cameraZ, newCameraVector)
         worldCentre.sub(cameraZ)
         camera.setPosition(newCameraVector.x, newCameraVector.y, newCameraVector.z)
@@ -268,6 +287,28 @@ class ConwayHex2020Day24 : GameLogic {
         distanceToWorldCentre = initialCameraPosition.length()
     }
 
+    private fun loadInitialCameraPosition() {
+        cameraFrameNumber = 0
+        val cameraData = cameraPaths[currentCameraPath]
+        val cp = cameraData[cameraFrameNumber].location
+        val cr = cameraData[cameraFrameNumber].rotation.normalize()
+        // Translate from Blender world to ours
+        camera.setPosition(cp.x, cp.z, -cp.y)
+        camera.setRotation(cr.w, cr.x, cr.y, cr.z)
+    }
+
+    private fun runCamera() {
+        movingCamera = true
+        loadInitialCameraPosition()
+    }
+
+    private fun nextCamera() {
+        currentCameraPath++
+        if (currentCameraPath > cameraPaths.size - 1) currentCameraPath = 0
+        movingCamera = false
+        loadInitialCameraPosition()
+    }
+
     private fun resetGame() {
         alive.clear()
         conwayIteration = 0
@@ -278,10 +319,12 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     private fun printGameState() {
-        println("""
+        println(
+            """
             camera: $camera
             world centre: $worldCentre
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 
     private fun changeState(command: KeyCommand) {
@@ -292,8 +335,10 @@ class ConwayHex2020Day24 : GameLogic {
                 return
             }
             lastPressedAt = pressedAt
-            flashMessage = command.toString()
-            flashPercentage = 100
+            if (showMessage) {
+                flashMessage = command.toString()
+                flashPercentage = 100
+            }
         }
 
         when (command) {
@@ -304,6 +349,11 @@ class ConwayHex2020Day24 : GameLogic {
             PrintState -> printGameState()
             SingleStep -> if (isPaused) performStep()
             ResetCamera -> resetCamera()
+            RunCamera -> runCamera()
+            NextCamera -> nextCamera()
+            ToggleMessages -> showMessage = !showMessage
+            ToggleHud -> showHud = !showHud
+
             MoveForward -> moveForward()
             MoveBackward -> moveBackward()
             MoveLeft -> moveLeft()
@@ -315,6 +365,9 @@ class ConwayHex2020Day24 : GameLogic {
 
     override fun update(interval: Float, mouseInput: MouseInput, window: Window) {
         if (!isPaused) {
+            moveCamera()
+
+            // do next conway step
             currentStepDelay += 1
             if (currentStepDelay % conwayStepDelay == 0) {
                 currentStepDelay = 0
@@ -387,6 +440,26 @@ class ConwayHex2020Day24 : GameLogic {
         }
     }
 
+    private fun moveCamera() {
+        if (currentCameraPath == -1) return
+        val cameraData = cameraPaths[currentCameraPath]
+        if (movingCamera && cameraFrameNumber < cameraData.size && cameraMovementTimer.accumulative > 0.03) {
+            cameraMovementTimer.set()
+            val cp = cameraData[cameraFrameNumber].location
+            val cr = cameraData[cameraFrameNumber].rotation.normalize()
+            // Translate from Blender world to ours
+            camera.setPosition(cp.x, cp.z, -cp.y)
+            val q = Quaternionf().lookAlong(worldCentre.sub(camera.position, Vector3f()), Vector3f(0f, 1f, 0f)).normalize()
+            camera.setRotation(cr.w, cr.x, cr.y, cr.z)
+//            println("cr: $cr, q: $q")
+            cameraFrameNumber++
+            if (cameraFrameNumber >= cameraData.size) {
+                cameraFrameNumber = 0
+                movingCamera = false
+            }
+        }
+    }
+
     private fun performStep() {
         // get the new state for entire grid, then work out which have flipped
         val newAlive = runConway()
@@ -453,17 +526,19 @@ class ConwayHex2020Day24 : GameLogic {
 
     override fun render(window: Window) {
         renderer.render(window, camera, gameItems)
-        val hudData = HudData(
-            speed = conwayStepDelay,
-            iteration = conwayIteration,
-            isPaused = isPaused,
-            liveCount = alive.count(),
-            flashMessage = flashMessage,
-            flashPercentage = flashPercentage,
-            createdCount = createdCount,
-            destroyedCount = destroyedCount
-        )
-        hud.render(window, hudData)
+        if (showHud) {
+            val hudData = HudData(
+                speed = conwayStepDelay,
+                iteration = conwayIteration,
+                isPaused = isPaused,
+                liveCount = alive.count(),
+                flashMessage = flashMessage,
+                flashPercentage = flashPercentage,
+                createdCount = createdCount,
+                destroyedCount = destroyedCount
+            )
+            hud.render(window, hudData)
+        }
     }
 
     override fun cleanup() {

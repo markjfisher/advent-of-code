@@ -32,7 +32,7 @@ class GameEngine(
 
     private fun init() {
         window.init()
-        timer.init()
+        timer.set()
         mouseInput.init(window)
         gameLogic.init(window)
     }

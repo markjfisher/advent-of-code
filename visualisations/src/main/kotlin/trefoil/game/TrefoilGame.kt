@@ -116,7 +116,7 @@ class TrefoilGame : GameLogic {
 
         hud.init(window)
         renderer.init(window)
-        keyPressedTimer.init()
+        keyPressedTimer.set()
     }
 
     override fun input(window: Window, mouseInput: MouseInput) {
