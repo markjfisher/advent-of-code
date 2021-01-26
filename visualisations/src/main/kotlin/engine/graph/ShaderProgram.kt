@@ -22,6 +22,7 @@ import org.lwjgl.opengl.GL20C.glLinkProgram
 import org.lwjgl.opengl.GL20C.glShaderSource
 import org.lwjgl.opengl.GL20C.glUniform1i
 import org.lwjgl.opengl.GL20C.glUniform3f
+import org.lwjgl.opengl.GL20C.glUniform4f
 import org.lwjgl.opengl.GL20C.glUniformMatrix4fv
 import org.lwjgl.opengl.GL20C.glUseProgram
 import org.lwjgl.opengl.GL20C.glValidateProgram
@@ -62,8 +63,8 @@ class ShaderProgram {
         uniforms[uniformName]?.let { glUniform1i(it, value) }
     }
 
-    fun setUniform(uniformName: String, value: Vector3f) {
-        uniforms[uniformName]?.let { glUniform3f(it, value.x, value.y, value.z) }
+    fun setUniform(uniformName: String, value: Vector3f, alpha: Float) {
+        uniforms[uniformName]?.let { glUniform4f(it, value.x, value.y, value.z, alpha) }
     }
 
     private fun createShader(shaderCode: String, shaderType: Int): Int {

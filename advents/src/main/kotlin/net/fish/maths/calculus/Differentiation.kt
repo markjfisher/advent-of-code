@@ -3,6 +3,8 @@ import net.fish.maths.functions.IFunction
 import kotlin.math.abs
 import kotlin.math.pow
 
+// Taken from https://github.com/bnorm/java-math/tree/master/src/math/calculus
+
 /**
  * A static library for derivative calculations of functions.
  *

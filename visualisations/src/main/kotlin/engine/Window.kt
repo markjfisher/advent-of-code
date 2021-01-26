@@ -1,43 +1,34 @@
 package engine
 
+import glm_.vec2.Vec2i
+import imgui.ImGui
+import imgui.classes.Context
+import imgui.impl.gl.ImplGL3
+import imgui.impl.glfw.ImplGlfw
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR
-import org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR
-import org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE
-import org.lwjgl.glfw.GLFW.GLFW_OPENGL_CORE_PROFILE
-import org.lwjgl.glfw.GLFW.GLFW_OPENGL_FORWARD_COMPAT
-import org.lwjgl.glfw.GLFW.GLFW_OPENGL_PROFILE
 import org.lwjgl.glfw.GLFW.GLFW_PRESS
-import org.lwjgl.glfw.GLFW.GLFW_RELEASE
-import org.lwjgl.glfw.GLFW.GLFW_RESIZABLE
-import org.lwjgl.glfw.GLFW.GLFW_SAMPLES
-import org.lwjgl.glfw.GLFW.GLFW_VISIBLE
-import org.lwjgl.glfw.GLFW.glfwCreateWindow
-import org.lwjgl.glfw.GLFW.glfwDefaultWindowHints
 import org.lwjgl.glfw.GLFW.glfwGetKey
 import org.lwjgl.glfw.GLFW.glfwGetVideoMode
-import org.lwjgl.glfw.GLFW.glfwInit
-import org.lwjgl.glfw.GLFW.glfwMakeContextCurrent
 import org.lwjgl.glfw.GLFW.glfwPollEvents
 import org.lwjgl.glfw.GLFW.glfwSetFramebufferSizeCallback
-import org.lwjgl.glfw.GLFW.glfwSetKeyCallback
-import org.lwjgl.glfw.GLFW.glfwSetWindowPos
-import org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose
-import org.lwjgl.glfw.GLFW.glfwShowWindow
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
-import org.lwjgl.glfw.GLFW.glfwSwapInterval
-import org.lwjgl.glfw.GLFW.glfwWindowHint
 import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
-import org.lwjgl.glfw.GLFWErrorCallback.createPrint
 import org.lwjgl.opengl.GL.createCapabilities
+import org.lwjgl.opengl.GL11C.GL_BLEND
 import org.lwjgl.opengl.GL11C.GL_DEPTH_TEST
-import org.lwjgl.opengl.GL11C.GL_FALSE
+import org.lwjgl.opengl.GL11C.GL_DST_ALPHA
+import org.lwjgl.opengl.GL11C.GL_ONE
+import org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA
+import org.lwjgl.opengl.GL11C.GL_SRC_ALPHA
 import org.lwjgl.opengl.GL11C.GL_STENCIL_TEST
-import org.lwjgl.opengl.GL11C.GL_TRUE
+import org.lwjgl.opengl.GL11C.GL_ZERO
+import org.lwjgl.opengl.GL11C.glBlendFunc
 import org.lwjgl.opengl.GL11C.glClearColor
 import org.lwjgl.opengl.GL11C.glEnable
-import org.lwjgl.system.MemoryUtil
-
+import uno.glfw.GlfwWindow
+import uno.glfw.VSync
+import uno.glfw.glfw
+import uno.glfw.windowHint.Profile.core
 
 data class Window(
     val title: String,
@@ -48,74 +39,57 @@ data class Window(
     var windowHandle: Long = 0
     var isResized = false
 
-    fun init() {
-        // Setup an error callback. The default implementation
-        // will print the error message in System.err.
-        createPrint(System.err).set()
+    private lateinit var window: GlfwWindow
+    lateinit var ctx: Context
+    lateinit var implGlfw: ImplGlfw
+    lateinit var implGl3: ImplGL3
 
-        // Initialize GLFW. Most GLFW functions will not work before doing this.
-        check(glfwInit()) { "Unable to initialize GLFW" }
-        glfwDefaultWindowHints() // optional, the current window hints are already the default
-        glfwWindowHint(GLFW_VISIBLE, GL_FALSE) // the window will stay hidden after creation
-        glfwWindowHint(GLFW_RESIZABLE, GL_TRUE) // the window will be resizable
-        glfwWindowHint(GLFW.GLFW_MAXIMIZED, GLFW.GLFW_TRUE)
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4)
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6)
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
-        glfwWindowHint(GLFW_SAMPLES, 4)
-
-        // Create the window
-        windowHandle = glfwCreateWindow(width, height, title, MemoryUtil.NULL, MemoryUtil.NULL)
-        if (windowHandle == MemoryUtil.NULL) {
-            throw RuntimeException("Failed to create the GLFW window")
-        }
-
-        // Setup resize callback
-        glfwSetFramebufferSizeCallback(windowHandle) { window: Long, width: Int, height: Int ->
-            this.width = width
-            this.height = height
-            isResized = true
-        }
-
-        // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(windowHandle) { window: Long, key: Int, scancode: Int, action: Int, mods: Int ->
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-                glfwSetWindowShouldClose(window, true) // We will detect this in the rendering loop
+    fun initImgui() {
+        glfw {
+            errorCallback = defaultErrorCallback
+            init()
+            windowHint {
+                visible = false
+                resizable = true
+                decorated = true
+                transparentFramebuffer = true
+                context.version = "4.6"
+                samples = 4
+                maximized = true
+                profile = core
+                forwardComp = true
             }
+
+        }
+        window = GlfwWindow(width, height, title)
+        windowHandle = window.handle.value
+
+        glfwSetFramebufferSizeCallback(windowHandle) { wh, w, h ->
+            width = w
+            height = h
+            isResized = true
         }
 
         // Get the resolution of the primary monitor
         val vidmode = glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor()) ?: throw Exception("Cannot get primary monitor information")
         // Center our window
-        glfwSetWindowPos(
-            windowHandle,
-            (vidmode.width() - width) / 2,
-            (vidmode.height() - height) / 2
-        )
+        window.pos = Vec2i((vidmode.width() - width) / 2, (vidmode.height() - height) / 2)
 
-        // Make the OpenGL context current
-        glfwMakeContextCurrent(windowHandle)
+        window.makeContextCurrent()
         if (isvSync()) {
-            // Enable v-sync
-            glfwSwapInterval(1)
+            glfw.swapInterval = VSync.ON
         }
 
-        // Make the window visible
-        glfwShowWindow(windowHandle)
+        window.show()
         createCapabilities()
-
-        // Set the clear color
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_STENCIL_TEST)
+        restoreState()
 
-        // DEBUG: Polygon mode
-        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-    }
+        ctx = Context()
+        ImGui.styleColorsDark()
+        implGlfw = ImplGlfw(window, true)
+        implGl3 = ImplGL3()
 
-    fun setClearColor(r: Float, g: Float, b: Float, alpha: Float) {
-        glClearColor(r, g, b, alpha)
     }
 
     fun isKeyPressed(keyCode: Int): Boolean {
@@ -130,10 +104,6 @@ data class Window(
         return vSync
     }
 
-    fun setvSync(vSync: Boolean) {
-        this.vSync = vSync
-    }
-
     fun update() {
         glfwSwapBuffers(windowHandle)
         glfwPollEvents()
@@ -142,6 +112,7 @@ data class Window(
     fun restoreState() {
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_STENCIL_TEST)
-        // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     }
 }

@@ -110,7 +110,7 @@ object Knots {
     }
 
     private fun createPathData(px: Double, py: Double, pz: Double, tx: Double, ty: Double, tz: Double, nx: Double, ny: Double, nz: Double): PathData {
-        // Rotate by 90° in X axis to get torus flat on the XZ plane (swap Y with -Z)
+        // Rotate by 90° in X axis to get surface flat on the XZ plane (swap Y with -Z)
         return PathData(
             point = Vector3f(px.toFloat(), -pz.toFloat(), py.toFloat()),
             tangent = Vector3f(tx.toFloat(), -tz.toFloat(), ty.toFloat()).normalize(),

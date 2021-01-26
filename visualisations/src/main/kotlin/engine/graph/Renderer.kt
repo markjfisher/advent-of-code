@@ -55,16 +55,16 @@ class Renderer {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT or GL_STENCIL_BUFFER_BIT)
     }
 
-    fun render(window: Window, camera: Camera, gameItems: List<GameItem>) {
+    fun render(window: Window, camera: Camera, gameItems: List<GameItem>, alpha: Float = 1f) {
         clear()
         if (window.isResized) {
             glViewport(0, 0, window.width, window.height)
             window.isResized = false
         }
-        renderScene(window, camera, gameItems)
+        renderScene(window, camera, gameItems, alpha)
     }
 
-    fun renderScene(window: Window, camera: Camera, gameItems: List<GameItem>) {
+    fun renderScene(window: Window, camera: Camera, gameItems: List<GameItem>, alpha: Float) {
         sceneShaderProgram.bind()
 
         // Update projection Matrix
@@ -81,7 +81,7 @@ class Renderer {
             val mesh = gameItem.mesh
             val modelViewMatrix = transformation.buildModelViewMatrix(gameItem, viewMatrix)
             sceneShaderProgram.setUniform("modelViewMatrix", modelViewMatrix)
-            sceneShaderProgram.setUniform("colour", mesh.colour)
+            sceneShaderProgram.setUniform("colour", mesh.colour, alpha)
             sceneShaderProgram.setUniform("useColour", if (mesh.isTextured()) 0 else 1)
             gameItem.mesh.render()
         }

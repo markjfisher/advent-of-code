@@ -31,7 +31,8 @@ class GameEngine(
     }
 
     private fun init() {
-        window.init()
+        // window.init()
+        window.initImgui()
         timer.set()
         mouseInput.init(window)
         gameLogic.init(window)

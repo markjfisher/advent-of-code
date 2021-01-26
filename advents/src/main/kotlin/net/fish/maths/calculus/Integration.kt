@@ -4,7 +4,7 @@ import net.fish.maths.functions.IFunction
 import kotlin.math.abs
 import kotlin.math.pow
 
-
+// taken from https://github.com/bnorm/java-math/tree/master/src/math/calculus
 /**
  * A static library for integral calculations of functions.
  *
