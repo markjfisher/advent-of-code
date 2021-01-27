@@ -3,6 +3,7 @@ package net.fish.geometry.hex.projection
 import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.geometry.paths.PathCreator
+import net.fish.geometry.paths.PathData
 import org.joml.Vector3f
 import kotlin.math.PI
 import kotlin.math.cos
@@ -16,17 +17,16 @@ data class PathMappedWrappingHexGrid(
     val pathCreator: PathCreator,
     val r: Double = 0.2
 ): SurfaceMapper(hexGrid) {
-    // private val knotCoordinates = Knots.torusKnot(p, q, a, b, scale, hexGrid.m * 2)
-    private val knotCoordinates = pathCreator.createPath()
+    private lateinit var knotCoordinates: List<PathData> // = pathCreator.createPath()
     private val hexCentres = mutableMapOf<Hex, Vector3f>()
 
-    init {
-        calculateHexCentres()
-    }
-
     override fun coordinates(hex: Hex): List<Vector3f> {
+        if (!this::knotCoordinates.isInitialized) {
+            knotCoordinates = pathCreator.createPath()
+            calculateHexCentres()
+        }
+
         // for a given hex, its corners are to be calculated relative to the hexes around it for simplicity
-        // until we see how bad this is...
         val c0 = averageCentres(hex, hex.neighbour(5), hex.neighbour(0))
         val c1 = averageCentres(hex, hex.neighbour(0), hex.neighbour(1))
         val c2 = averageCentres(hex, hex.neighbour(1), hex.neighbour(2))

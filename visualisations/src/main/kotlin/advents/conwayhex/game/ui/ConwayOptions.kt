@@ -15,6 +15,7 @@ import imgui.ImGui.button
 import imgui.ImGui.buttonEx
 import imgui.ImGui.checkbox
 import imgui.ImGui.columns
+import imgui.ImGui.dragInt2
 import imgui.ImGui.end
 import imgui.ImGui.nextColumn
 import imgui.ImGui.popItemFlag
@@ -38,18 +39,17 @@ data class ConwayOptions(
     var showMessage: Boolean,
     var pauseGame: Boolean,
     var showPolygons: Boolean,
-    var cameraFrameNumber: Int,
-    var maxCameraFrames: Int,
-    var movingCamera: Boolean,
-    var loopCamera: Boolean,
-    val cameraPathNames: List<String>,
-    var currentCameraPath: Int,
     var globalAlpha: Float,
+    var gridSizeH: Int,
+    var gridSizeV: Int,
+    var cameraOptions: CameraOptions,
     val stateChangeFunction: KFunction1<KeyCommand, Unit>
 ) {
     private val fullSize = Vec2(-Float.MIN_VALUE, 0f)
 
     fun render(width: Int) {
+        val gridSize4i = intArrayOf(gridSizeH, gridSizeV, 2000, MAX_M_BY_N / gridSizeH.coerceAtLeast(1))
+
         ImGui.setNextWindowSize(Vec2(INITIAL_WIDTH, INITIAL_HEIGHT), Cond.FirstUseEver)
         ImGui.setNextWindowPos(Vec2(width - INITIAL_WIDTH - 2, 2), Cond.Appearing)
         if (!begin("Conway Options")) {
@@ -81,23 +81,32 @@ data class ConwayOptions(
         }
         treeNode("Camera") {
             columns(3, "camera1", false)
-            checkbox("Animate", ::movingCamera); nextColumn()
-            checkbox("Loop", ::loopCamera); nextColumn()
+            checkbox("Animate", cameraOptions::movingCamera); nextColumn()
+            checkbox("Loop", cameraOptions::loopCamera); nextColumn()
             if (buttonEx("Reset", fullSize)) stateChangeFunction(ResetCamera)
             columns(1)
 
-            val toShow = maxCameraFrames.coerceAtLeast(100)
-            if (sliderInt("Camera Pos", ::cameraFrameNumber, 1, toShow) && maxCameraFrames != -1) {
+            val toShow = cameraOptions.maxCameraFrames.coerceAtLeast(100)
+            if (sliderInt("Camera Pos", cameraOptions::cameraFrameNumber, 1, toShow) && cameraOptions.maxCameraFrames != -1) {
                 stateChangeFunction(SetCamera)
             }
 
             treeNode("Camera Path:") {
-                (cameraPathNames.indices).forEach { i ->
-                    if (selectable(String.format("%1d. %s", i + 1, cameraPathNames[i]), currentCameraPath == i)) {
-                        currentCameraPath = i
+                (cameraOptions.cameraPathNames.indices).forEach { i ->
+                    if (selectable(String.format("%1d. %s", i + 1, cameraOptions.cameraPathNames[i]), cameraOptions.currentCameraPath == i)) {
+                        cameraOptions.currentCameraPath = i
                         stateChangeFunction(LoadCamera)
                     }
                 }
+            }
+        }
+        treeNode("Surface") {
+            sliderFloat("Global Alpha", ::globalAlpha, 0f, 1f)
+            if(dragInt2("Grid Size", gridSize4i, 2f, 2000, 600)) {
+                gridSizeH = gridSize4i[0]
+                var maxV = MAX_M_BY_N / gridSizeH
+                if (maxV % 2 == 1) maxV--
+                gridSizeV = gridSize4i[1].coerceAtMost(maxV)
             }
         }
         treeNode("Debug") {
@@ -108,10 +117,6 @@ data class ConwayOptions(
             if (buttonEx("Print State", fullSize)) stateChangeFunction(PrintState)
             columns(1)
         }
-        treeNode("Surface") {
-            sliderFloat("Global Alpha", ::globalAlpha, 0f, 1f)
-        }
-
         popItemWidth()
 
         end()
@@ -120,5 +125,15 @@ data class ConwayOptions(
     companion object {
         const val INITIAL_WIDTH = 420
         const val INITIAL_HEIGHT = 350
+        const val MAX_M_BY_N = 15600
     }
 }
+
+data class CameraOptions(
+    var cameraFrameNumber: Int,
+    var maxCameraFrames: Int,
+    var movingCamera: Boolean,
+    var loopCamera: Boolean,
+    var currentCameraPath: Int,
+    val cameraPathNames: List<String>
+)

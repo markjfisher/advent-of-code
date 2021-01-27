@@ -1,5 +1,6 @@
 package advents.conwayhex.game
 
+import advents.conwayhex.game.ui.CameraOptions
 import advents.conwayhex.game.ui.ConwayOptions
 import commands.DecreaseSpeed
 import commands.IncreaseSpeed
@@ -132,7 +133,6 @@ class ConwayHex2020Day24 : GameLogic {
         r = 0.25
     )
 
-
     // Game state
     private var currentStepDelay = 0
     private var conwayIteration = 0
@@ -191,13 +191,17 @@ class ConwayHex2020Day24 : GameLogic {
         showMessage = false,
         pauseGame = true,
         showPolygons = false,
-        cameraFrameNumber = 1,
-        maxCameraFrames = -1,
-        movingCamera = false,
-        loopCamera = false,
-        cameraPathNames = cameraPaths.keys.sorted(),
-        currentCameraPath = -1,
+        cameraOptions = CameraOptions(
+            cameraFrameNumber = 1,
+            maxCameraFrames = -1,
+            movingCamera = false,
+            loopCamera = false,
+            cameraPathNames = cameraPaths.keys.sorted(),
+            currentCameraPath = -1,
+        ),
         globalAlpha = 1f,
+        gridSizeH = 0,
+        gridSizeV = 0,
         stateChangeFunction = ::changeState
     )
 
@@ -253,7 +257,7 @@ class ConwayHex2020Day24 : GameLogic {
 
     override fun input(window: Window, mouseInput: MouseInput) {
         // skip if imgUI is handling input
-        if(window.ctx.io.wantCaptureKeyboard or window.ctx.io.wantCaptureMouse or window.ctx.io.wantTextInput) return
+        if (window.ctx.io.wantCaptureKeyboard or window.ctx.io.wantCaptureMouse or window.ctx.io.wantTextInput) return
 
         turboMove = window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)
         when {
@@ -324,7 +328,7 @@ class ConwayHex2020Day24 : GameLogic {
         rotation.set(initialCameraRotation.x, initialCameraRotation.y, initialCameraRotation.z, initialCameraRotation.w)
         position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z)
         worldCentre.set(initialWorldCentre.x, initialWorldCentre.y, initialWorldCentre.z)
-        with(conwayOptions) {
+        with(conwayOptions.cameraOptions) {
             movingCamera = false
             loopCamera = false
             cameraFrameNumber = 1
@@ -334,16 +338,18 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     private fun loadInitialCameraPosition() {
-        cameraData.clear()
-        cameraData.addAll(cameraPaths[conwayOptions.cameraPathNames[conwayOptions.currentCameraPath]]!!.invoke())
+        with (conwayOptions.cameraOptions) {
+            cameraData.clear()
+            cameraData.addAll(cameraPaths[cameraPathNames[currentCameraPath]]!!.invoke())
 
-        conwayOptions.cameraFrameNumber = 1
-        conwayOptions.maxCameraFrames = cameraData.size
+            cameraFrameNumber = 1
+            maxCameraFrames = cameraData.size
 
-        val cp = cameraData[conwayOptions.cameraFrameNumber - 1].location
-        val cr = cameraData[conwayOptions.cameraFrameNumber - 1].rotation.normalize()
-        camera.setPosition(cp.x, cp.y, cp.z)
-        camera.setRotation(cr.w, cr.x, cr.y, cr.z)
+            val cp = cameraData[cameraFrameNumber - 1].location
+            val cr = cameraData[cameraFrameNumber - 1].rotation.normalize()
+            camera.setPosition(cp.x, cp.y, cp.z)
+            camera.setRotation(cr.w, cr.x, cr.y, cr.z)
+        }
     }
 
     private fun calculateTunnelPath(): List<CameraData> {
@@ -351,31 +357,33 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     private fun moveCamera() {
-        if (conwayOptions.currentCameraPath == -1) return
-        if ((conwayOptions.loopCamera || conwayOptions.cameraFrameNumber <= cameraData.size) && cameraMovementTimer.accumulative > 0.03) {
-            setCamera()
-            conwayOptions.cameraFrameNumber++
-            if (conwayOptions.cameraFrameNumber > cameraData.size) {
-                if (!conwayOptions.loopCamera) {
-                    conwayOptions.cameraFrameNumber = cameraData.size
-                } else {
-                    conwayOptions.cameraFrameNumber = 1
+        with (conwayOptions.cameraOptions) {
+            if (currentCameraPath == -1) return
+            if ((loopCamera || cameraFrameNumber <= cameraData.size) && cameraMovementTimer.accumulative > 0.03) {
+                setCamera()
+                cameraFrameNumber++
+                if (cameraFrameNumber > cameraData.size) {
+                    if (!loopCamera) {
+                        cameraFrameNumber = cameraData.size
+                    } else {
+                        cameraFrameNumber = 1
+                    }
                 }
+                cameraMovementTimer.set()
             }
-            cameraMovementTimer.set()
         }
     }
 
     private fun setCamera() {
-        val cp = cameraData[conwayOptions.cameraFrameNumber - 1].location
-        val cr = cameraData[conwayOptions.cameraFrameNumber - 1].rotation
+        val cp = cameraData[conwayOptions.cameraOptions.cameraFrameNumber - 1].location
+        val cr = cameraData[conwayOptions.cameraOptions.cameraFrameNumber - 1].rotation
         camera.setPosition(cp.x, cp.y, cp.z)
         camera.setRotation(cr.w, cr.x, cr.y, cr.z)
     }
 
     private fun nextCamera() {
-        conwayOptions.currentCameraPath = (conwayOptions.currentCameraPath + 1) % cameraPaths.size
-        conwayOptions.movingCamera = false
+        conwayOptions.cameraOptions.currentCameraPath = (conwayOptions.cameraOptions.currentCameraPath + 1) % cameraPaths.size
+        conwayOptions.cameraOptions.movingCamera = false
         loadInitialCameraPosition()
     }
 
@@ -422,7 +430,7 @@ class ConwayHex2020Day24 : GameLogic {
             LoadCamera -> loadInitialCameraPosition()
             NextCamera -> nextCamera()
             SetCamera -> setCamera()
-            RunCamera -> conwayOptions.movingCamera = !conwayOptions.movingCamera
+            RunCamera -> conwayOptions.cameraOptions.movingCamera = !conwayOptions.cameraOptions.movingCamera
             ToggleMessages -> conwayOptions.showMessage = !conwayOptions.showMessage
             ToggleHud -> conwayOptions.showHud = !conwayOptions.showHud
             ToggleImgUI -> showImgUI = !showImgUI
@@ -437,7 +445,7 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     override fun update(interval: Float, mouseInput: MouseInput, window: Window) {
-        if (conwayOptions.movingCamera) {
+        if (conwayOptions.cameraOptions.movingCamera) {
             moveCamera()
         }
 
@@ -453,7 +461,7 @@ class ConwayHex2020Day24 : GameLogic {
         if (flashPercentage == 0) flashMessage = ""
 
         // Don't process mouse inputs if it is over a ImgUI window
-        if(window.ctx.io.wantCaptureKeyboard or window.ctx.io.wantCaptureMouse or window.ctx.io.wantTextInput) {
+        if (window.ctx.io.wantCaptureKeyboard or window.ctx.io.wantCaptureMouse or window.ctx.io.wantTextInput) {
             mouseInput.scrollDirection = 0 // stop weird hangover of scrolling continuing to show once if used when focus is on ImgUI
             return
         }
