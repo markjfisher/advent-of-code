@@ -7,10 +7,9 @@ data class TorusKnotPathCreator(
     val q: Int,
     val a: Double = 1.0,
     val b: Double = 0.5,
-    val scale: Double = 1.0,
-    val segments: Int
+    val scale: Double = 1.0
 ): PathCreator {
-    override fun createPath(): List<PathData> {
+    override fun createPath(segments: Int): List<PathData> {
         return Knots.torusKnot(p, q, a, b, scale, segments)
     }
 }

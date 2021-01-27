@@ -2,6 +2,7 @@ package net.fish.geometry.hex.projection
 
 import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.WrappingHexGrid
+import net.fish.geometry.paths.NoPathCreator
 import org.joml.Vector3f
 import kotlin.math.PI
 import kotlin.math.cos
@@ -12,7 +13,7 @@ data class TorusMappedWrappingHexGrid(
     override val hexGrid: WrappingHexGrid,
     val r1: Double, // The radius of the minor circle, thinking of a doughnut, this is the smaller of the 2 circles
     val r2: Double  // The radius of the major circle, the one which sweeps around dictating centre of minor circle
-): SurfaceMapper(hexGrid) {
+): SurfaceMapper(hexGrid, NoPathCreator) {
 
     override fun coordinates(hex: Hex): List<Vector3f> {
         // See https://gamedev.stackexchange.com/questions/16845/how-do-i-generate-a-torus-mesh

@@ -59,7 +59,7 @@ class TrefoilGame : GameLogic {
     // Grid and space
     private val gridLayout = Layout(Orientation.ORIENTATION.POINTY)
     private val hexGrid = WrappingHexGrid(1200, 12, gridLayout)
-    private val pather = TorusKnotPathCreator(p = 3, q = 7, scale = 5.0, segments = hexGrid.m * 2)
+    private val pather = TorusKnotPathCreator(p = 3, q = 7, scale = 5.0)
     private val knot = PathMappedWrappingHexGrid(hexGrid = hexGrid, pathCreator = pather, r = 0.15)
 
     // Game state

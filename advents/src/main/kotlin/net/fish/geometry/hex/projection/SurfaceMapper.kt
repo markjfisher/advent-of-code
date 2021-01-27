@@ -2,14 +2,16 @@ package net.fish.geometry.hex.projection
 
 import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.HexAxis
-import net.fish.geometry.hex.Orientation
+import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
+import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
+import net.fish.geometry.paths.PathCreator
 import net.fish.maths.normalFromPoints
 import org.joml.Matrix3f
 import org.joml.Vector3f
 import java.io.OutputStream
 
-abstract class SurfaceMapper(open val hexGrid: WrappingHexGrid) {
+abstract class SurfaceMapper(open val hexGrid: WrappingHexGrid, open val pathCreator: PathCreator) {
     // return the coordinates of the hex corners on the torus described by the layout
     abstract fun coordinates(hex: Hex): List<Vector3f>
 
@@ -24,14 +26,14 @@ abstract class SurfaceMapper(open val hexGrid: WrappingHexGrid) {
         val cornersOnTorus = coordinates(hex)
         val centre = cornersOnTorus[6]
         val (xP, yP) = when (hexGrid.layout.orientation) {
-            Orientation.ORIENTATION.POINTY -> {
+            POINTY -> {
                 val midpoint01 = cornersOnTorus[0].add(cornersOnTorus[1], Vector3f()).mul(0.5f)
                 val midpoint34 = cornersOnTorus[3].add(cornersOnTorus[4], Vector3f()).mul(0.5f)
                 val xDir = midpoint01.sub(midpoint34)
                 val yDir = cornersOnTorus[2].sub(cornersOnTorus[5])
                 Pair(xDir, yDir)
             }
-            Orientation.ORIENTATION.FLAT -> {
+            FLAT -> {
                 val xDir = cornersOnTorus[0].sub(cornersOnTorus[3], Vector3f())
                 val midpoint45 = cornersOnTorus[4].add(cornersOnTorus[5], Vector3f()).mul(0.5f)
                 val midpoint21 = cornersOnTorus[2].add(cornersOnTorus[1], Vector3f()).mul(0.5f)
@@ -67,7 +69,7 @@ abstract class SurfaceMapper(open val hexGrid: WrappingHexGrid) {
 
         // textures
         when (hexGrid.layout.orientation) {
-            Orientation.ORIENTATION.POINTY -> {
+            POINTY -> {
                 lines += "vt 0.8660 0.7500" // point 0
                 lines += "vt 0.8660 0.2500" // point 1
                 lines += "vt 0.4330 0.0000" // point 2
@@ -76,7 +78,7 @@ abstract class SurfaceMapper(open val hexGrid: WrappingHexGrid) {
                 lines += "vt 0.4330 1.0000" // point 5
                 lines += "vt 0.4330 0.5000" // point 6
             }
-            Orientation.ORIENTATION.FLAT -> {
+            FLAT -> {
                 // The y coordinate is shifted down by (1-sqrt(3)/2) as the 0,0 isn't top left it seems.
                 lines += "vt 1.0000 0.5670" // point 0
                 lines += "vt 0.7500 0.1340" // point 1

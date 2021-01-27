@@ -4,10 +4,9 @@ import net.fish.geometry.knots.Knots
 
 data class DecoratedTorusKnotPathCreator(
     val pattern: String,
-    val scale: Double,
-    val segments: Int
+    val scale: Double
 ): PathCreator {
-    override fun createPath(): List<PathData> {
+    override fun createPath(segments: Int): List<PathData> {
         return when(pattern) {
             "4b" -> Knots.decoratedKnot4b(segments, scale)
             "7a" -> Knots.decoratedKnot7a(segments, scale)

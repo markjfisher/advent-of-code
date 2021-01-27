@@ -40,15 +40,14 @@ data class ConwayOptions(
     var pauseGame: Boolean,
     var showPolygons: Boolean,
     var globalAlpha: Float,
-    var gridSizeH: Int,
-    var gridSizeV: Int,
     var cameraOptions: CameraOptions,
+    var surfaceOptions: SurfaceOptions,
     val stateChangeFunction: KFunction1<KeyCommand, Unit>
 ) {
     private val fullSize = Vec2(-Float.MIN_VALUE, 0f)
 
     fun render(width: Int) {
-        val gridSize4i = intArrayOf(gridSizeH, gridSizeV, 2000, MAX_M_BY_N / gridSizeH.coerceAtLeast(1))
+        val gridSize4i = intArrayOf(surfaceOptions.gridSizeH, surfaceOptions.gridSizeV, 2000, MAX_M_BY_N / surfaceOptions.gridSizeH.coerceAtLeast(1))
 
         ImGui.setNextWindowSize(Vec2(INITIAL_WIDTH, INITIAL_HEIGHT), Cond.FirstUseEver)
         ImGui.setNextWindowPos(Vec2(width - INITIAL_WIDTH - 2, 2), Cond.Appearing)
@@ -103,10 +102,10 @@ data class ConwayOptions(
         treeNode("Surface") {
             sliderFloat("Global Alpha", ::globalAlpha, 0f, 1f)
             if(dragInt2("Grid Size", gridSize4i, 2f, 2000, 600)) {
-                gridSizeH = gridSize4i[0]
-                var maxV = MAX_M_BY_N / gridSizeH
+                surfaceOptions.gridSizeH = gridSize4i[0]
+                var maxV = MAX_M_BY_N / surfaceOptions.gridSizeH
                 if (maxV % 2 == 1) maxV--
-                gridSizeV = gridSize4i[1].coerceAtMost(maxV)
+                surfaceOptions.gridSizeV = gridSize4i[1].coerceAtMost(maxV)
             }
         }
         treeNode("Debug") {
@@ -136,4 +135,14 @@ data class CameraOptions(
     var loopCamera: Boolean,
     var currentCameraPath: Int,
     val cameraPathNames: List<String>
+)
+
+data class SurfaceOptions(
+    var gridSizeH: Int,
+    var gridSizeV: Int,
+    var p: Int = 1,
+    var q: Int = 1,
+    var a: Double = 1.0,
+    var b: Double = 0.5,
+    var scale: Double = 1.0
 )

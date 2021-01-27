@@ -2,6 +2,7 @@ package advents.conwayhex.game
 
 import advents.conwayhex.game.ui.CameraOptions
 import advents.conwayhex.game.ui.ConwayOptions
+import advents.conwayhex.game.ui.SurfaceOptions
 import commands.DecreaseSpeed
 import commands.IncreaseSpeed
 import commands.KeyCommand
@@ -44,6 +45,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.Layout
+import net.fish.geometry.hex.Orientation
+import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.geometry.hex.projection.PathMappedWrappingHexGrid
@@ -127,9 +130,9 @@ class ConwayHex2020Day24 : GameLogic {
 
     // Decorated Torus Knot
     private val surface = PathMappedWrappingHexGrid(
-        hexGrid = WrappingHexGrid(900, 16, Layout(POINTY)),
+        hexGrid = WrappingHexGrid(900, 16, Layout(FLAT)),
         // Valid patterns: 4b, 7a, 7b, 10b, 11c
-        pathCreator = DecoratedTorusKnotPathCreator(pattern = "11c", scale = 5.0, segments = 1800),
+        pathCreator = DecoratedTorusKnotPathCreator(pattern = "11c", scale = 5.0),
         r = 0.25
     )
 
@@ -154,7 +157,8 @@ class ConwayHex2020Day24 : GameLogic {
     private var flashMessage: String = ""
 
     // Textures
-    lateinit var aliveTexture: Texture
+    lateinit var aliveTexturePointy: Texture
+    lateinit var aliveTextureFlat: Texture
 
     // make it read only by typing it as constant - ensures it's not changed
     private val globalY: Vector3fc = Vector3f(0f, 1f, 0f)
@@ -187,6 +191,7 @@ class ConwayHex2020Day24 : GameLogic {
 
     private val conwayOptions = ConwayOptions(
         gameSpeed = 5,
+        globalAlpha = 1f,
         showHud = false,
         showMessage = false,
         pauseGame = true,
@@ -199,9 +204,10 @@ class ConwayHex2020Day24 : GameLogic {
             cameraPathNames = cameraPaths.keys.sorted(),
             currentCameraPath = -1,
         ),
-        globalAlpha = 1f,
-        gridSizeH = 0,
-        gridSizeV = 0,
+        surfaceOptions = SurfaceOptions(
+            gridSizeH = 0,
+            gridSizeV = 0
+        ),
         stateChangeFunction = ::changeState
     )
 
@@ -217,7 +223,8 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     override fun init(window: Window) {
-        aliveTexture = Texture("visualisations/textures/new-white-pointy.png")
+        aliveTexturePointy = Texture("visualisations/textures/new-white-pointy.png")
+        aliveTextureFlat = Texture("visualisations/textures/new-white-flat.png")
 
         surface.hexGrid.hexes().forEachIndexed { _, hex ->
             val newMesh = loadMesh(surface.hexToObj(hex))
@@ -338,7 +345,7 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     private fun loadInitialCameraPosition() {
-        with (conwayOptions.cameraOptions) {
+        with(conwayOptions.cameraOptions) {
             cameraData.clear()
             cameraData.addAll(cameraPaths[cameraPathNames[currentCameraPath]]!!.invoke())
 
@@ -353,11 +360,11 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     private fun calculateTunnelPath(): List<CameraData> {
-        return CameraPath(surface.pathCreator).generateCameraPath()
+        return CameraPath.generateCameraPath(surface)
     }
 
     private fun moveCamera() {
-        with (conwayOptions.cameraOptions) {
+        with(conwayOptions.cameraOptions) {
             if (currentCameraPath == -1) return
             if ((loopCamera || cameraFrameNumber <= cameraData.size) && cameraMovementTimer.accumulative > 0.03) {
                 setCamera()
@@ -540,15 +547,13 @@ class ConwayHex2020Day24 : GameLogic {
         alive.clear()
         alive.addAll(newAlive)
 
-        // Paint off before on so the on's don't lose any edges in polygon mode
         newOff.forEach { hex ->
             hexToGameItem[hex]!!.mesh.texture = null
             hexToGameItem[hex]!!.mesh.colour = hexToColour(hex)
         }
 
         newOn.forEach { hex ->
-            hexToGameItem[hex]!!.mesh.texture = aliveTexture
-            // hexToGameItem[hex]!!.mesh.colour = Vector3f(1f, 1f, 1f)
+            hexToGameItem[hex]!!.mesh.texture = if (surface.hexGrid.layout.orientation == POINTY) aliveTexturePointy else aliveTextureFlat
         }
     }
 

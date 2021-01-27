@@ -1,6 +1,8 @@
 package net.fish.geometry.hex.projection
 
 import net.fish.geometry.hex.Hex
+import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
+import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.geometry.paths.PathCreator
 import net.fish.geometry.paths.PathData
@@ -14,28 +16,26 @@ import kotlin.math.sin
 // each hexagon mapped onto the given Torus Knot
 data class PathMappedWrappingHexGrid(
     override val hexGrid: WrappingHexGrid,
-    val pathCreator: PathCreator,
+    override val pathCreator: PathCreator,
     val r: Double = 0.2
-): SurfaceMapper(hexGrid) {
-    private lateinit var knotCoordinates: List<PathData> // = pathCreator.createPath()
-    private val hexCentres = mutableMapOf<Hex, Vector3f>()
+) : SurfaceMapper(hexGrid, pathCreator) {
+    private var hexCentres: Map<Hex, Vector3f> = emptyMap()
 
     override fun coordinates(hex: Hex): List<Vector3f> {
-        if (!this::knotCoordinates.isInitialized) {
-            knotCoordinates = pathCreator.createPath()
-            calculateHexCentres()
+        if (hexCentres.isEmpty()) {
+            hexCentres = calculateHexCentres()
         }
 
-        // for a given hex, its corners are to be calculated relative to the hexes around it for simplicity
-        val c0 = averageCentres(hex, hex.neighbour(5), hex.neighbour(0))
-        val c1 = averageCentres(hex, hex.neighbour(0), hex.neighbour(1))
-        val c2 = averageCentres(hex, hex.neighbour(1), hex.neighbour(2))
-        val c3 = averageCentres(hex, hex.neighbour(2), hex.neighbour(3))
-        val c4 = averageCentres(hex, hex.neighbour(3), hex.neighbour(4))
-        val c5 = averageCentres(hex, hex.neighbour(4), hex.neighbour(5))
-        val c6 = hexCentres[hex]!!
+        val pairs = when (hexGrid.layout.orientation) {
+            POINTY -> listOf(Pair(5, 0), Pair(0, 1), Pair(1, 2), Pair(2, 3), Pair(3, 4), Pair(4, 5))
+            FLAT -> listOf(Pair(0, 1), Pair(1, 2), Pair(2, 3), Pair(3, 4), Pair(4, 5), Pair(5, 0))
+        }
+        // for a given hex, its corners are calculated relative to the hexes around it for simplicity
+        val corners = pairs.map { neighbourPair ->
+            averageCentres(hex, hex.neighbour(neighbourPair.first), hex.neighbour(neighbourPair.second))
+        }
 
-        return listOf(c0, c1, c2, c3, c4, c5, c6)
+        return corners + hexCentres[hex]!!
     }
 
     private fun averageCentres(h0: Hex, h1: Hex, h2: Hex): Vector3f {
@@ -45,8 +45,42 @@ data class PathMappedWrappingHexGrid(
         return hc0.add(hc1, Vector3f()).add(hc2).div(3f)
     }
 
-    private fun calculateHexCentres() {
-        knotCoordinates.forEachIndexed { segment, knotData ->
+    private fun calculateHexCentres(): Map<Hex, Vector3f> {
+        return when (hexGrid.layout.orientation) {
+            POINTY -> calcuatePointyHexCentres()
+            FLAT -> calculateFlatHexCentres()
+        }
+
+    }
+
+    private fun calculateFlatHexCentres(): Map<Hex, Vector3f> {
+        val centres = mutableMapOf<Hex, Vector3f>()
+        val pathCoordinates = pathCreator.createPath(hexGrid.m)
+        pathCoordinates.forEachIndexed { segment, knotData ->
+            val hexList = mutableListOf<Hex>()
+            val hq = segment
+            val hs = -segment / 2
+            val hr = -hq - hs
+            var hexToAdd = hexGrid.hex(hq, hr, hs)
+            hexList.add(hexToAdd)
+            (0 until hexGrid.n).forEach { _ ->
+                hexToAdd = hexToAdd.neighbour(2)
+                hexList.add(hexToAdd)
+            }
+            hexList.forEachIndexed { index, hex ->
+                val adjustOddHexes = if (segment % 2 == 0) 0.0 else (0.5 / hexGrid.n)
+                val theta = 2.0 * PI * (1.0 / hexGrid.n * index + adjustOddHexes)
+                centres[hex] = calculateHexCentre(knotData, theta)
+            }
+
+        }
+        return centres
+    }
+
+    private fun calcuatePointyHexCentres(): Map<Hex, Vector3f> {
+        val centres = mutableMapOf<Hex, Vector3f>()
+        val pathCoordinates = pathCreator.createPath(hexGrid.m * 2)
+        pathCoordinates.forEachIndexed { segment, pathData ->
             val hexList = mutableListOf<Hex>()
             var hexToAdd = when {
                 segment % 2 == 0 -> {
@@ -67,21 +101,20 @@ data class PathMappedWrappingHexGrid(
                 hexToAdd = hexToAdd.diagonalNeighbour(1) // add the "north" diagonal
                 hexList.add(hexToAdd)
             }
-            // Now distribute the hexes evenly around a circle adjusted from the current knotData
-            // We will record only their centres, and later calculate their corners
             hexList.forEachIndexed { index, hex ->
                 // pencil and paper!
-                val adjustForPointy = if (segment%2 == 0) 0.0 else (1.0 / hexGrid.n)
-                val theta = 2.0 * PI * (2.0 / hexGrid.n * index + adjustForPointy)
-                val p = knotData.point
-                val n = knotData.normal
-                val t = knotData.tangent
-                val b = t.cross(n, Vector3f())
-                val xd = b.mul((r * cos(theta)).toFloat(), Vector3f())
-                val yd = n.mul((r * sin(theta)).toFloat(), Vector3f())
-                val centre = xd.add(p).add(yd)
-                hexCentres[hex] = centre
+                val adjustOddHexes = if (segment % 2 == 0) 0.0 else (1.0 / hexGrid.n)
+                val theta = 2.0 * PI * (2.0 / hexGrid.n * index + adjustOddHexes)
+                centres[hex] = calculateHexCentre(pathData, theta)
             }
         }
+        return centres
+    }
+
+    private fun calculateHexCentre(pathData: PathData, theta: Double): Vector3f {
+        val b = pathData.tangent.cross(pathData.normal, Vector3f())
+        val xd = b.mul((r * cos(theta)).toFloat(), Vector3f())
+        val yd = pathData.normal.mul((r * sin(theta)).toFloat(), Vector3f())
+        return xd.add(pathData.point).add(yd)
     }
 }
