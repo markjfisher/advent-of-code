@@ -21,7 +21,6 @@ class Hud {
     private var vg: Long = 0
     private lateinit var colour: NVGColor
     private var fontBuffer: ByteBuffer = Utils.ioResourceToByteBuffer("/fonts/UbuntuMono-R.ttf", 150 * 1024)
-    private val dateFormat: DateFormat = SimpleDateFormat("HH:mm:ss")
     private lateinit var posx: DoubleBuffer
     private lateinit var posy: DoubleBuffer
 

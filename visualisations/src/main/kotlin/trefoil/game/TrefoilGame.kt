@@ -25,10 +25,9 @@ import engine.graph.Renderer
 import engine.graph.Texture
 import engine.item.GameItem
 import net.fish.geometry.hex.Layout
-import net.fish.geometry.hex.Orientation
+import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
-import net.fish.geometry.hex.projection.PathMappedWrappingHexGrid
-import net.fish.geometry.paths.TorusKnotPathCreator
+import net.fish.geometry.hex.projection.TorusKnotSurface
 import org.joml.Math.abs
 import org.joml.Math.max
 import org.joml.Matrix3f
@@ -57,10 +56,9 @@ class TrefoilGame : GameLogic {
     private val hud = Hud()
 
     // Grid and space
-    private val gridLayout = Layout(Orientation.ORIENTATION.POINTY)
+    private val gridLayout = Layout(POINTY)
     private val hexGrid = WrappingHexGrid(1200, 12, gridLayout)
-    private val pather = TorusKnotPathCreator(p = 3, q = 7, scale = 5.0)
-    private val knot = PathMappedWrappingHexGrid(hexGrid = hexGrid, pathCreator = pather, r = 0.15)
+    private val surface = TorusKnotSurface(1200, 12, POINTY, 3, 7, 1.0f, 0.5f, 0.15f, 5.0f)
 
     // Game state
     private var isPaused = true
@@ -102,10 +100,11 @@ class TrefoilGame : GameLogic {
     private val grey = Vector3f(0.6f, 0.6f, 0.6f)
 
     override fun init(window: Window) {
+        surface.createMapper()
         emptyTexture = Texture("visualisations/textures/stone3-wl-pointy.png")
 
         hexGrid.hexes().forEachIndexed { index, hex ->
-            val newMesh = OBJLoader.loadMesh(knot.hexToObj(hex))
+            val newMesh = OBJLoader.loadMesh(surface.mapper.hexToObj(hex))
             newMesh.texture = emptyTexture
             val gameItem = GameItem(newMesh)
             gameItem.setPosition(Vector3f(0f, 0f, 0f))
@@ -115,7 +114,7 @@ class TrefoilGame : GameLogic {
         }
 
         hud.init(window)
-        renderer.init(window)
+        renderer.init()
         keyPressedTimer.set()
     }
 

@@ -2,7 +2,7 @@ package advents.conwayhex.game
 
 import advents.conwayhex.game.ui.CameraOptions
 import advents.conwayhex.game.ui.ConwayOptions
-import advents.conwayhex.game.ui.SurfaceOptions
+import commands.CreateSurface
 import commands.DecreaseSpeed
 import commands.IncreaseSpeed
 import commands.KeyCommand
@@ -19,6 +19,7 @@ import commands.ResetCamera
 import commands.ResetGame
 import commands.RunCamera
 import commands.SetCamera
+import commands.SetLookahead
 import commands.SingleKeyPressCommand
 import commands.SingleStep
 import commands.ToggleHud
@@ -44,15 +45,15 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.fish.geometry.hex.Hex
-import net.fish.geometry.hex.Layout
-import net.fish.geometry.hex.Orientation
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
-import net.fish.geometry.hex.WrappingHexGrid
-import net.fish.geometry.hex.projection.PathMappedWrappingHexGrid
+import net.fish.geometry.hex.projection.DecoratedKnotSurface
+import net.fish.geometry.hex.projection.DecoratedKnotType.Type11c
+import net.fish.geometry.hex.projection.SimpleTorusSurface
+import net.fish.geometry.hex.projection.TorusKnotSurface
+import net.fish.geometry.hex.projection.TrefoilSurface
 import net.fish.geometry.paths.CameraData
 import net.fish.geometry.paths.CameraPath
-import net.fish.geometry.paths.DecoratedTorusKnotPathCreator
 import net.fish.resourceLines
 import net.fish.y2020.Day24
 import org.joml.Math.abs
@@ -99,42 +100,6 @@ class ConwayHex2020Day24 : GameLogic {
 
     // Input from the original puzzle!
     private val data = resourceLines(2020, 24)
-
-//    // Torus
-//    private val surface = TorusMappedWrappingHexGrid(
-//        hexGrid = WrappingHexGrid(m = 160, n = 40, layout = Layout(POINTY)),
-//        r1 = 1.5,
-//        r2 = 8.0
-//    )
-
-    // trefoil:
-//    private val surface = PathMappedWrappingHexGrid(
-//        hexGrid = WrappingHexGrid(600, 26, Layout(POINTY)),
-//        pathCreator = TrefoilPathCreator(scale = 3.0, segments = 1200),
-//        r = 0.6
-//    )
-
-//    // TorusKnot
-//    private val surface = PathMappedWrappingHexGrid(
-//        hexGrid = WrappingHexGrid(900, 16, Layout(POINTY)),
-//        pathCreator = TorusKnotPathCreator(p = 3, q = 7, scale = 5.0, segments = 1800),
-//        r = 0.25
-//    )
-
-//    // Dense TorusKnot
-//    private val surface = PathMappedWrappingHexGrid(
-//        hexGrid = WrappingHexGrid(1300, 12, Layout(POINTY)),
-//        pathCreator = TorusKnotPathCreator(p = 11, q = 17, b = 0.2, scale = 5.0, segments = 2600),
-//        r = 0.20
-//    )
-
-    // Decorated Torus Knot
-    private val surface = PathMappedWrappingHexGrid(
-        hexGrid = WrappingHexGrid(900, 16, Layout(FLAT)),
-        // Valid patterns: 4b, 7a, 7b, 10b, 11c
-        pathCreator = DecoratedTorusKnotPathCreator(pattern = "11c", scale = 5.0),
-        r = 0.25
-    )
 
     // Game state
     private var currentStepDelay = 0
@@ -189,6 +154,16 @@ class ConwayHex2020Day24 : GameLogic {
     private val newCameraVector = Vector3f()
     private val cameraDelta = Vector3f()
 
+    // Surfaces
+    val surfaces = mutableMapOf(
+        "Torus" to SimpleTorusSurface(160, 50, POINTY, 8.0f, 1.5f, 1.0f),
+        "Trefoil Knot" to TrefoilSurface(600, 26, POINTY, 0.6f, 3.0f),
+        "Torus Knot 3,7" to TorusKnotSurface(900, 16, POINTY, 3, 7, 1.0f, 0.2f, 0.2f, 5.0f),
+        "Torus Knot 11,17" to TorusKnotSurface(1300,12, POINTY, 11, 17, 1.0f, 0.2f, 0.2f, 5.0f),
+        "Decorated Torus Knot" to DecoratedKnotSurface(900, 16, FLAT, Type11c, 0.25f, 5.0f)
+    )
+
+    // Main Options for application
     private val conwayOptions = ConwayOptions(
         gameSpeed = 5,
         globalAlpha = 1f,
@@ -203,13 +178,14 @@ class ConwayHex2020Day24 : GameLogic {
             loopCamera = false,
             cameraPathNames = cameraPaths.keys.sorted(),
             currentCameraPath = -1,
+            lookAhead = 10
         ),
-        surfaceOptions = SurfaceOptions(
-            gridSizeH = 0,
-            gridSizeV = 0
-        ),
+        currentSurfaceName = "Decorated Torus Knot",
+        surfaces = surfaces,
         stateChangeFunction = ::changeState
     )
+
+    private var surface = surfaces[conwayOptions.currentSurfaceName]!!
 
     private fun readInitialPosition(): Set<Hex> {
         val doubledCoords = Day24.walk(data).take(initialPoints)
@@ -226,8 +202,23 @@ class ConwayHex2020Day24 : GameLogic {
         aliveTexturePointy = Texture("visualisations/textures/new-white-pointy.png")
         aliveTextureFlat = Texture("visualisations/textures/new-white-flat.png")
 
+        surface.createMapper()
+        createGameItems()
+
+        with(ImGui) {
+            sysDefault = io.fonts.addFontDefault()
+            ubuntuFont = io.fonts.addFontFromFileTTF("fonts/UbuntuMono-R.ttf", 18.0f) ?: sysDefault
+        }
+
+        hud.init(window)
+        renderer.init()
+        keyPressedTimer.set()
+        cameraMovementTimer.set()
+    }
+
+    private fun createGameItems() {
         surface.hexGrid.hexes().forEachIndexed { _, hex ->
-            val newMesh = loadMesh(surface.hexToObj(hex))
+            val newMesh = loadMesh(surface.mapper.hexToObj(hex))
             val hexColour = hexToColour(hex)
             newMesh.colour = hexColour
 
@@ -242,19 +233,10 @@ class ConwayHex2020Day24 : GameLogic {
             hexToGameItem[hex] = gameItem
             gameItemToHex[gameItem] = hex
         }
-        with(ImGui) {
-            sysDefault = io.fonts.addFontDefault()
-            ubuntuFont = io.fonts.addFontFromFileTTF("fonts/UbuntuMono-R.ttf", 18.0f) ?: sysDefault
-        }
-
-        hud.init(window)
-        renderer.init(window)
-        keyPressedTimer.set()
-        cameraMovementTimer.set()
     }
 
     private fun hexToColour(hex: Hex): Vector3f {
-        val hexAxis = surface.hexAxis(hex)
+        val hexAxis = surface.mapper.hexAxis(hex)
         return Vector3f(
             hexAxis.axes.m00 * 0.65f + 0.1f,
             hexAxis.axes.m11 * 0.65f + 0.1f,
@@ -344,12 +326,12 @@ class ConwayHex2020Day24 : GameLogic {
         }
     }
 
-    private fun loadInitialCameraPosition() {
+    private fun loadInitialCameraPosition(keepFrame: Boolean) {
         with(conwayOptions.cameraOptions) {
             cameraData.clear()
             cameraData.addAll(cameraPaths[cameraPathNames[currentCameraPath]]!!.invoke())
 
-            cameraFrameNumber = 1
+            if (!keepFrame) cameraFrameNumber = 1
             maxCameraFrames = cameraData.size
 
             val cp = cameraData[cameraFrameNumber - 1].location
@@ -360,7 +342,7 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     private fun calculateTunnelPath(): List<CameraData> {
-        return CameraPath.generateCameraPath(surface)
+        return CameraPath.generateCameraPath(surface, conwayOptions.cameraOptions.lookAhead)
     }
 
     private fun moveCamera() {
@@ -391,7 +373,24 @@ class ConwayHex2020Day24 : GameLogic {
     private fun nextCamera() {
         conwayOptions.cameraOptions.currentCameraPath = (conwayOptions.cameraOptions.currentCameraPath + 1) % cameraPaths.size
         conwayOptions.cameraOptions.movingCamera = false
-        loadInitialCameraPosition()
+        loadInitialCameraPosition(false)
+    }
+
+    private fun createSurface() {
+        // re-initialise everything with new surface
+        aliveTexturePointy = Texture("visualisations/textures/new-white-pointy.png")
+        aliveTextureFlat = Texture("visualisations/textures/new-white-flat.png")
+        alive.clear()
+        conwayIteration = 0
+        resetCamera()
+        cleanup()
+        gameItems.clear()
+        hexToGameItem.clear()
+        gameItemToHex.clear()
+        surface = surfaces[conwayOptions.currentSurfaceName]!!
+        surface.createMapper()
+        createGameItems()
+        renderer.init()
     }
 
     private fun resetGame() {
@@ -434,13 +433,15 @@ class ConwayHex2020Day24 : GameLogic {
             PrintState -> printGameState()
             SingleStep -> if (conwayOptions.pauseGame) performStep()
             ResetCamera -> resetCamera()
-            LoadCamera -> loadInitialCameraPosition()
+            LoadCamera -> loadInitialCameraPosition(keepFrame = false)
+            SetLookahead -> loadInitialCameraPosition(keepFrame = true)
             NextCamera -> nextCamera()
             SetCamera -> setCamera()
             RunCamera -> conwayOptions.cameraOptions.movingCamera = !conwayOptions.cameraOptions.movingCamera
             ToggleMessages -> conwayOptions.showMessage = !conwayOptions.showMessage
             ToggleHud -> conwayOptions.showHud = !conwayOptions.showHud
             ToggleImgUI -> showImgUI = !showImgUI
+            CreateSurface -> createSurface()
 
             MoveForward -> moveForward()
             MoveBackward -> moveBackward()

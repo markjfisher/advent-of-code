@@ -5,11 +5,11 @@ import net.fish.geometry.knots.Knots
 data class TorusKnotPathCreator(
     val p: Int,
     val q: Int,
-    val a: Double = 1.0,
-    val b: Double = 0.5,
-    val scale: Double = 1.0
+    val a: Float = 1.0f,
+    val b: Float = 0.5f,
+    val scale: Float = 1.0f
 ): PathCreator {
     override fun createPath(segments: Int): List<PathData> {
-        return Knots.torusKnot(p, q, a, b, scale, segments)
+        return Knots.torusKnot(p, q, a.toDouble(), b.toDouble(), scale.toDouble(), segments)
     }
 }

@@ -11,20 +11,20 @@ import java.io.File
 
 internal class SurfaceMapperTest {
 
-    private val decoratedSurface = PathMappedWrappingHexGrid(
+    private val decoratedSurface = SurfaceMapper(
         hexGrid = WrappingHexGrid(900, 16, Layout(POINTY)),
         // Valid patterns: 4b, 7a, 7b, 10b, 11c
         pathCreator = DecoratedTorusKnotPathCreator(pattern = "11c", scale = 5.0),
         r = 0.25
     )
 
-    private val trefoilSurface = PathMappedWrappingHexGrid(
+    private val trefoilSurface = SurfaceMapper(
         hexGrid = WrappingHexGrid(600, 26, Layout(POINTY)),
         pathCreator = TrefoilPathCreator(scale = 3.0),
         r = 0.6
     )
 
-    private val torusKnotSurface = PathMappedWrappingHexGrid(
+    private val torusKnotSurface = SurfaceMapper(
         hexGrid = WrappingHexGrid(900, 16, Layout(POINTY)),
         pathCreator = TorusKnotPathCreator(p = 3, q = 7, scale = 5.0),
         r = 0.25

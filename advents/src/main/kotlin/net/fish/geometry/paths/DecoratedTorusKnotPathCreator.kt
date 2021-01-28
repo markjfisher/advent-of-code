@@ -1,19 +1,24 @@
 package net.fish.geometry.paths
 
+import net.fish.geometry.hex.projection.DecoratedKnotType
+import net.fish.geometry.hex.projection.DecoratedKnotType.Type10b
+import net.fish.geometry.hex.projection.DecoratedKnotType.Type11c
+import net.fish.geometry.hex.projection.DecoratedKnotType.Type4b
+import net.fish.geometry.hex.projection.DecoratedKnotType.Type7a
+import net.fish.geometry.hex.projection.DecoratedKnotType.Type7b
 import net.fish.geometry.knots.Knots
 
 data class DecoratedTorusKnotPathCreator(
-    val pattern: String,
-    val scale: Double
+    val pattern: DecoratedKnotType,
+    val scale: Float
 ): PathCreator {
     override fun createPath(segments: Int): List<PathData> {
         return when(pattern) {
-            "4b" -> Knots.decoratedKnot4b(segments, scale)
-            "7a" -> Knots.decoratedKnot7a(segments, scale)
-            "7b" -> Knots.decoratedKnot7b(segments, scale)
-            "10b" -> Knots.decoratedKnot10b(segments, scale)
-            "11c" -> Knots.decoratedKnot11c(segments, scale)
-            else -> throw Exception("Unknown pattern: $pattern")
+            Type4b -> Knots.decoratedKnot4b(segments, scale.toDouble())
+            Type7a -> Knots.decoratedKnot7a(segments, scale.toDouble())
+            Type7b -> Knots.decoratedKnot7b(segments, scale.toDouble())
+            Type10b -> Knots.decoratedKnot10b(segments, scale.toDouble())
+            Type11c -> Knots.decoratedKnot11c(segments, scale.toDouble())
         }
 
     }

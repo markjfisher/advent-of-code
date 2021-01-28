@@ -9,6 +9,15 @@ import kotlin.math.sin
 
 object Knots {
 
+    fun plainTorus(r: Double, scale: Double, segments: Int): List<PathData> {
+        val fns = Parametrics(
+            { x -> r * cos(x) * scale },
+            { x -> r * sin(x) * scale },
+            { x -> 0.0 }
+        )
+        return createPath(segments, fns)
+    }
+
     // see https://www.gsn-lib.org/docs/nodes/MeshTorusNode.php
     fun torusKnot(p: Int, q: Int, a: Double, b: Double, scale: Double, segments: Int): List<PathData> {
         val fns = Parametrics(
