@@ -67,6 +67,9 @@ class SurfaceMapper(val surface: Surface) {
         }
         val unitX = xP.normalize()
         val unitY = yP.normalize()
+        if (unitX.x.isNaN() || unitY.x.isNaN()) {
+            println("ERROR IN NORMALS: hex = $hex, xP = $xP, yP = $yP")
+        }
         val unitZ = unitX.cross(unitY, Vector3f())
         return HexAxis(
             location = centre,

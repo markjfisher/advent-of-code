@@ -21,6 +21,8 @@ import imgui.ImGui.columns
 import imgui.ImGui.dragInt2
 import imgui.ImGui.end
 import imgui.ImGui.frameHeight
+import imgui.ImGui.inputFloat
+import imgui.ImGui.inputInt
 import imgui.ImGui.nextColumn
 import imgui.ImGui.popButtonRepeat
 import imgui.ImGui.popItemFlag
@@ -36,7 +38,6 @@ import imgui.ImGui.separator
 import imgui.ImGui.sliderFloat
 import imgui.ImGui.sliderInt
 import imgui.StyleVar
-import imgui.demo.ShowDemoWindowWidgets
 import imgui.dsl.radioButton
 import imgui.dsl.treeNode
 import imgui.internal.sections.ButtonFlag
@@ -44,14 +45,15 @@ import imgui.internal.sections.ItemFlag
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.projection.DecoratedKnotSurface
-import net.fish.geometry.hex.projection.DecoratedKnotType
 import net.fish.geometry.hex.projection.DecoratedKnotType.Type10b
 import net.fish.geometry.hex.projection.DecoratedKnotType.Type11c
 import net.fish.geometry.hex.projection.DecoratedKnotType.Type4b
 import net.fish.geometry.hex.projection.DecoratedKnotType.Type7a
 import net.fish.geometry.hex.projection.DecoratedKnotType.Type7b
+import net.fish.geometry.hex.projection.EpitrochoidSurface
 import net.fish.geometry.hex.projection.SimpleTorusSurface
 import net.fish.geometry.hex.projection.Surface
+import net.fish.geometry.hex.projection.ThreeFactorParametricSurface
 import net.fish.geometry.hex.projection.TorusKnotSurface
 import kotlin.reflect.KFunction1
 
@@ -81,6 +83,7 @@ data class ConwayOptions(
         }
 
         pushItemWidth(-140f)
+        separator()
         treeNode("Game") {
             columns(2, "game1", false)
             checkbox("Pause", ::pauseGame); nextColumn()
@@ -102,6 +105,7 @@ data class ConwayOptions(
             if (button("Reset Game", fullSize)) stateChangeFunction(ResetGame)
             columns(1)
         }
+        separator()
         treeNode("Camera") {
             columns(3, "camera1", false)
             checkbox("Animate", cameraOptions::movingCamera); nextColumn()
@@ -153,64 +157,74 @@ data class ConwayOptions(
                 }
             }
         }
+        separator()
         treeNode("Surface") {
             sliderFloat("Global Alpha", ::globalAlpha, 0f, 1f)
 
-            treeNode("Surfaces") {
-                if (dragInt2("Grid Size", gridSize4i, 2f, 2, 2000)) {
-                    var newWidth = gridSize4i[0].coerceAtLeast(2)
-                    if (newWidth % 2 == 1) newWidth--
-                    var maxV = MAX_M_BY_N / newWidth
-                    if (maxV % 2 == 1) maxV--
-                    currentSurface.gridWidth = newWidth
-                    currentSurface.gridHeight = gridSize4i[1].coerceAtMost(maxV).coerceAtLeast(2)
-                }
-                radioButton("Pointy", currentSurface.gridOrientation == POINTY) {
-                    currentSurface.gridOrientation = POINTY
-                }
-                sameLine()
-                radioButton("Flat", currentSurface.gridOrientation == FLAT) {
-                    currentSurface.gridOrientation = FLAT
-                }
-                surfaces.keys.sorted().forEachIndexed { i, surfaceName ->
-                    if (selectable(String.format("%1d. %s", i + 1, surfaceName), currentSurfaceName == surfaceName)) {
-                        currentSurfaceName = surfaceName
-                    }
-                }
-                separator()
-                // for the given surface type, show its controls
-                when(currentSurface) {
-                    is SimpleTorusSurface -> {
-                        sliderFloat("Major Radius", currentSurface::majorRadius, 0.0001f, 20f)
-                    }
-                    is DecoratedKnotSurface -> {
-                        radioButton("4b", currentSurface.type == Type4b) { currentSurface.type = Type4b }
-                        sameLine()
-                        radioButton("7a", currentSurface.type == Type7a) { currentSurface.type = Type7a }
-                        sameLine()
-                        radioButton("7b", currentSurface.type == Type7b) { currentSurface.type = Type7b }
-                        sameLine()
-                        radioButton("10b", currentSurface.type == Type10b) { currentSurface.type = Type10b }
-                        sameLine()
-                        radioButton("11c", currentSurface.type == Type11c) { currentSurface.type = Type11c }
-                    }
-                    is TorusKnotSurface -> {
-                        sliderInt("p", currentSurface::p, 1, 20)
-                        sliderInt("q", currentSurface::q, 1, 20)
-
-                        sliderFloat("a", currentSurface::a, 0.1f, 2f)
-                        sliderFloat("b", currentSurface::b, 0.1f, 2f)
-                    }
-                    else -> {
-                        // todo
-                    }
-                }
-                sliderFloat("Sweep Radius", currentSurface::r, 0.1f, 5f)
-                sliderFloat("Scale", currentSurface::scale, 0.2f, 10f)
-                separator()
-                if (button("Create Surface", fullSize)) stateChangeFunction(CreateSurface)
+            if (dragInt2("Grid Size", gridSize4i, 2f, 2, 2000)) {
+                var newWidth = gridSize4i[0].coerceAtLeast(2)
+                if (newWidth % 2 == 1) newWidth--
+                var maxV = MAX_M_BY_N / newWidth
+                if (maxV % 2 == 1) maxV--
+                currentSurface.gridWidth = newWidth
+                currentSurface.gridHeight = gridSize4i[1].coerceAtMost(maxV).coerceAtLeast(2)
             }
+            radioButton("Pointy", currentSurface.gridOrientation == POINTY) {
+                currentSurface.gridOrientation = POINTY
+            }
+            sameLine()
+            radioButton("Flat", currentSurface.gridOrientation == FLAT) {
+                currentSurface.gridOrientation = FLAT
+            }
+            surfaces.keys.sorted().forEachIndexed { i, surfaceName ->
+                if (selectable(String.format("%1d. %s", i + 1, surfaceName), currentSurfaceName == surfaceName)) {
+                    currentSurfaceName = surfaceName
+                }
+            }
+            separator()
+            // for the given surface type, show its controls
+            when (currentSurface) {
+                is SimpleTorusSurface -> {
+                    sliderFloat("Major Radius", currentSurface::majorRadius, 0.0001f, 20f)
+                }
+                is DecoratedKnotSurface -> {
+                    radioButton("4b", currentSurface.type == Type4b) { currentSurface.type = Type4b }
+                    sameLine()
+                    radioButton("7a", currentSurface.type == Type7a) { currentSurface.type = Type7a }
+                    sameLine()
+                    radioButton("7b", currentSurface.type == Type7b) { currentSurface.type = Type7b }
+                    sameLine()
+                    radioButton("10b", currentSurface.type == Type10b) { currentSurface.type = Type10b }
+                    sameLine()
+                    radioButton("11c", currentSurface.type == Type11c) { currentSurface.type = Type11c }
+                }
+                is TorusKnotSurface -> {
+                    sliderInt("p", currentSurface::p, 1, 20)
+                    sliderInt("q", currentSurface::q, 1, 20)
+
+                    sliderFloat("a", currentSurface::a, 0.1f, 2f)
+                    sliderFloat("b", currentSurface::b, 0.1f, 2f)
+                }
+                is EpitrochoidSurface -> {
+                    inputFloat("a", currentSurface::a, 0.1f, 10f, "%.2f")
+                    inputFloat("b", currentSurface::b, 0.1f, 10f, "%.2f")
+                    inputFloat("c", currentSurface::c, 0.1f, 10f, "%.2f")
+                }
+                is ThreeFactorParametricSurface -> {
+                    inputInt("a", currentSurface::a, 0, 20)
+                    inputInt("b", currentSurface::b, 0, 20)
+                    inputInt("c", currentSurface::c, 0, 20)
+                }
+                else -> {
+                    // todo
+                }
+            }
+            sliderFloat("Sweep Radius", currentSurface::r, 0.1f, 5f)
+            sliderFloat("Scale", currentSurface::scale, 0.2f, 10f)
+            separator()
+            if (button("Create Surface", fullSize)) stateChangeFunction(CreateSurface)
         }
+        separator()
         treeNode("Debug") {
             columns(2, "debug_options", false)
             checkbox("Show Hud", ::showHud); nextColumn()

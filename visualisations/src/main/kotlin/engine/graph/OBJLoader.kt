@@ -17,6 +17,7 @@ object OBJLoader {
         val faces = mutableListOf<Face>()
 
         for (line in lines) {
+            // println("parsing: $line")
             val tokens = line.split("\\s".toRegex())
             when (tokens[0]) {
                 "v" -> vertices.add(Vector3f(tokens[1].toFloat(), tokens[2].toFloat(), tokens[3].toFloat()))

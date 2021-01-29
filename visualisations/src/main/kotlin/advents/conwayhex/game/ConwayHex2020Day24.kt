@@ -48,8 +48,12 @@ import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.projection.DecoratedKnotSurface
+import net.fish.geometry.hex.projection.DecoratedKnotType
+import net.fish.geometry.hex.projection.DecoratedKnotType.Type10b
 import net.fish.geometry.hex.projection.DecoratedKnotType.Type11c
+import net.fish.geometry.hex.projection.EpitrochoidSurface
 import net.fish.geometry.hex.projection.SimpleTorusSurface
+import net.fish.geometry.hex.projection.ThreeFactorParametricSurface
 import net.fish.geometry.hex.projection.TorusKnotSurface
 import net.fish.geometry.hex.projection.TrefoilSurface
 import net.fish.geometry.paths.CameraData
@@ -160,7 +164,9 @@ class ConwayHex2020Day24 : GameLogic {
         "Trefoil Knot" to TrefoilSurface(600, 26, POINTY, 0.6f, 3.0f),
         "Torus Knot 3,7" to TorusKnotSurface(900, 16, POINTY, 3, 7, 1.0f, 0.2f, 0.2f, 5.0f),
         "Torus Knot 11,17" to TorusKnotSurface(1300,12, POINTY, 11, 17, 1.0f, 0.2f, 0.2f, 5.0f),
-        "Decorated Torus Knot" to DecoratedKnotSurface(900, 16, FLAT, Type11c, 0.25f, 5.0f)
+        "Decorated Torus Knot" to DecoratedKnotSurface(900, 16, FLAT, Type10b, 0.25f, 5.0f),
+        "Epitrochoid" to EpitrochoidSurface(1200, 12, FLAT, 5f, 1f, 3.5f, 0.2f, 0.5f),
+        "3 Factor Parametric" to ThreeFactorParametricSurface(1220, 12, FLAT, 2, 5, 4, 0.3f, 3f)
     )
 
     // Main Options for application
