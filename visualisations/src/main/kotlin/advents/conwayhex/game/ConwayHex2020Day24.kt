@@ -155,7 +155,7 @@ class ConwayHex2020Day24 : GameLogic {
     private val cameraDelta = Vector3f()
 
     // Surfaces
-    val surfaces = mutableMapOf(
+    private val surfaces = mutableMapOf(
         "Torus" to SimpleTorusSurface(160, 50, POINTY, 8.0f, 1.5f, 1.0f),
         "Trefoil Knot" to TrefoilSurface(600, 26, POINTY, 0.6f, 3.0f),
         "Torus Knot 3,7" to TorusKnotSurface(900, 16, POINTY, 3, 7, 1.0f, 0.2f, 0.2f, 5.0f),
@@ -334,10 +334,7 @@ class ConwayHex2020Day24 : GameLogic {
             if (!keepFrame) cameraFrameNumber = 1
             maxCameraFrames = cameraData.size
 
-            val cp = cameraData[cameraFrameNumber - 1].location
-            val cr = cameraData[cameraFrameNumber - 1].rotation.normalize()
-            camera.setPosition(cp.x, cp.y, cp.z)
-            camera.setRotation(cr.w, cr.x, cr.y, cr.z)
+            setCamera()
         }
     }
 
@@ -364,10 +361,14 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     private fun setCamera() {
-        val cp = cameraData[conwayOptions.cameraOptions.cameraFrameNumber - 1].location
-        val cr = cameraData[conwayOptions.cameraOptions.cameraFrameNumber - 1].rotation
-        camera.setPosition(cp.x, cp.y, cp.z)
-        camera.setRotation(cr.w, cr.x, cr.y, cr.z)
+        with(conwayOptions.cameraOptions) {
+            val cp = cameraData[cameraFrameNumber - 1].location
+            val cr = cameraData[cameraFrameNumber - 1].rotation
+            camera.setPosition(cp.x, cp.y, cp.z)
+            camera.setRotation(cr.w, cr.x, cr.y, cr.z)
+            val lookAt = (cameraFrameNumber + lookAhead - 1) % maxCameraFrames
+            worldCentre.set(cameraData[lookAt].location)
+        }
     }
 
     private fun nextCamera() {
@@ -477,6 +478,7 @@ class ConwayHex2020Day24 : GameLogic {
         // Mouse detection
         when {
             mouseInput.isMiddleButtonPressed && (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) && abs(mouseInput.displVec.length()) > 0.001f -> {
+                conwayOptions.cameraOptions.movingCamera = false
                 // free camera move in its XY plane
                 val moveVec: Vector2f = mouseInput.displVec
                 camera.rotation.positiveY(cameraY).mul(moveVec.x * MOUSE_SENSITIVITY)
@@ -487,6 +489,7 @@ class ConwayHex2020Day24 : GameLogic {
             }
 
             mouseInput.isMiddleButtonPressed && abs(mouseInput.displVec.length()) > 0.001f -> {
+                conwayOptions.cameraOptions.movingCamera = false
                 val moveVec: Vector2f = mouseInput.displVec
                 val rotAngles = Vector3f(-MOUSE_SENSITIVITY * moveVec.y, -MOUSE_SENSITIVITY * moveVec.x, 0f)
 
@@ -520,6 +523,7 @@ class ConwayHex2020Day24 : GameLogic {
             }
 
             mouseInput.scrollDirection != 0 -> {
+                conwayOptions.cameraOptions.movingCamera = false
                 // move camera a percentage closer/further from world centre.
                 val percentageChange = if (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) 0.10f else 0.02f
 
