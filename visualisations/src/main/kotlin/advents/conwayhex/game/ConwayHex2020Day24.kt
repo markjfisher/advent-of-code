@@ -164,9 +164,9 @@ class ConwayHex2020Day24 : GameLogic {
         "Trefoil Knot" to TrefoilSurface(600, 26, POINTY, 0.6f, 3.0f),
         "Torus Knot 3,7" to TorusKnotSurface(900, 16, POINTY, 3, 7, 1.0f, 0.2f, 0.2f, 5.0f),
         "Torus Knot 11,17" to TorusKnotSurface(1300,12, POINTY, 11, 17, 1.0f, 0.2f, 0.2f, 5.0f),
-        "Decorated Torus Knot" to DecoratedKnotSurface(900, 16, FLAT, Type10b, 0.25f, 5.0f),
-        "Epitrochoid" to EpitrochoidSurface(1200, 12, FLAT, 5f, 1f, 3.5f, 0.2f, 0.5f),
-        "3 Factor Parametric" to ThreeFactorParametricSurface(1220, 12, FLAT, 2, 5, 4, 0.3f, 3f)
+        "Decorated Torus Knot" to DecoratedKnotSurface(900, 16, POINTY, Type10b, 0.25f, 5.0f),
+        "Epitrochoid" to EpitrochoidSurface(1200, 12, POINTY, 5f, 1f, 3.5f, 0.2f, 0.5f),
+        "3 Factor Parametric" to ThreeFactorParametricSurface(1220, 12, POINTY, 2, 5, 4, 0.3f, 3f)
     )
 
     // Main Options for application
@@ -205,8 +205,7 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     override fun init(window: Window) {
-        aliveTexturePointy = Texture("visualisations/textures/new-white-pointy.png")
-        aliveTextureFlat = Texture("visualisations/textures/new-white-flat.png")
+        loadTextures()
 
         surface.createMapper()
         createGameItems()
@@ -385,8 +384,7 @@ class ConwayHex2020Day24 : GameLogic {
 
     private fun createSurface() {
         // re-initialise everything with new surface
-        aliveTexturePointy = Texture("visualisations/textures/new-white-pointy.png")
-        aliveTextureFlat = Texture("visualisations/textures/new-white-flat.png")
+        loadTextures()
         alive.clear()
         conwayIteration = 0
         resetCamera()
@@ -398,6 +396,11 @@ class ConwayHex2020Day24 : GameLogic {
         surface.createMapper()
         createGameItems()
         renderer.init()
+    }
+
+    private fun loadTextures() {
+        aliveTexturePointy = Texture("visualisations/textures/new-white-pointy-50trans.png")
+        aliveTextureFlat = Texture("visualisations/textures/new-white-flat.png")
     }
 
     private fun resetGame() {
@@ -460,21 +463,6 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     override fun update(interval: Float, mouseInput: MouseInput, window: Window) {
-        if (conwayOptions.cameraOptions.movingCamera) {
-            moveCamera()
-        }
-
-        if (!conwayOptions.pauseGame) {
-            // do next conway step
-            currentStepDelay += 1
-            if (currentStepDelay % conwayOptions.gameSpeed == 0) {
-                currentStepDelay = 0
-                performStep()
-            }
-        }
-        flashPercentage = max(flashPercentage - 7, 0)
-        if (flashPercentage == 0) flashMessage = ""
-
         // Don't process mouse inputs if it is over a ImgUI window
         if (window.ctx.io.wantCaptureKeyboard or window.ctx.io.wantCaptureMouse or window.ctx.io.wantTextInput) {
             mouseInput.scrollDirection = 0 // stop weird hangover of scrolling continuing to show once if used when focus is on ImgUI
@@ -483,7 +471,7 @@ class ConwayHex2020Day24 : GameLogic {
 
         // Mouse detection
         when {
-            mouseInput.isMiddleButtonPressed && (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) && abs(mouseInput.displVec.length()) > 0.001f -> {
+            mouseInput.isMiddleButtonPressed && (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) && abs(mouseInput.displVec.lengthSquared()) > 0.001f -> {
                 conwayOptions.cameraOptions.movingCamera = false
                 // free camera move in its XY plane
                 val moveVec: Vector2f = mouseInput.displVec
@@ -494,7 +482,7 @@ class ConwayHex2020Day24 : GameLogic {
                 camera.setPosition(camera.position.x + cameraDelta.x, camera.position.y + cameraDelta.y, camera.position.z + cameraDelta.z)
             }
 
-            mouseInput.isMiddleButtonPressed && abs(mouseInput.displVec.length()) > 0.001f -> {
+            mouseInput.isMiddleButtonPressed && abs(mouseInput.displVec.lengthSquared()) > 0.001f -> {
                 conwayOptions.cameraOptions.movingCamera = false
                 val moveVec: Vector2f = mouseInput.displVec
                 val rotAngles = Vector3f(-MOUSE_SENSITIVITY * moveVec.y, -MOUSE_SENSITIVITY * moveVec.x, 0f)
@@ -611,6 +599,24 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     override fun render(window: Window) {
+        if (conwayOptions.cameraOptions.movingCamera) {
+            moveCamera()
+        }
+
+
+        if (!conwayOptions.pauseGame) {
+            // do next conway step
+            currentStepDelay += 1
+            if (currentStepDelay % conwayOptions.gameSpeed == 0) {
+                currentStepDelay = 0
+                performStep()
+            }
+        }
+        flashPercentage = max(flashPercentage - 7, 0)
+        if (flashPercentage == 0) flashMessage = ""
+
+
+
         val polygonMode = if (conwayOptions.showPolygons) GL_LINE else GL_FILL
         glPolygonMode(GL11C.GL_FRONT_AND_BACK, polygonMode)
         // sort the gameItems so that the "on" items are at the start - vertices don't seem to get overwritten by later items (expected it to be other way around!)

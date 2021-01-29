@@ -222,7 +222,7 @@ class TrefoilGame : GameLogic {
         if (flashPercentage == 0) flashMessage = ""
 
         when {
-            mouseInput.isMiddleButtonPressed && (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) && abs(mouseInput.displVec.length()) > 0.001f -> {
+            mouseInput.isMiddleButtonPressed && (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT) || window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) && abs(mouseInput.displVec.lengthSquared()) > 0.001f -> {
                 // free camera move in its XY plane
                 val moveVec: Vector2f = mouseInput.displVec
                 camera.rotation.positiveY(cameraY).mul(moveVec.x * MOUSE_SENSITIVITY)
@@ -232,7 +232,7 @@ class TrefoilGame : GameLogic {
                 camera.setPosition(camera.position.x + cameraDelta.x, camera.position.y + cameraDelta.y, camera.position.z + cameraDelta.z)
             }
 
-            mouseInput.isMiddleButtonPressed && abs(mouseInput.displVec.length()) > 0.001f -> {
+            mouseInput.isMiddleButtonPressed && abs(mouseInput.displVec.lengthSquared()) > 0.001f -> {
                 val moveVec: Vector2f = mouseInput.displVec
                 val rotAngles = Vector3f(-MOUSE_SENSITIVITY * moveVec.y, -MOUSE_SENSITIVITY * moveVec.x, 0f)
 

@@ -143,8 +143,8 @@ object Knots {
         val pf = Vector3f(px.toFloat(), -pz.toFloat(), py.toFloat())
         val tf = Vector3f(tx.toFloat(), -tz.toFloat(), ty.toFloat())
         val nf = Vector3f(nx.toFloat(), -nz.toFloat(), ny.toFloat())
-        if (tf.length() > 0.00001f) tf.normalize()
-        if (nf.length() > 0.00001f) nf.normalize()
+        if (tf.lengthSquared() > 0.001f) tf.normalize()
+        if (nf.lengthSquared() > 0.001f) nf.normalize()
         return PathData(
             point = pf,
             tangent = tf,
