@@ -9,8 +9,10 @@ class GameItem(
     val position: Vector3f = Vector3f(),
     var scale: Float = 1f,
     val rotation: Quaternionf = Quaternionf(),
-    var colour: Vector3f = mesh.colour
+    var animating: Boolean = false
 ) {
+    var colour: Vector3f = mesh.colour
+
     fun setPosition(x: Float, y: Float, z: Float) {
         position.set(x, y, z)
     }

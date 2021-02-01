@@ -25,6 +25,7 @@ import org.lwjgl.opengl.GL30C.glGenVertexArrays
 import org.lwjgl.system.MemoryUtil
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
+import kotlin.math.roundToInt
 
 class Mesh(
     val positions: FloatArray,
@@ -32,6 +33,7 @@ class Mesh(
     val normals: FloatArray,
     val indices: IntArray,
     var texture: Texture? = null,
+    var textures: List<Texture> = emptyList(),
     var colour: Vector3f = DEFAULT_COLOUR
 ) {
     var vaoId = 0
@@ -42,12 +44,15 @@ class Mesh(
 
     fun isTextured() = texture != null
 
-    fun render() {
-        texture?.id?.let {
-            // Activate first texture bank
-            glActiveTexture(GL_TEXTURE0)
-            // Bind the texture
-            glBindTexture(GL_TEXTURE_2D, it)
+    fun render(animationPercentage: Float = 1f) {
+        if (animationPercentage > 0.001f) {
+            val nearestIndex = ((textures.size - 1) * animationPercentage).roundToInt()
+            textures[nearestIndex].id.let {
+                // Activate first texture bank
+                glActiveTexture(GL_TEXTURE0)
+                // Bind the texture
+                glBindTexture(GL_TEXTURE_2D, it)
+            }
         }
 
         // Draw the mesh

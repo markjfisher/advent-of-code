@@ -70,8 +70,6 @@ inline fun <reified T> Pair<Int, Int>.createArray(initialValue: T) = Array(this.
 fun normalFromPoints(p1: Vector3f, p2: Vector3f, p3: Vector3f): Vector3f {
     // Blender does normal = (p1-p2)x(p2-p3)
     val cross = p1.sub(p2, Vector3f()).cross(p2.sub(p3, Vector3f()))
-    if (cross.lengthSquared() > 0.001f) cross.normalize() else {
-        println("cross is zero for $p1, $p2, $p3")
-    }
+    if (cross.lengthSquared() > 0.0001f) cross.normalize()
     return cross
 }

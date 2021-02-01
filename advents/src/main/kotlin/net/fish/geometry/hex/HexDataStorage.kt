@@ -1,34 +1,30 @@
 package net.fish.geometry.hex
 
-interface HexDataStorage {
+interface HexDataStorage<T: HexData> {
     val hexes: Iterable<Hex>
 
-    fun addHex(hex: Hex)
-    fun addHex(hex: Hex, data: HexData): Boolean
+    fun addHex(hex: Hex, data: T): Boolean
 
-    fun getData(hex: Hex): HexData
+    fun getData(hex: Hex): T?
     fun containsHex(hex: Hex): Boolean
     fun hasData(hex: Hex): Boolean
     fun clearData(hex: Hex): Boolean
+    fun clearAll()
 }
 
-class DefaultHexDataStorage : HexDataStorage {
-    private val storage = LinkedHashMap<Hex, HexData>()
+class HashMapBackedHexDataStorage<T:HexData> : HexDataStorage<T> {
+    private val storage = LinkedHashMap<Hex, T?>()
 
     override val hexes: Iterable<Hex>
         get() = storage.keys
 
-    override fun addHex(hex: Hex) {
-        storage[hex] = EmptyHexData
-    }
-
-    override fun addHex(hex: Hex, data: HexData): Boolean {
+    override fun addHex(hex: Hex, data: T): Boolean {
         val previous = storage.put(hex, data)
         return previous != null
     }
 
-    override fun getData(hex: Hex): HexData {
-        return storage.getOrDefault(hex, EmptyHexData)
+    override fun getData(hex: Hex): T? {
+        return storage[hex]
     }
 
     override fun containsHex(hex: Hex): Boolean {
@@ -36,13 +32,17 @@ class DefaultHexDataStorage : HexDataStorage {
     }
 
     override fun hasData(hex: Hex): Boolean {
-        return storage.getOrDefault(hex, EmptyHexData) != EmptyHexData
+        return storage[hex] != null
     }
 
     override fun clearData(hex: Hex): Boolean {
         val result = hasData(hex)
         storage.remove(hex)
         return result
+    }
+
+    override fun clearAll() {
+        storage.clear()
     }
 
 }

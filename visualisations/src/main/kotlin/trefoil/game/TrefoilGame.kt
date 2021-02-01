@@ -284,7 +284,7 @@ class TrefoilGame : GameLogic {
 
 
     override fun render(window: Window) {
-        renderer.render(window, camera, gameItems)
+        renderer.render(window, camera, gameItems, 1f)
         val hudData = HudData(
             isPaused = isPaused,
             flashMessage = flashMessage,
