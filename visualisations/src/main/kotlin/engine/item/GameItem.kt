@@ -8,8 +8,7 @@ class GameItem(
     val mesh: Mesh,
     val position: Vector3f = Vector3f(),
     var scale: Float = 1f,
-    val rotation: Quaternionf = Quaternionf(),
-    var animating: Boolean = false
+    val rotation: Quaternionf = Quaternionf()
 ) {
     var colour: Vector3f = mesh.colour
 

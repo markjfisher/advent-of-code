@@ -9,6 +9,7 @@ import commands.ResetGame
 import commands.SetCamera
 import commands.SetLookahead
 import commands.SingleStep
+import commands.ToggleTexture
 import glm_.vec2.Vec2
 import imgui.Cond
 import imgui.Dir
@@ -64,6 +65,8 @@ data class ConwayOptions(
     var pauseGame: Boolean,
     var showPolygons: Boolean,
     var globalAlpha: Float,
+    var useTexture: Boolean,
+    var animationPercentages: MutableMap<Int, Float>,
     var currentSurfaceName: String,
     var surfaces: MutableMap<String, Surface>,
     var cameraOptions: CameraOptions,
@@ -104,6 +107,9 @@ data class ConwayOptions(
 
             if (button("Reset Game", fullSize)) stateChangeFunction(ResetGame)
             columns(1)
+            if (checkbox("Use Texture", ::useTexture)) {
+                stateChangeFunction(ToggleTexture)
+            }
         }
         separator()
         treeNode("Camera") {

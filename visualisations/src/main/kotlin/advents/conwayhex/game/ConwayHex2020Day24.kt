@@ -30,6 +30,7 @@ import commands.ToggleHud
 import commands.ToggleImgUI
 import commands.ToggleMessages
 import commands.TogglePause
+import commands.ToggleTexture
 import engine.GameEngine
 import engine.GameLogic
 import engine.MouseInput
@@ -112,6 +113,8 @@ class ConwayHex2020Day24 : GameLogic {
     private val gameItems = mutableListOf<GameItem>()
     private val hexStorage = HashMapBackedHexDataStorage<ConwayHexData>()
     private val alive = mutableSetOf<Hex>()
+    private val creating = mutableSetOf<Hex>()
+    private val destroying = mutableSetOf<Hex>()
     private val initialPoints = 25 // we have up to 597 initial points from the original game
     private var createdCount = 0
     private var destroyedCount = 0
@@ -124,11 +127,28 @@ class ConwayHex2020Day24 : GameLogic {
     // text flashing and other animation
     private var flashPercentage: Int = 0
     private var flashMessage: String = ""
-    private var animationPercentage: Float = 0f
+
+    // y = 1648x / (1250x + 625)
+    private val animationPercentages = mutableMapOf(
+        0 to 0f,
+        10 to 0.3152f,
+        20 to 0.5087f,
+        30 to 0.6397f,
+        40 to 0.7342f,
+        50 to 0.8056f,
+        60 to 0.8614f,
+        70 to 0.9063f,
+        80 to 0.9431f,
+        90 to 0.9739f,
+        100 to 1f
+    )
 
     // Textures
-    lateinit var pointyTextures: List<Texture>
-    lateinit var flatTextures: List<Texture>
+    lateinit var aliveTexturePointy: Texture
+    lateinit var aliveTextureFlat: Texture
+
+    // Colour for on
+    private var colourOn = Vector3f(0.75f, 0.75f, 0.75f)
 
     // make it read only by typing it as constant - ensures it's not changed
     private val globalY: Vector3fc = Vector3f(0f, 1f, 0f)
@@ -164,7 +184,7 @@ class ConwayHex2020Day24 : GameLogic {
         "Torus" to SimpleTorusSurface(160, 50, POINTY, 8.0f, 1.5f, 1.0f),
         "Trefoil Knot" to TrefoilSurface(600, 26, POINTY, 0.6f, 3.0f),
         "Torus Knot 3,7" to TorusKnotSurface(900, 16, POINTY, 3, 7, 1.0f, 0.2f, 0.2f, 5.0f),
-        "Torus Knot 11,17" to TorusKnotSurface(1300,12, POINTY, 11, 17, 1.0f, 0.2f, 0.2f, 5.0f),
+        "Torus Knot 11,17" to TorusKnotSurface(1300, 12, POINTY, 11, 17, 1.0f, 0.2f, 0.2f, 5.0f),
         "Decorated Torus Knot" to DecoratedKnotSurface(900, 16, POINTY, Type10b, 0.25f, 5.0f),
         "Epitrochoid" to EpitrochoidSurface(1200, 12, POINTY, 5f, 1f, 3.5f, 0.2f, 0.5f),
         "3 Factor Parametric" to ThreeFactorParametricSurface(1220, 12, POINTY, 2, 5, 4, 0.3f, 3f)
@@ -178,6 +198,7 @@ class ConwayHex2020Day24 : GameLogic {
         showMessage = false,
         pauseGame = true,
         showPolygons = false,
+        useTexture = false,
         cameraOptions = CameraOptions(
             cameraFrameNumber = 1,
             maxCameraFrames = -1,
@@ -187,6 +208,7 @@ class ConwayHex2020Day24 : GameLogic {
             currentCameraPath = -1,
             lookAhead = 10
         ),
+        animationPercentages = animationPercentages,
         currentSurfaceName = "Decorated Torus Knot",
         surfaces = surfaces,
         stateChangeFunction = ::changeState
@@ -206,9 +228,7 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     override fun init(window: Window) {
-        // loadTextures()
-        flatTextures = loadFlatTextures()
-        pointyTextures = loadPointyTextures()
+        loadTextures()
 
         surface.createMapper()
         createGameItems()
@@ -227,7 +247,6 @@ class ConwayHex2020Day24 : GameLogic {
     private fun createGameItems() {
         surface.hexGrid.hexes().forEachIndexed { _, hex ->
             val newMesh = loadMesh(surface.mapper.hexToObj(hex))
-            newMesh.textures = if (surface.hexGrid.layout.orientation == POINTY) pointyTextures else flatTextures
             val hexColour = hexToColour(hex)
 
             val gameItem = GameItem(newMesh)
@@ -357,11 +376,7 @@ class ConwayHex2020Day24 : GameLogic {
                 setCamera()
                 cameraFrameNumber++
                 if (cameraFrameNumber > cameraData.size) {
-                    if (!loopCamera) {
-                        cameraFrameNumber = cameraData.size
-                    } else {
-                        cameraFrameNumber = 1
-                    }
+                    cameraFrameNumber = if (!loopCamera) cameraData.size else 1
                 }
                 cameraMovementTimer.set()
             }
@@ -387,11 +402,10 @@ class ConwayHex2020Day24 : GameLogic {
 
     private fun createSurface() {
         // re-initialise everything with new surface
-        // loadTextures()
-        flatTextures = loadFlatTextures()
-        pointyTextures = loadPointyTextures()
-
+        loadTextures()
         alive.clear()
+        creating.clear()
+        destroying.clear()
         conwayIteration = 0
         resetCamera()
         cleanup()
@@ -403,40 +417,20 @@ class ConwayHex2020Day24 : GameLogic {
         renderer.init()
     }
 
-//    private fun loadTextures() {
-//        aliveTexturePointy = Texture("visualisations/textures/new-white-pointy-50trans.png")
-//        aliveTextureFlat = Texture("visualisations/textures/new-white-flat.png")
-//    }
-
-    private fun loadPointyTextures(): List<Texture> {
-        return listOf(
-            Texture("visualisations/textures/white-pointy-25.png"),
-            Texture("visualisations/textures/white-pointy-50.png"),
-            Texture("visualisations/textures/white-pointy-62.png"),
-            Texture("visualisations/textures/white-pointy-75.png"),
-            Texture("visualisations/textures/white-pointy-87.png"),
-            Texture("visualisations/textures/white-pointy-100.png")
-        )
-    }
-
-    private fun loadFlatTextures(): List<Texture> {
-        return listOf(
-            Texture("visualisations/textures/white-flat-25.png"),
-            Texture("visualisations/textures/white-flat-50.png"),
-            Texture("visualisations/textures/white-flat-62.png"),
-            Texture("visualisations/textures/white-flat-75.png"),
-            Texture("visualisations/textures/white-flat-87.png"),
-            Texture("visualisations/textures/white-flat-100.png")
-        )
+    private fun loadTextures() {
+        aliveTexturePointy = Texture("visualisations/textures/white-pointy-100.png")
+        aliveTextureFlat = Texture("visualisations/textures/white-flat-100.png")
     }
 
     private fun resetGame() {
         alive.clear()
+        creating.clear()
+        destroying.clear()
         conwayIteration = 0
         surface.hexGrid.hexes().forEach { hex ->
             val data = hexStorage.getData(hex)!!
             data.state = DEAD
-            data.gameItem.animating = false
+            data.gameItem.colour = hexToColour(hex)
         }
     }
 
@@ -447,6 +441,31 @@ class ConwayHex2020Day24 : GameLogic {
             world centre: $worldCentre
             """.trimIndent()
         )
+    }
+
+    private fun toggleTextureMode() {
+        if(conwayOptions.useTexture) {
+            // for any currently animating, turn them into full textures
+            destroying.forEach { hex ->
+                hexStorage.getData(hex)!!.gameItem.colour.set(hexToColour(hex))
+                hexStorage.getData(hex)!!.gameItem.mesh.texture = null
+            }
+            alive.forEach { hex ->
+                hexStorage.getData(hex)!!.gameItem.colour.set(hexToColour(hex))
+                hexStorage.getData(hex)!!.gameItem.mesh.texture = getAliveTexture()
+            }
+        } else {
+            // change to colour mode
+            println("switching to colour mode. alive: ${alive.size}, creating: ${creating.size}, destroying: ${destroying.size}")
+
+            // all the currently alive (includes creating), turn them fully on, then deal with the changing
+            alive.forEach { hex ->
+                hexStorage.getData(hex)!!.gameItem.colour.set(colourOn)
+                hexStorage.getData(hex)!!.gameItem.mesh.texture = null
+            }
+            // any changing states can be in their correct animation phase
+            setAnimationColours(currentStepDelay % conwayOptions.gameSpeed)
+        }
     }
 
     fun changeState(command: KeyCommand) {
@@ -480,6 +499,7 @@ class ConwayHex2020Day24 : GameLogic {
             ToggleHud -> conwayOptions.showHud = !conwayOptions.showHud
             ToggleImgUI -> showImgUI = !showImgUI
             CreateSurface -> createSurface()
+            ToggleTexture -> toggleTextureMode()
 
             MoveForward -> moveForward()
             MoveBackward -> moveBackward()
@@ -564,16 +584,21 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     private fun performStep() {
-        // mark all the hexes that were creating as alive, destroying as dead
+        // mark all the hexes that were creating as alive, destroying as dead, set their colours to end conditions
         surface.hexGrid.hexes().forEach { hex ->
             val data = hexStorage.getData(hex)!!
             if (data.state == CREATING) {
                 data.state = ALIVE
-                data.gameItem.animating = false
+                if (conwayOptions.useTexture) {
+                    data.gameItem.mesh.texture = getAliveTexture()
+                } else {
+                    data.gameItem.colour.set(colourOn)
+                }
             }
             if (data.state == DESTROYING) {
                 data.state = DEAD
-                data.gameItem.animating = false
+                data.gameItem.colour.set(hexToColour(hex))
+                data.gameItem.mesh.texture = null
             }
         }
 
@@ -586,19 +611,27 @@ class ConwayHex2020Day24 : GameLogic {
 
         alive.clear()
         alive.addAll(newAlive)
+        creating.clear()
+        creating.addAll(newOn)
+        destroying.clear()
+        destroying.addAll(newOff)
 
-        newOff.forEach { hex ->
-            val data = hexStorage.getData(hex)!!
-            data.state = DESTROYING
-            data.gameItem.animating = true
-        }
+        if (conwayOptions.useTexture) {
+            newOff.forEach { hex ->
+                val data = hexStorage.getData(hex)!!
+                data.state = DESTROYING
+                data.gameItem.mesh.texture = null
+            }
 
-        newOn.forEach { hex ->
-            val data = hexStorage.getData(hex)!!
-            data.state = CREATING
-            data.gameItem.animating = true
+            newOn.forEach { hex ->
+                val data = hexStorage.getData(hex)!!
+                data.state = CREATING
+                data.gameItem.mesh.texture = getAliveTexture()
+            }
         }
     }
+
+    private fun getAliveTexture() = if (surface.hexGrid.layout.orientation == POINTY) aliveTexturePointy else aliveTextureFlat
 
     private fun runConway(): Set<Hex> {
         conwayIteration++
@@ -652,13 +685,16 @@ class ConwayHex2020Day24 : GameLogic {
 
         if (!conwayOptions.pauseGame) {
             // do next conway step
-            currentStepDelay += 1
+            currentStepDelay++
 
             val animationStep = currentStepDelay % conwayOptions.gameSpeed
-            animationPercentage = animationStep / (conwayOptions.gameSpeed - 1).toFloat()
             if (animationStep == 0) {
                 currentStepDelay = 0
                 performStep()
+            }
+
+            if (!conwayOptions.useTexture) {
+                setAnimationColours(animationStep)
             }
         }
         flashPercentage = max(flashPercentage - 7, 0)
@@ -667,10 +703,38 @@ class ConwayHex2020Day24 : GameLogic {
         val polygonMode = if (conwayOptions.showPolygons) GL_LINE else GL_FILL
         glPolygonMode(GL11C.GL_FRONT_AND_BACK, polygonMode)
         // sort the gameItems so that the "on" items are at the start - vertices don't seem to get overwritten by later items (expected it to be other way around!)
-        renderer.render(window, camera, gameItems, animationPercentage, conwayOptions.globalAlpha)
+        renderer.render(window, camera, gameItems, conwayOptions.globalAlpha)
         glPolygonMode(GL11C.GL_FRONT_AND_BACK, GL_FILL)
         doHud(window)
         if (showImgUI) doImgUI(window)
+    }
+
+    private fun setAnimationColours(animationStep: Int) {
+        val animationPercentage = (animationStep + 1) / conwayOptions.gameSpeed.toFloat()
+        // Now find all hexes that are animating and work out their new colours
+        destroying.forEach { hex ->
+            setAnimationColour(hex, animationPercentage, true)
+        }
+        creating.forEach { hex ->
+            setAnimationColour(hex, animationPercentage, false)
+        }
+    }
+
+    private fun setAnimationColour(hex: Hex, animationPercentage: Float, destroying: Boolean) {
+        var p: Float = calculatePercentage(animationPercentage)
+        if (!destroying) p = 1-p
+        val newColour = hexToColour(hex).sub(colourOn).mul(p).add(colourOn)
+        hexStorage.getData(hex)!!.gameItem.colour.set(newColour)
+        hexStorage.getData(hex)!!.gameItem.mesh.texture = null
+    }
+
+    private fun calculatePercentage(animationPercentage: Float): Float {
+        val lower10 = (animationPercentage * 10f).toInt() * 10 // e.g. 0.47 -> 40
+        val upper10 = ((animationPercentage + 0.1f) * 10f).toInt() * 10
+        val between = (animationPercentage * 100f).toInt() - lower10
+        val lowerP = conwayOptions.animationPercentages.getOrDefault(lower10, 1f)
+        val upperP = conwayOptions.animationPercentages.getOrDefault(upper10, 1f)
+        return lowerP * (10f - between) / 10f + upperP * between / 10f
     }
 
     private fun doImgUI(window: Window) {

@@ -23,6 +23,7 @@ object ToggleMessages: SingleKeyPressCommand()
 object ToggleHud: SingleKeyPressCommand()
 object ToggleImgUI: SingleKeyPressCommand()
 object CreateSurface: SingleKeyPressCommand()
+object ToggleTexture: SingleKeyPressCommand()
 
 sealed class MovementCommand: KeyCommand()
 object MoveForward: MovementCommand()

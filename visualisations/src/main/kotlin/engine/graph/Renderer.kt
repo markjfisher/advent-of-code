@@ -44,16 +44,16 @@ class Renderer {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT or GL_STENCIL_BUFFER_BIT)
     }
 
-    fun render(window: Window, camera: Camera, gameItems: List<GameItem>, animationPercentage: Float, alpha: Float = 1f) {
+    fun render(window: Window, camera: Camera, gameItems: List<GameItem>, alpha: Float = 1f) {
         clear()
         if (window.isResized) {
             glViewport(0, 0, window.width, window.height)
             window.isResized = false
         }
-        renderScene(window, camera, gameItems, animationPercentage, alpha)
+        renderScene(window, camera, gameItems, alpha)
     }
 
-    fun renderScene(window: Window, camera: Camera, gameItems: List<GameItem>, animationPercentage: Float, alpha: Float) {
+    fun renderScene(window: Window, camera: Camera, gameItems: List<GameItem>, alpha: Float) {
         sceneShaderProgram.bind()
 
         // Update projection Matrix
@@ -65,21 +65,12 @@ class Renderer {
         // Need to change this if we have more than 1 texture, presumably
         sceneShaderProgram.setUniform("texture_sampler", 0)
 
-        // Now the animating ones
-        gameItems.filter { it.animating }.forEach { gameItem ->
-            val modelViewMatrix = transformation.buildModelViewMatrix(gameItem, viewMatrix)
-            sceneShaderProgram.setUniform("modelViewMatrix", modelViewMatrix)
-            sceneShaderProgram.setUniform("useColour", 0)
-            gameItem.mesh.render(animationPercentage)
-        }
-
-        // Render our items - first everything
         for (gameItem in gameItems) {
             val modelViewMatrix = transformation.buildModelViewMatrix(gameItem, viewMatrix)
             sceneShaderProgram.setUniform("modelViewMatrix", modelViewMatrix)
             sceneShaderProgram.setUniform("colour", gameItem.colour, alpha)
-            sceneShaderProgram.setUniform("useColour", 1)
-            gameItem.mesh.render(0f)
+            sceneShaderProgram.setUniform("useColour", if (gameItem.mesh.isTextured()) 0 else 1)
+            gameItem.mesh.render()
         }
 
         sceneShaderProgram.unbind()
