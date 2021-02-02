@@ -418,8 +418,8 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     private fun loadTextures() {
-        aliveTexturePointy = Texture("visualisations/textures/white-pointy-100.png")
-        aliveTextureFlat = Texture("visualisations/textures/white-flat-100.png")
+        aliveTexturePointy = Texture("visualisations/textures/new-white-pointy.png")
+        aliveTextureFlat = Texture("visualisations/textures/new-white-flat.png")
     }
 
     private fun resetGame() {
