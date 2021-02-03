@@ -23,6 +23,7 @@ import commands.ResetCamera
 import commands.ResetGame
 import commands.RunCamera
 import commands.SetCamera
+import commands.SetGlobalAlpha
 import commands.SetLookahead
 import commands.SingleKeyPressCommand
 import commands.SingleStep
@@ -42,6 +43,7 @@ import engine.graph.OBJLoader.loadMesh
 import engine.graph.Renderer
 import engine.graph.Texture
 import engine.item.GameItem
+import glm_.vec4.Vec4
 import imgui.ImGui
 import imgui.font.Font
 import kotlinx.coroutines.Dispatchers
@@ -70,6 +72,7 @@ import org.joml.Quaternionf
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector3fc
+import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW.GLFW_KEY_0
 import org.lwjgl.glfw.GLFW.GLFW_KEY_1
 import org.lwjgl.glfw.GLFW.GLFW_KEY_A
@@ -128,7 +131,7 @@ class ConwayHex2020Day24 : GameLogic {
     private var flashPercentage: Int = 0
     private var flashMessage: String = ""
 
-    // y = 1648x / (1250x + 625)
+    // y = 1648x / (1250x + 625), or y = (n π + 2) x / ( π (n x + 1)). higher n = steeper drop/climb
     private val animationPercentages = mutableMapOf(
         0 to 0f,
         10 to 0.3152f,
@@ -148,7 +151,7 @@ class ConwayHex2020Day24 : GameLogic {
     lateinit var aliveTextureFlat: Texture
 
     // Colour for on
-    private var colourOn = Vector3f(0.75f, 0.75f, 0.75f)
+    private var colourOn = Vector4f(0.75f, 0.75f, 0.75f, 0.95f)
 
     // make it read only by typing it as constant - ensures it's not changed
     private val globalY: Vector3fc = Vector3f(0f, 1f, 0f)
@@ -199,6 +202,7 @@ class ConwayHex2020Day24 : GameLogic {
         pauseGame = true,
         showPolygons = false,
         useTexture = false,
+        aliveColour = colourOn,
         cameraOptions = CameraOptions(
             cameraFrameNumber = 1,
             maxCameraFrames = -1,
@@ -262,12 +266,13 @@ class ConwayHex2020Day24 : GameLogic {
         }
     }
 
-    private fun hexToColour(hex: Hex): Vector3f {
+    private fun hexToColour(hex: Hex): Vector4f {
         val hexAxis = surface.mapper.hexAxis(hex)
-        return Vector3f(
+        return Vector4f(
             hexAxis.axes.m00 * 0.65f + 0.1f,
             hexAxis.axes.m11 * 0.65f + 0.1f,
-            hexAxis.axes.m22 * 0.65f + 0.1f
+            hexAxis.axes.m22 * 0.65f + 0.1f,
+            conwayOptions.globalAlpha
         )
     }
 
@@ -431,6 +436,7 @@ class ConwayHex2020Day24 : GameLogic {
             val data = hexStorage.getData(hex)!!
             data.state = DEAD
             data.gameItem.colour = hexToColour(hex)
+            data.gameItem.mesh.texture = null
         }
     }
 
@@ -444,7 +450,7 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     private fun toggleTextureMode() {
-        if(conwayOptions.useTexture) {
+        if (conwayOptions.useTexture) {
             // for any currently animating, turn them into full textures
             destroying.forEach { hex ->
                 hexStorage.getData(hex)!!.gameItem.colour.set(hexToColour(hex))
@@ -456,11 +462,9 @@ class ConwayHex2020Day24 : GameLogic {
             }
         } else {
             // change to colour mode
-            println("switching to colour mode. alive: ${alive.size}, creating: ${creating.size}, destroying: ${destroying.size}")
-
             // all the currently alive (includes creating), turn them fully on, then deal with the changing
             alive.forEach { hex ->
-                hexStorage.getData(hex)!!.gameItem.colour.set(colourOn)
+                hexStorage.getData(hex)!!.gameItem.colour.set(conwayOptions.aliveColour)
                 hexStorage.getData(hex)!!.gameItem.mesh.texture = null
             }
             // any changing states can be in their correct animation phase
@@ -468,7 +472,14 @@ class ConwayHex2020Day24 : GameLogic {
         }
     }
 
-    fun changeState(command: KeyCommand) {
+    private fun setGameItemsAlpha() {
+        // any non animating or alive hexes need to change their alpha value.
+        (hexStorage.hexes - alive - creating - destroying).forEach { hex ->
+            hexStorage.getData(hex)!!.gameItem.colour.w = conwayOptions.globalAlpha
+        }
+    }
+
+    private fun changeState(command: KeyCommand) {
         if (command is SingleKeyPressCommand) {
             // Stop key repeats when this is meant to be a 1 shot press
             val pressedAt = keyPressedTimer.time
@@ -488,7 +499,13 @@ class ConwayHex2020Day24 : GameLogic {
             ResetGame -> resetGame()
             TogglePause -> conwayOptions.pauseGame = !conwayOptions.pauseGame
             PrintState -> printGameState()
-            SingleStep -> if (conwayOptions.pauseGame) performStep()
+            SingleStep -> if (conwayOptions.pauseGame) {
+                performStep()
+                if (!conwayOptions.useTexture) {
+                    setAnimationColours(0)
+                }
+
+            }
             ResetCamera -> resetCamera()
             LoadCamera -> loadInitialCameraPosition(keepFrame = false)
             SetLookahead -> loadInitialCameraPosition(keepFrame = true)
@@ -500,6 +517,7 @@ class ConwayHex2020Day24 : GameLogic {
             ToggleImgUI -> showImgUI = !showImgUI
             CreateSurface -> createSurface()
             ToggleTexture -> toggleTextureMode()
+            SetGlobalAlpha -> setGameItemsAlpha()
 
             MoveForward -> moveForward()
             MoveBackward -> moveBackward()
@@ -592,7 +610,7 @@ class ConwayHex2020Day24 : GameLogic {
                 if (conwayOptions.useTexture) {
                     data.gameItem.mesh.texture = getAliveTexture()
                 } else {
-                    data.gameItem.colour.set(colourOn)
+                    data.gameItem.colour.set(conwayOptions.aliveColour)
                 }
             }
             if (data.state == DESTROYING) {
@@ -703,7 +721,11 @@ class ConwayHex2020Day24 : GameLogic {
         val polygonMode = if (conwayOptions.showPolygons) GL_LINE else GL_FILL
         glPolygonMode(GL11C.GL_FRONT_AND_BACK, polygonMode)
         // sort the gameItems so that the "on" items are at the start - vertices don't seem to get overwritten by later items (expected it to be other way around!)
-        renderer.render(window, camera, gameItems, conwayOptions.globalAlpha)
+        val aliveGameItems = hexStorage.data.filter { data -> setOf(ALIVE).contains(data.state) }.map { it.gameItem }
+        val creatingGameItems = hexStorage.data.filter { data -> setOf(CREATING).contains(data.state) }.map { it.gameItem }
+        val destroyingGameItems = hexStorage.data.filter { data -> setOf(DESTROYING).contains(data.state) }.map { it.gameItem }
+        val notAliveGameItems = gameItems - aliveGameItems - creatingGameItems - destroyingGameItems
+        renderer.render(window, camera, aliveGameItems + creatingGameItems + destroyingGameItems + notAliveGameItems)
         glPolygonMode(GL11C.GL_FRONT_AND_BACK, GL_FILL)
         doHud(window)
         if (showImgUI) doImgUI(window)
@@ -712,18 +734,21 @@ class ConwayHex2020Day24 : GameLogic {
     private fun setAnimationColours(animationStep: Int) {
         val animationPercentage = (animationStep + 1) / conwayOptions.gameSpeed.toFloat()
         // Now find all hexes that are animating and work out their new colours
-        destroying.forEach { hex ->
+//        alive.forEach { hex ->
+//            hexStorage.getData(hex)!!.gameItem.colour.set(colourOn)
+//        }
+        creating.forEach { hex ->
             setAnimationColour(hex, animationPercentage, true)
         }
-        creating.forEach { hex ->
+        destroying.forEach { hex ->
             setAnimationColour(hex, animationPercentage, false)
         }
     }
 
-    private fun setAnimationColour(hex: Hex, animationPercentage: Float, destroying: Boolean) {
+    private fun setAnimationColour(hex: Hex, animationPercentage: Float, creating: Boolean) {
         var p: Float = calculatePercentage(animationPercentage)
-        if (!destroying) p = 1-p
-        val newColour = hexToColour(hex).sub(colourOn).mul(p).add(colourOn)
+        if (creating) p = 1f - p
+        val newColour = hexToColour(hex).sub(conwayOptions.aliveColour).mul(p).add(conwayOptions.aliveColour)
         hexStorage.getData(hex)!!.gameItem.colour.set(newColour)
         hexStorage.getData(hex)!!.gameItem.mesh.texture = null
     }

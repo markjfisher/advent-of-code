@@ -1,6 +1,6 @@
 package engine.graph
 
-import org.joml.Vector3f
+import org.joml.Vector4f
 import org.lwjgl.opengl.GL11C.GL_FLOAT
 import org.lwjgl.opengl.GL11C.GL_TEXTURE_2D
 import org.lwjgl.opengl.GL11C.GL_TRIANGLES
@@ -32,7 +32,7 @@ class Mesh(
     val normals: FloatArray,
     val indices: IntArray,
     var texture: Texture? = null,
-    var colour: Vector3f = DEFAULT_COLOUR
+    var colour: Vector4f = DEFAULT_COLOUR
 ) {
     var vaoId = 0
         private set
@@ -119,6 +119,6 @@ class Mesh(
     }
 
     companion object {
-        val DEFAULT_COLOUR = Vector3f(1.0f, 1.0f, 1.0f)
+        val DEFAULT_COLOUR = Vector4f(1.0f, 1.0f, 1.0f, 1.0f)
     }
 }

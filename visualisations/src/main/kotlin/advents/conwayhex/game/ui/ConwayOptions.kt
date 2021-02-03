@@ -7,10 +7,12 @@ import commands.PrintState
 import commands.ResetCamera
 import commands.ResetGame
 import commands.SetCamera
+import commands.SetGlobalAlpha
 import commands.SetLookahead
 import commands.SingleStep
 import commands.ToggleTexture
 import glm_.vec2.Vec2
+import glm_.vec4.Vec4
 import imgui.Cond
 import imgui.Dir
 import imgui.ImGui
@@ -18,6 +20,7 @@ import imgui.ImGui.begin
 import imgui.ImGui.button
 import imgui.ImGui.buttonEx
 import imgui.ImGui.checkbox
+import imgui.ImGui.colorEdit4
 import imgui.ImGui.columns
 import imgui.ImGui.dragInt2
 import imgui.ImGui.end
@@ -56,6 +59,7 @@ import net.fish.geometry.hex.projection.SimpleTorusSurface
 import net.fish.geometry.hex.projection.Surface
 import net.fish.geometry.hex.projection.ThreeFactorParametricSurface
 import net.fish.geometry.hex.projection.TorusKnotSurface
+import org.joml.Vector4f
 import kotlin.reflect.KFunction1
 
 data class ConwayOptions(
@@ -66,6 +70,7 @@ data class ConwayOptions(
     var showPolygons: Boolean,
     var globalAlpha: Float,
     var useTexture: Boolean,
+    var aliveColour: Vector4f,
     var animationPercentages: MutableMap<Int, Float>,
     var currentSurfaceName: String,
     var surfaces: MutableMap<String, Surface>,
@@ -73,6 +78,7 @@ data class ConwayOptions(
     val stateChangeFunction: KFunction1<KeyCommand, Unit>
 ) {
     private val fullSize = Vec2(-Float.MIN_VALUE, 0f)
+    private var aliveColour4v = Vec4(aliveColour.x, aliveColour.y, aliveColour.z, aliveColour.w)
 
     fun render(width: Int) {
         val currentSurface = surfaces[currentSurfaceName]!!
@@ -107,6 +113,9 @@ data class ConwayOptions(
 
             if (button("Reset Game", fullSize)) stateChangeFunction(ResetGame)
             columns(1)
+            if (colorEdit4("Alive colour", aliveColour4v)) {
+                aliveColour.set(aliveColour4v.x, aliveColour4v.y, aliveColour4v.z, aliveColour4v.w)
+            }
             if (checkbox("Use Texture", ::useTexture)) {
                 stateChangeFunction(ToggleTexture)
             }
@@ -165,7 +174,9 @@ data class ConwayOptions(
         }
         separator()
         treeNode("Surface") {
-            sliderFloat("Global Alpha", ::globalAlpha, 0f, 1f)
+            if(sliderFloat("Global Alpha", ::globalAlpha, 0f, 1f)) {
+                stateChangeFunction(SetGlobalAlpha)
+            }
 
             if (dragInt2("Grid Size", gridSize4i, 2f, 2, 2000)) {
                 var newWidth = gridSize4i[0].coerceAtLeast(2)
@@ -245,8 +256,8 @@ data class ConwayOptions(
     }
 
     companion object {
-        const val INITIAL_WIDTH = 420
-        const val INITIAL_HEIGHT = 600
+        const val INITIAL_WIDTH = 500
+        const val INITIAL_HEIGHT = 800
         const val MAX_M_BY_N = 15600
     }
 }

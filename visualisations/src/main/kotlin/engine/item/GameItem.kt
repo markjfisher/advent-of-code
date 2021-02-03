@@ -3,6 +3,7 @@ package engine.item
 import engine.graph.Mesh
 import org.joml.Quaternionf
 import org.joml.Vector3f
+import org.joml.Vector4f
 
 class GameItem(
     val mesh: Mesh,
@@ -10,7 +11,7 @@ class GameItem(
     var scale: Float = 1f,
     val rotation: Quaternionf = Quaternionf()
 ) {
-    var colour: Vector3f = mesh.colour
+    var colour: Vector4f = mesh.colour
 
     fun setPosition(x: Float, y: Float, z: Float) {
         position.set(x, y, z)

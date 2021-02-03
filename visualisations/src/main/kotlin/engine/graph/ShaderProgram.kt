@@ -1,7 +1,7 @@
 package engine.graph
 
 import org.joml.Matrix4f
-import org.joml.Vector3f
+import org.joml.Vector4f
 import org.lwjgl.opengl.GL20C.GL_COMPILE_STATUS
 import org.lwjgl.opengl.GL20C.GL_FRAGMENT_SHADER
 import org.lwjgl.opengl.GL20C.GL_LINK_STATUS
@@ -21,7 +21,6 @@ import org.lwjgl.opengl.GL20C.glGetUniformLocation
 import org.lwjgl.opengl.GL20C.glLinkProgram
 import org.lwjgl.opengl.GL20C.glShaderSource
 import org.lwjgl.opengl.GL20C.glUniform1i
-import org.lwjgl.opengl.GL20C.glUniform3f
 import org.lwjgl.opengl.GL20C.glUniform4f
 import org.lwjgl.opengl.GL20C.glUniformMatrix4fv
 import org.lwjgl.opengl.GL20C.glUseProgram
@@ -63,8 +62,8 @@ class ShaderProgram {
         uniforms[uniformName]?.let { glUniform1i(it, value) }
     }
 
-    fun setUniform(uniformName: String, value: Vector3f, alpha: Float) {
-        uniforms[uniformName]?.let { glUniform4f(it, value.x, value.y, value.z, alpha) }
+    fun setUniform(uniformName: String, value: Vector4f) {
+        uniforms[uniformName]?.let { glUniform4f(it, value.x, value.y, value.z, value.w) }
     }
 
     private fun createShader(shaderCode: String, shaderType: Int): Int {

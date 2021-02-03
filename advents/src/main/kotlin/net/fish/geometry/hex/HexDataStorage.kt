@@ -2,6 +2,7 @@ package net.fish.geometry.hex
 
 interface HexDataStorage<T: HexData> {
     val hexes: Iterable<Hex>
+    val data: Iterable<T>
 
     fun addHex(hex: Hex, data: T): Boolean
 
@@ -17,6 +18,9 @@ class HashMapBackedHexDataStorage<T:HexData> : HexDataStorage<T> {
 
     override val hexes: Iterable<Hex>
         get() = storage.keys
+
+    override val data: Iterable<T>
+        get() = storage.values.filterNotNull().asIterable()
 
     override fun addHex(hex: Hex, data: T): Boolean {
         val previous = storage.put(hex, data)
