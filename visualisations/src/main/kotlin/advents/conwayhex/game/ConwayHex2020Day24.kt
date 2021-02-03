@@ -161,6 +161,7 @@ class ConwayHex2020Day24 : GameLogic {
 
     private val cameraPaths = mutableMapOf(
         "Simple Circle Path" to { CameraLoader.loadCamera("/conwayhex/simple-circle-path.txt") },
+        "Fly by 10b (a)" to { CameraLoader.loadCamera("/conwayhex/fly-by-10b.txt") },
         "Fly by 11c (a)" to { CameraLoader.loadCamera("/conwayhex/fly-by-11c.txt") },
         "Fly by 11c (b)" to { CameraLoader.loadCamera("/conwayhex/fly-by-11c-2.txt") },
         "Current Tunnel" to { calculateTunnelPath() }

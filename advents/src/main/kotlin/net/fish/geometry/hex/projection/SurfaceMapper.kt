@@ -4,8 +4,6 @@ import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.HexAxis
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
-import net.fish.geometry.hex.WrappingHexGrid
-import net.fish.geometry.paths.PathCreator
 import net.fish.geometry.paths.PathData
 import net.fish.maths.normalFromPoints
 import org.joml.Matrix3f
