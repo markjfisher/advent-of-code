@@ -60,6 +60,7 @@ import net.fish.geometry.hex.projection.Surface
 import net.fish.geometry.hex.projection.ThreeFactorParametricSurface
 import net.fish.geometry.hex.projection.TorusKnotSurface
 import org.joml.Vector4f
+import kotlin.math.PI
 import kotlin.reflect.KFunction1
 
 data class ConwayOptions(
@@ -162,6 +163,8 @@ data class ConwayOptions(
             if (sliderInt("Look ahead", cameraOptions::lookAhead, 1, 150)) {
                 stateChangeFunction(SetLookahead)
             }
+
+            sliderFloat("fov", cameraOptions::fov, 0.01f, (PI - 0.01).toFloat())
 
             treeNode("Camera Path:") {
                 (cameraOptions.cameraPathNames.indices).forEach { i ->
@@ -269,5 +272,6 @@ data class CameraOptions(
     var loopCamera: Boolean,
     var currentCameraPath: Int,
     val cameraPathNames: List<String>,
-    var lookAhead: Int
+    var lookAhead: Int,
+    var fov: Float
 )

@@ -15,7 +15,7 @@ class Renderer {
     private var sceneShaderProgram: ShaderProgram = ShaderProgram()
 
     companion object {
-        private val FOV = toRadians(35f)
+        val FOV = toRadians(35f)
         private const val Z_NEAR = 0.01f
         private const val Z_FAR = 1000f
     }
@@ -44,20 +44,20 @@ class Renderer {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT or GL_STENCIL_BUFFER_BIT)
     }
 
-    fun render(window: Window, camera: Camera, gameItems: List<GameItem>) {
+    fun render(window: Window, camera: Camera, gameItems: List<GameItem>, fov: Float = FOV) {
         clear()
         if (window.isResized) {
             glViewport(0, 0, window.width, window.height)
             window.isResized = false
         }
-        renderScene(window, camera, gameItems)
+        renderScene(window, camera, gameItems, fov)
     }
 
-    fun renderScene(window: Window, camera: Camera, gameItems: List<GameItem>) {
+    fun renderScene(window: Window, camera: Camera, gameItems: List<GameItem>, fov: Float = FOV) {
         sceneShaderProgram.bind()
 
         // Update projection Matrix
-        val projectionMatrix = transformation.getProjectionMatrix(FOV, window.width.toFloat(), window.height.toFloat(), Z_NEAR, Z_FAR)
+        val projectionMatrix = transformation.getProjectionMatrix(fov, window.width.toFloat(), window.height.toFloat(), Z_NEAR, Z_FAR)
         sceneShaderProgram.setUniform("projectionMatrix", projectionMatrix)
         // Update view Matrix
         val viewMatrix = transformation.getViewMatrix(camera)

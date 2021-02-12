@@ -41,6 +41,7 @@ import engine.graph.Camera
 import engine.graph.CameraLoader
 import engine.graph.OBJLoader.loadMesh
 import engine.graph.Renderer
+import engine.graph.Renderer.Companion.FOV
 import engine.graph.Texture
 import engine.item.GameItem
 import glm_.vec4.Vec4
@@ -161,9 +162,10 @@ class ConwayHex2020Day24 : GameLogic {
 
     private val cameraPaths = mutableMapOf(
         "Simple Circle Path" to { CameraLoader.loadCamera("/conwayhex/simple-circle-path.txt") },
+        "Circle Path Quick" to { CameraLoader.loadCamera("/conwayhex/quick-simple-circle.txt") },
+        "Knot 3/7 Inner Circle" to { CameraLoader.loadCamera("/conwayhex/knot-3-7-inner-circle.txt") },
+        "Knot 11/17 Inner Circle" to { CameraLoader.loadCamera("/conwayhex/knot-11-17-inner-circle-wide.txt") },
         "Fly by 10b (a)" to { CameraLoader.loadCamera("/conwayhex/fly-by-10b.txt") },
-        "Fly by 11c (a)" to { CameraLoader.loadCamera("/conwayhex/fly-by-11c.txt") },
-        "Fly by 11c (b)" to { CameraLoader.loadCamera("/conwayhex/fly-by-11c-2.txt") },
         "Current Tunnel" to { calculateTunnelPath() }
     )
     private val cameraData = mutableListOf<CameraData>()
@@ -211,7 +213,8 @@ class ConwayHex2020Day24 : GameLogic {
             loopCamera = false,
             cameraPathNames = cameraPaths.keys.sorted(),
             currentCameraPath = -1,
-            lookAhead = 10
+            lookAhead = 10,
+            fov = FOV
         ),
         animationPercentages = animationPercentages,
         currentSurfaceName = "Decorated Torus Knot",
@@ -356,6 +359,7 @@ class ConwayHex2020Day24 : GameLogic {
             cameraFrameNumber = 1
             maxCameraFrames = -1
             currentCameraPath = -1
+            fov = FOV
         }
     }
 
@@ -726,7 +730,7 @@ class ConwayHex2020Day24 : GameLogic {
         val creatingGameItems = hexStorage.data.filter { data -> setOf(CREATING).contains(data.state) }.map { it.gameItem }
         val destroyingGameItems = hexStorage.data.filter { data -> setOf(DESTROYING).contains(data.state) }.map { it.gameItem }
         val notAliveGameItems = gameItems - aliveGameItems - creatingGameItems - destroyingGameItems
-        renderer.render(window, camera, aliveGameItems + creatingGameItems + destroyingGameItems + notAliveGameItems)
+        renderer.render(window, camera, aliveGameItems + creatingGameItems + destroyingGameItems + notAliveGameItems, conwayOptions.cameraOptions.fov)
         glPolygonMode(GL11C.GL_FRONT_AND_BACK, GL_FILL)
         doHud(window)
         if (showImgUI) doImgUI(window)
