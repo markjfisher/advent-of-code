@@ -27,7 +27,7 @@ import engine.item.GameItem
 import net.fish.geometry.hex.Layout
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
-import net.fish.geometry.hex.projection.TorusKnotSurface
+import net.fish.geometry.projection.TorusKnotSurface
 import org.joml.Math.abs
 import org.joml.Math.max
 import org.joml.Matrix3f
@@ -103,7 +103,7 @@ class TrefoilGame : GameLogic {
         surface.createMapper()
         emptyTexture = Texture("visualisations/textures/stone3-wl-pointy.png")
 
-        hexGrid.hexes().forEachIndexed { index, hex ->
+        hexGrid.items().forEachIndexed { index, hex ->
             val newMesh = OBJLoader.loadMesh(surface.mapper.hexToObj(hex))
             newMesh.texture = emptyTexture
             val gameItem = GameItem(newMesh)

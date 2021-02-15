@@ -128,7 +128,7 @@ object Knots {
         return createPath(segments, fns)
     }
 
-    private fun createPath(segments: Int, fns: Parametrics, lowerBound: Double = 0.0, upperBound: Double = 2.0 * PI) = (0 until segments).map { i ->
+    fun createPath(segments: Int, fns: Parametrics, lowerBound: Double = 0.0, upperBound: Double = 2.0 * PI) = (0 until segments).map { i ->
         val t = lowerBound + i * (upperBound - lowerBound) / segments
         // println(String.format("i: %d, t: %.3f, fx: %.3f, tx: %.3f, nx: %.3f", i, t, fns.fx.eval(t), fns.tx.eval(t), fns.nx.eval(t)))
         createPathData(

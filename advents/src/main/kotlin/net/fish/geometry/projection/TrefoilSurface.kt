@@ -1,5 +1,6 @@
-package net.fish.geometry.hex.projection
+package net.fish.geometry.projection
 
+import net.fish.geometry.hex.HexSurfaceMapperOld
 import net.fish.geometry.hex.Layout
 import net.fish.geometry.hex.Orientation.ORIENTATION
 import net.fish.geometry.hex.WrappingHexGrid
@@ -11,15 +12,15 @@ data class TrefoilSurface(
     override var gridOrientation: ORIENTATION,
     override var r: Float = 0.2f,
     override var scale: Float = 1.0f
-) : Surface {
+) : SurfaceOld {
     override lateinit var hexGrid: WrappingHexGrid
     override lateinit var pathCreator: TrefoilPathCreator
-    override lateinit var mapper: SurfaceMapper
+    override lateinit var mapper: HexSurfaceMapperOld
 
-    override fun createMapper(): SurfaceMapper {
+    override fun createMapper(): HexSurfaceMapperOld {
         hexGrid = WrappingHexGrid(gridWidth, gridHeight, Layout(gridOrientation))
         pathCreator = TrefoilPathCreator(scale)
-        mapper = SurfaceMapper(this)
+        mapper = HexSurfaceMapperOld(this)
         return mapper
     }
 }

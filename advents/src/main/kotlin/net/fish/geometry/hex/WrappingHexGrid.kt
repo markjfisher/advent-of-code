@@ -1,17 +1,19 @@
 package net.fish.geometry.hex
 
+import net.fish.geometry.grid.Grid
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 
 /*
- This is a rectangular grid of Hex objects, whose ends wrap around.
- This class required a lot of sweat, new printer ink for hex graphs, 2 pencils, 1 eraser, and quite a bit of wine.
+ This is a "rectangular" grid of Hex objects, whose ends wrap around.
+ In order to wrap correctly, for a pointy based hex grid, the height must be even.
+ For a flat based hex grid, the width must be even.
  */
 data class WrappingHexGrid(
-    val m: Int,
-    val n: Int,
-    val layout: Layout,
-) : HexConstrainer {
+    var m: Int,
+    var n: Int,
+    var layout: Layout,
+) : HexConstrainer, Grid {
     init {
         require(if (layout.orientation == POINTY) n % 2 == 0 else true) {
             "Invalid dimensions for pointy orientation, n must be even. Given: $n"
@@ -22,35 +24,47 @@ data class WrappingHexGrid(
         }
     }
 
+    override var width: Int = m
+        set(value) {
+            m = value
+            field = value
+        }
+
+    override var height: Int = n
+        set(value) {
+            n = value
+            field = value
+        }
+
     // This is in terms of m/n, and needs to be multiplied by the layout's hex size to get an actual width/height
-    fun width(): Double = when (layout.orientation) {
+    fun hexWidth(): Double = when (layout.orientation) {
         POINTY -> m * layout.orientation.o.f0 // f0 = sqrt(3)
         FLAT -> 1.5 * m
     }
 
-    fun height(): Double = when (layout.orientation) {
+    fun hexHeight(): Double = when (layout.orientation) {
         POINTY -> 1.5 * n
         FLAT -> n * layout.orientation.o.f3 // f3 = sqrt(3)
     }
 
     // Magic constants for constraining to pointy grid
-    private val minPointyR = 1 - n
-    private val maxPointyR = 0
-    private val maxPointyQminusS = 2 * m - 1
-    private val minPointyQminusS = 0
+    private fun getMinPointyR() = 1 - n
+    private fun getMaxPointyR() = 0
+    private fun getMaxPointyQminusS() = 2 * m - 1
+    private fun getMinPointyQminusS() = 0
 
     // Magic constants for constraining to flat grid
-    private val minFlatRminusS = 1 - 2 * n
-    private val maxFlatRminusS = 0
-    private val minFlatQ = 0
-    private val maxFlatQ = m - 1
+    private fun getMinFlatRminusS() = 1 - 2 * n
+    private fun getMaxFlatRminusS() = 0
+    private fun getMinFlatQ() = 0
+    private fun getMaxFlatQ() = m - 1
 
     fun hex(q: Int, r: Int, s: Int): Hex = constrain(Hex(q, r, s, this))
 
     override tailrec fun constrain(hex: Hex): Hex {
         val adjust = when (layout.orientation) {
-            POINTY -> adjust(hex.r, minPointyR, maxPointyR, Hex(-n / 2, n, -n / 2), hex.q, hex.s, minPointyQminusS, maxPointyQminusS, Hex(m, 0, -m))
-            FLAT -> adjust(hex.q, minFlatQ, maxFlatQ, Hex(m, -m / 2, -m / 2), hex.r, hex.s, minFlatRminusS, maxFlatRminusS, Hex(0, n, -n))
+            POINTY -> adjust(hex.r, getMinPointyR(), getMaxPointyR(), Hex(-n / 2, n, -n / 2), hex.q, hex.s, getMinPointyQminusS(), getMaxPointyQminusS(), Hex(m, 0, -m))
+            FLAT -> adjust(hex.q, getMinFlatQ(), getMaxFlatQ(), Hex(m, -m / 2, -m / 2), hex.r, hex.s, getMinFlatRminusS(), getMaxFlatRminusS(), Hex(0, n, -n))
         }
         return if (adjust == Hex(0, 0, 0)) Hex(hex.q, hex.r, hex.s, this) else constrain(Hex(hex.q + adjust.q, hex.r + adjust.r, hex.s + adjust.s))
     }
@@ -67,7 +81,7 @@ data class WrappingHexGrid(
         return adjust
     }
 
-    fun hexes(): Iterable<Hex> {
+    override fun items(): Iterable<Hex> {
         return sequence {
             when (layout.orientation) {
                 POINTY -> for (r in 0 until n) {

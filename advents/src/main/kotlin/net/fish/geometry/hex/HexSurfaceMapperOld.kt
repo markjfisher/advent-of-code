@@ -1,10 +1,10 @@
-package net.fish.geometry.hex.projection
+package net.fish.geometry.hex
 
-import net.fish.geometry.hex.Hex
-import net.fish.geometry.hex.HexAxis
+import net.fish.geometry.grid.GridItemAxis
 import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.paths.PathData
+import net.fish.geometry.projection.SurfaceOld
 import net.fish.maths.normalFromPoints
 import org.joml.Matrix3f
 import org.joml.Vector3f
@@ -17,7 +17,7 @@ import kotlin.math.sin
 // The hexGrid controls movement within the hexagons, but this class presents the real world coordinates of
 // each hexagon mapped onto the given Torus Knot
 
-class SurfaceMapper(val surface: Surface) {
+class HexSurfaceMapperOld(private val surface: SurfaceOld) {
     private var hexCentres: Map<Hex, Vector3f> = emptyMap()
 
     fun coordinates(hex: Hex): List<Vector3f> {
@@ -38,13 +38,13 @@ class SurfaceMapper(val surface: Surface) {
     }
 
     // Returns a map of all hexes in the grid to HexAxis (which contain their location and Unit axes for x/y/z in matrix format)
-    fun hexAxes(): Map<Hex, HexAxis> {
-        return surface.hexGrid.hexes().map { hex ->
+    fun hexAxes(): Map<Hex, GridItemAxis> {
+        return surface.hexGrid.items().map { hex ->
             hex to hexAxis(hex)
         }.toMap()
     }
 
-    fun hexAxis(hex: Hex): HexAxis {
+    fun hexAxis(hex: Hex): GridItemAxis {
         val cornersOnTorus = coordinates(hex)
         val centre = cornersOnTorus[6]
         val (xP, yP) = when (surface.hexGrid.layout.orientation) {
@@ -69,7 +69,7 @@ class SurfaceMapper(val surface: Surface) {
             println("ERROR IN NORMALS: hex = $hex, xP = $xP, yP = $yP")
         }
         val unitZ = unitX.cross(unitY, Vector3f())
-        return HexAxis(
+        return GridItemAxis(
             location = centre,
             axes = Matrix3f(unitX, unitY, unitZ)
         )
@@ -144,7 +144,7 @@ class SurfaceMapper(val surface: Surface) {
         val faces = mutableListOf<Face>()
         val normals = mutableListOf<Vector3f>()
         var faceIndex = 1
-        surface.hexGrid.hexes().forEach { hex ->
+        surface.hexGrid.items().forEach { hex ->
             // accumulate 7 unique points of the hex into a list, with their indexes in the global points map
             val hexPointIndices = mutableListOf<Int>()
             coordinates(hex).forEach { hexPoint ->

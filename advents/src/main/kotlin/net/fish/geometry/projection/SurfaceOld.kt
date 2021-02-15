@@ -1,12 +1,13 @@
-package net.fish.geometry.hex.projection
+package net.fish.geometry.projection
 
+import net.fish.geometry.hex.HexSurfaceMapperOld
 import net.fish.geometry.hex.Orientation.ORIENTATION
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.geometry.paths.PathCreator
 
-interface Surface {
-    fun createMapper(): SurfaceMapper
-    val mapper: SurfaceMapper
+interface SurfaceOld {
+    fun createMapper(): HexSurfaceMapperOld
+    val mapper: HexSurfaceMapperOld
     var hexGrid: WrappingHexGrid
     val pathCreator: PathCreator
     var r: Float

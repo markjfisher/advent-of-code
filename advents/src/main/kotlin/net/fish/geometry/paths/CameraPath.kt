@@ -1,13 +1,12 @@
 package net.fish.geometry.paths
 
-import net.fish.geometry.hex.projection.Surface
 import org.joml.Quaternionf
 import org.joml.Vector3f
 
 object CameraPath {
-    fun generateCameraPath(surface: Surface, lookAhead: Int): List<CameraData> {
-        // always calculate every half step for smoother animation, doesn't matter if we are pointy or flat.
-        val pathData = surface.pathCreator.createPath(surface.hexGrid.m * 3)
+    fun generateCameraPath(pathCreator: PathCreator, width: Int, lookAhead: Int): List<CameraData> {
+        // always calculate every third of a step for smoother animation, doesn't matter if we are pointy or flat.
+        val pathData = pathCreator.createPath(width * 3)
         return pathData.mapIndexed { i, data ->
             val normal = data.normal
             val point = data.point

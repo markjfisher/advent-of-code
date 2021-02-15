@@ -1,5 +1,6 @@
 package net.fish.geometry.hex
 
+import net.fish.geometry.grid.GridItem
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -12,7 +13,7 @@ data class Hex(
     val r: Int,
     val s: Int,
     val constrainer: HexConstrainer = DefaultHexConstrainer()
-) {
+): GridItem {
     init {
         require(q + r + s == 0) { "q + r + s must be 0, got [$q, $r, $s]" }
     }
@@ -39,7 +40,7 @@ data class Hex(
     fun length(): Int = (abs(q) + abs(r) + abs(s)) / 2
     fun distance(other: Hex) = (this - other).length() // TODO: this is wrong in wrapped context
 
-    fun neighbours(): List<Hex> = directions.map { this + it }
+    override fun neighbours(): List<Hex> = directions.map { this + it }
     fun diagonals(): List<Hex> = diagonals.map { this + it }
 
     fun rotateLeft(vector: Hex) = this + vector.rotateLeft()

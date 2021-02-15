@@ -21,7 +21,7 @@ class WrappingHexGridTest {
             Hex(1, -2, 1), Hex(2, -2, 0), Hex(3, -2, -1),
             Hex(2, -3, 1), Hex(3, -3, 0), Hex(4, -3, -1)
         )
-        assertThat(WrappingHexGrid(3, 4, pointyLayout).hexes()).containsExactlyElementsOf(hexes)
+        assertThat(WrappingHexGrid(3, 4, pointyLayout).items()).containsExactlyElementsOf(hexes)
     }
 
     @Test
@@ -31,7 +31,7 @@ class WrappingHexGridTest {
             Hex(0, -1, 1), Hex(1, -2, 1), Hex(2, -2, 0), Hex(3, -3, 0),
             Hex(0, -2, 2), Hex(1, -3, 2), Hex(2, -3, 1), Hex(3, -4, 1)
         )
-        assertThat(WrappingHexGrid(4, 3, flatLayout).hexes()).containsExactlyElementsOf(hexes)
+        assertThat(WrappingHexGrid(4, 3, flatLayout).items()).containsExactlyElementsOf(hexes)
     }
 
     @Test
@@ -158,11 +158,11 @@ class WrappingHexGridTest {
 
     @Test
     fun `grid width and height`() {
-        assertThat(abs(pointyGrid.width() - 8 * sqrt(3.0))).isLessThan(0.0001)
-        assertThat(pointyGrid.height()).isEqualTo(6.0)
+        assertThat(abs(pointyGrid.hexWidth() - 8 * sqrt(3.0))).isLessThan(0.0001)
+        assertThat(pointyGrid.hexHeight()).isEqualTo(6.0)
 
-        assertThat(flatGrid.width()).isEqualTo(12.0)
-        assertThat(abs(flatGrid.height() - 4 * sqrt(3.0))).isLessThan(0.0001)
+        assertThat(flatGrid.hexWidth()).isEqualTo(12.0)
+        assertThat(abs(flatGrid.hexHeight() - 4 * sqrt(3.0))).isLessThan(0.0001)
     }
 
 
