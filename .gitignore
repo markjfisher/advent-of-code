@@ -16,6 +16,6 @@ dist
 .DS_Store
 
 hs_err_pid*.log
-imgui.log
+imgui.log.*
 imgui.log.lck
 replay_pid*.log

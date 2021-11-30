@@ -2,6 +2,6 @@
 
 My kotlin solutions to [Advent of Code](https://adventofcode.com/) puzzles.
 
-To run all days
+To run all days, adjust year, but run with:
 
-    ./gradlew advent2020
+    ./gradlew advent2021
