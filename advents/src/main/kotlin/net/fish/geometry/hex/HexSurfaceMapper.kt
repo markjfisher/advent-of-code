@@ -5,7 +5,7 @@ import net.fish.geometry.grid.GridItemAxis
 import net.fish.geometry.paths.PathCreator
 import net.fish.geometry.paths.PathData
 import net.fish.geometry.projection.SurfaceMapper
-import net.fish.geometry.projection.SurfaceType
+import net.fish.geometry.grid.GridType
 import net.fish.maths.normalFromPoints
 import org.joml.Matrix3f
 import org.joml.Vector3f
@@ -22,10 +22,7 @@ class HexSurfaceMapper(
     private var hexCentres: Map<Hex, Vector3f> = emptyMap()
 
     override fun grid() = grid
-    override fun mappingType() = SurfaceType.HEX
-    override fun init() {
-        hexCentres = emptyMap()
-    }
+    override fun mappingType() = GridType.HEX
 
     override fun toString(): String {
         return String.format("HexSurfaceMapper[grid: %s]", grid)

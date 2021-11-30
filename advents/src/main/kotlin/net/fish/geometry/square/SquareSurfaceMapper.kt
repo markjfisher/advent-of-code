@@ -5,7 +5,7 @@ import net.fish.geometry.grid.GridItemAxis
 import net.fish.geometry.paths.PathCreator
 import net.fish.geometry.paths.PathData
 import net.fish.geometry.projection.SurfaceMapper
-import net.fish.geometry.projection.SurfaceType
+import net.fish.geometry.grid.GridType
 import net.fish.maths.normalFromPoints
 import org.joml.Matrix3f
 import org.joml.Vector3f
@@ -21,11 +21,7 @@ class SquareSurfaceMapper(
     private var centres: Map<Square, Vector3f> = emptyMap()
 
     override fun grid() = grid
-    override fun mappingType() = SurfaceType.SQUARE
-
-    override fun init() {
-        centres = emptyMap()
-    }
+    override fun mappingType() = GridType.SQUARE
 
     override fun itemToObj(item: GridItem): List<String> {
         val square = item as Square

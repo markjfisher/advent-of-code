@@ -14,8 +14,7 @@ import imgui.ImGui.nextColumn
 import imgui.ImGui.popItemWidth
 import imgui.ImGui.pushItemWidth
 import imgui.dsl.collapsingHeader
-import net.fish.geometry.projection.SurfaceMapper
-import net.fish.geometry.projection.SurfaceOld
+import net.fish.geometry.projection.Surface
 import org.joml.Vector4f
 import kotlin.reflect.KFunction1
 
@@ -55,7 +54,7 @@ data class ConwayOptions(
     companion object {
         const val INITIAL_WIDTH = 500
         const val INITIAL_HEIGHT = 800
-        const val MAX_M_BY_N = 15600
+        const val MAX_M_BY_N = 14000
         val fullSize = Vec2(-Float.MIN_VALUE, 0f)
     }
 }
@@ -70,10 +69,8 @@ data class GameOptions(
 data class SurfaceOptions(
     var globalAlpha: Float,
     var animationPercentages: MutableMap<Int, Float>,
-    var currentSurfaceName: String,
-    var surfaces: MutableMap<String, SurfaceOld>,
-    var currentSurfaceMapperName: String,
-    var mappers: MutableMap<String, SurfaceMapper>
+    var surface: Surface,
+    var surfaces: List<Surface>
 )
 
 data class DebugOptions(

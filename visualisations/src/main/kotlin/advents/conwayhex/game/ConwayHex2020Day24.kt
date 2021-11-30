@@ -55,24 +55,20 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.fish.geometry.grid.GridItem
+import net.fish.geometry.grid.GridType
 import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
 import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.HexConstrainer
-import net.fish.geometry.hex.Layout
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.geometry.paths.CameraData
 import net.fish.geometry.paths.CameraPath
-import net.fish.geometry.projection.DecoratedKnotSurfaceMapperFactory
-import net.fish.geometry.projection.DecoratedKnotSurfaceOld
-import net.fish.geometry.projection.DecoratedKnotType.Type10b
-import net.fish.geometry.projection.EpitrochoidSurface
-import net.fish.geometry.projection.SimpleTorusSurface
-import net.fish.geometry.projection.SimpleTorusSurfaceMapper
-import net.fish.geometry.projection.SurfaceType
-import net.fish.geometry.projection.ThreeFactorParametricSurface
-import net.fish.geometry.projection.TorusKnotSurface
-import net.fish.geometry.projection.TrefoilSurface
+import net.fish.geometry.paths.PathType.DecoratedTorusKnot
+import net.fish.geometry.paths.PathType.Epitrochoid
+import net.fish.geometry.paths.PathType.SimpleTorus
+import net.fish.geometry.paths.PathType.TorusKnot
+import net.fish.geometry.paths.PathType.Trefoil
+import net.fish.geometry.projection.Surface
 import net.fish.geometry.square.Square
 import net.fish.geometry.square.WrappingSquareGrid
 import net.fish.resourceLines
@@ -134,6 +130,8 @@ class ConwayHex2020Day24 : GameLogic {
     private val initialPoints = 25 // we have up to 597 initial points from the original game
     private var createdCount = 0
     private var destroyedCount = 0
+
+    private var performSingleStep = false
 
     // keyboard handling
     private val keyPressedTimer = Timer()
@@ -197,23 +195,25 @@ class ConwayHex2020Day24 : GameLogic {
     private val newCameraVector = Vector3f()
     private val cameraDelta = Vector3f()
 
-    // Surfaces
-    private val surfaces = mutableMapOf(
-        "Torus" to SimpleTorusSurface(160, 50, POINTY, 8.0f, 1.5f, 1.0f),
-        "Trefoil Knot" to TrefoilSurface(600, 26, POINTY, 0.6f, 3.0f),
-        "Torus Knot 3,7" to TorusKnotSurface(900, 16, POINTY, 3, 7, 1.0f, 0.2f, 0.2f, 5.0f),
-        "Torus Knot 11,17" to TorusKnotSurface(1300, 12, POINTY, 11, 17, 1.0f, 0.2f, 0.2f, 5.0f),
-        "Decorated Torus Knot" to DecoratedKnotSurfaceOld(900, 16, POINTY, Type10b, 0.25f, 5.0f),
-        "Epitrochoid" to EpitrochoidSurface(1200, 12, POINTY, 5f, 1f, 3.5f, 0.2f, 0.5f),
-        "3 Factor Parametric" to ThreeFactorParametricSurface(1220, 12, POINTY, 2, 5, 4, 0.3f, 3f)
+    private val exampleSurfaces = listOf(
+        Surface("(Hex) 3,7 Torus Knot", mutableMapOf("gridType" to "hex", "width" to "800", "height" to "16", "orientation" to "pointy", "p" to "3", "q" to "7", "a" to "1.0", "b" to "0.2"), TorusKnot, 0.2f, 5.0f),
+        Surface("(Square) 3,7 Torus Knot", mutableMapOf("gridType" to "square", "width" to "800", "height" to "16", "p" to "3", "q" to "7", "a" to "1.0", "b" to "0.2"), TorusKnot, 0.2f, 5.0f),
+        Surface("(Hex) 11,17 Torus Knot", mutableMapOf("gridType" to "hex", "width" to "1100", "height" to "12", "orientation" to "pointy", "p" to "11", "q" to "17", "a" to "1.0", "b" to "0.2"), TorusKnot, 0.2f, 5.0f),
+        Surface("(Square) 11,17 Torus Knot", mutableMapOf("gridType" to "square", "width" to "1100", "height" to "13", "p" to "11", "q" to "17", "a" to "1.0", "b" to "0.2"), TorusKnot, 0.2f, 5.0f),
+        Surface("(Hex) Torus", mutableMapOf("gridType" to "hex", "width" to "160", "height" to "50", "orientation" to "pointy", "majorRadius" to "8.0f"), SimpleTorus, 1.5f, 1.0f),
+        Surface("(Square) Torus", mutableMapOf("gridType" to "square", "width" to "160", "height" to "50", "majorRadius" to "8.0f"), SimpleTorus, 1.5f, 1.0f),
+        Surface("(Hex) 10b Decorated Torus Knot", mutableMapOf("gridType" to "hex", "width" to "900", "height" to "16", "orientation" to "pointy", "pattern" to "Type10b"), DecoratedTorusKnot, 0.25f, 5.0f),
+        Surface("(Square) 10b Decorated Torus Knot", mutableMapOf("gridType" to "square", "width" to "900", "height" to "16", "pattern" to "Type10b"), DecoratedTorusKnot, 0.25f, 5.0f),
+        Surface("(Hex) Trefoil", mutableMapOf("gridType" to "hex", "width" to "600", "height" to "26", "orientation" to "pointy"), Trefoil, 0.6f, 3.0f),
+        Surface("(Square) Trefoil", mutableMapOf("gridType" to "square", "width" to "600", "height" to "26"), Trefoil, 0.6f, 3.0f),
+        Surface("(Hex) 3 Factor Parametric", mutableMapOf("gridType" to "hex", "width" to "1000", "height" to "12", "orientation" to "pointy", "a" to "2", "b" to "5", "c" to "4"), Trefoil, 0.3f, 3.0f),
+        Surface("(Square) 3 Factor Parametric", mutableMapOf("gridType" to "square", "width" to "1000", "height" to "12", "a" to "2", "b" to "5", "c" to "4"), Trefoil, 0.3f, 3.0f),
+        Surface("(Hex) Epitrochoid", mutableMapOf("gridType" to "hex", "width" to "1000", "height" to "12", "orientation" to "pointy", "a" to "5.0", "b" to "1.0", "c" to "3.5"), Epitrochoid, 0.3f, 3.0f),
+        Surface("(Square) Epitrochoid", mutableMapOf("gridType" to "square", "width" to "1000", "height" to "12", "a" to "5.0", "b" to "1.0", "c" to "3.5"), Epitrochoid, 0.3f, 3.0f),
     )
 
-    private var mappers = mutableMapOf(
-        "Decorated Torus Knot (Hex)" to DecoratedKnotSurfaceMapperFactory.createSurfaceMapper(WrappingHexGrid(900, 16, Layout(POINTY)), Type10b, 0.25f, 5.0f),
-        "Decorated Torus Knot (Square)" to DecoratedKnotSurfaceMapperFactory.createSurfaceMapper(WrappingSquareGrid(900, 16), Type10b, 0.25f, 5.0f),
-        "Simple Torus (Hex)" to SimpleTorusSurfaceMapper.createSurfaceMapper(WrappingHexGrid(160, 50, Layout(POINTY)), 8.0f, 1.5f, 1.0f),
-        "Simple Torus (Square)" to SimpleTorusSurfaceMapper.createSurfaceMapper(WrappingSquareGrid(160, 50), 8.0f, 1.5f, 1.0f)
-    )
+    private var surface = exampleSurfaces.first().copy()
+    private var surfaceMapper = surface.createSurfaceMapper()
 
     // Main Options for application
     private val conwayOptions = ConwayOptions(
@@ -226,10 +226,8 @@ class ConwayHex2020Day24 : GameLogic {
         surfaceOptions = SurfaceOptions(
             globalAlpha = 1f,
             animationPercentages = animationPercentages,
-            currentSurfaceName = "Decorated Torus Knot",
-            surfaces = surfaces,
-            currentSurfaceMapperName = "Decorated Torus Knot (Square)",
-            mappers = mappers
+            surface = surface,
+            surfaces = exampleSurfaces
         ),
         cameraOptions = CameraOptions(
             cameraFrameNumber = 1,
@@ -249,12 +247,10 @@ class ConwayHex2020Day24 : GameLogic {
         stateChangeFunction = ::changeState
     )
 
-    private var surfaceMapper = mappers[conwayOptions.surfaceOptions.currentSurfaceMapperName]!!
-
     // this is hex specific, needs refactoring
     private fun readInitialPosition(): Set<GridItem> {
         return when (surfaceMapper.mappingType()) {
-            SurfaceType.HEX -> {
+            GridType.HEX -> {
                 // This will need changing to check it's right type
                 val constrainer = surfaceMapper.grid() as HexConstrainer
                 val doubledCoords = Day24.walk(data).take(initialPoints)
@@ -266,7 +262,7 @@ class ConwayHex2020Day24 : GameLogic {
                 }
                 hexes.map { constrainer.constrain(it) }.toSet()
             }
-            SurfaceType.SQUARE -> {
+            GridType.SQUARE -> {
                 val constrainer = surfaceMapper.grid() as WrappingSquareGrid
                 val slider = setOf(
                     Square(0, 2, constrainer),
@@ -465,8 +461,8 @@ class ConwayHex2020Day24 : GameLogic {
         cleanup()
         gameItems.clear()
         storage.clearAll()
-        surfaceMapper = mappers[conwayOptions.surfaceOptions.currentSurfaceMapperName]!!
-        surfaceMapper.init()
+        surface = conwayOptions.surfaceOptions.surface
+        surfaceMapper = surface.createSurfaceMapper()
         createGameItems()
         renderer.init()
     }
@@ -522,10 +518,13 @@ class ConwayHex2020Day24 : GameLogic {
     }
 
     private fun setGameItemsAlpha() {
+        val currentPauseState = conwayOptions.gameOptions.pauseGame
+        conwayOptions.gameOptions.pauseGame = true
         // any non animating or alive hexes need to change their alpha value.
         (storage.items - alive - creating - destroying).forEach { hex ->
             storage.getData(hex)!!.gameItem.colour.w = conwayOptions.surfaceOptions.globalAlpha
         }
+        conwayOptions.gameOptions.pauseGame = currentPauseState
     }
 
     private fun changeState(command: KeyCommand) {
@@ -548,13 +547,7 @@ class ConwayHex2020Day24 : GameLogic {
             ResetGame -> resetGame()
             TogglePause -> conwayOptions.gameOptions.pauseGame = !conwayOptions.gameOptions.pauseGame
             PrintState -> printGameState()
-            SingleStep -> if (conwayOptions.gameOptions.pauseGame) {
-                performStep()
-                if (!conwayOptions.gameOptions.useTexture) {
-                    setAnimationColours(0)
-                }
-
-            }
+            SingleStep -> performSingleStep = true
             ResetCamera -> resetCamera()
             LoadCamera -> loadInitialCameraPosition(keepFrame = false)
             SetLookahead -> loadInitialCameraPosition(keepFrame = true)
@@ -652,9 +645,9 @@ class ConwayHex2020Day24 : GameLogic {
 
     private fun performStep() {
         // mark all the hexes that were creating as alive, destroying as dead, set their colours to end conditions
-        surfaceMapper.grid().items().forEach { hex ->
-            val data = storage.getData(hex)!!
-            if (data.state == CREATING) {
+        surfaceMapper.grid().items().forEach { item ->
+            val data = storage.getData(item)
+            if (data?.state == CREATING) {
                 data.state = ALIVE
                 if (conwayOptions.gameOptions.useTexture) {
                     data.gameItem.mesh.texture = getAliveTexture()
@@ -662,9 +655,9 @@ class ConwayHex2020Day24 : GameLogic {
                     data.gameItem.colour.set(conwayOptions.gameOptions.aliveColour)
                 }
             }
-            if (data.state == DESTROYING) {
+            if (data?.state == DESTROYING) {
                 data.state = DEAD
-                data.gameItem.colour.set(itemToColour(hex))
+                data.gameItem.colour.set(itemToColour(item))
                 data.gameItem.mesh.texture = null
             }
         }
@@ -700,11 +693,11 @@ class ConwayHex2020Day24 : GameLogic {
 
     private fun getAliveTexture(): Texture {
         return when (surfaceMapper.mappingType()) {
-            SurfaceType.HEX -> {
+            GridType.HEX -> {
                 val hexGrid = surfaceMapper.grid() as WrappingHexGrid
                 if (hexGrid.layout.orientation == POINTY) aliveTexturePointy else aliveTextureFlat
             }
-            SurfaceType.SQUARE -> aliveTexturePointy // TODO make a texture
+            GridType.SQUARE -> aliveTexturePointy // TODO make a texture
             else -> throw Exception("Type not implemented yet: ${surfaceMapper.mappingType()}")
         }
     }
@@ -745,14 +738,14 @@ class ConwayHex2020Day24 : GameLogic {
             val isAlive = alive.contains(gridItem)
 
             when (surfaceMapper.mappingType()) {
-                SurfaceType.HEX -> {
+                GridType.HEX -> {
                     when {
                         isAlive && (neighbourCount == 0 || neighbourCount > 2) -> newAlive.remove(gridItem)
                         !isAlive && neighbourCount == 2 -> newAlive.add(gridItem)
                         isAlive -> newAlive.add(gridItem)
                     }
                 }
-                SurfaceType.SQUARE -> {
+                GridType.SQUARE -> {
                     when {
                         isAlive && (neighbourCount == 2 || neighbourCount == 3) -> newAlive.add(gridItem)
                         !isAlive && neighbourCount == 3 -> newAlive.add(gridItem)
@@ -768,11 +761,12 @@ class ConwayHex2020Day24 : GameLogic {
             moveCamera()
         }
 
-        if (!conwayOptions.gameOptions.pauseGame) {
+        if (!conwayOptions.gameOptions.pauseGame || performSingleStep) {
             // do next conway step
             currentStepDelay++
 
-            val animationStep = currentStepDelay % conwayOptions.gameOptions.gameSpeed
+            var animationStep = currentStepDelay % conwayOptions.gameOptions.gameSpeed
+            if (performSingleStep && conwayOptions.gameOptions.useTexture) animationStep = 0 // ok for textures, not colours
             if (animationStep == 0) {
                 currentStepDelay = 0
                 performStep()
@@ -781,6 +775,7 @@ class ConwayHex2020Day24 : GameLogic {
             if (!conwayOptions.gameOptions.useTexture) {
                 setAnimationColours(animationStep)
             }
+            performSingleStep = false
         }
         flashPercentage = max(flashPercentage - 7, 0)
         if (flashPercentage == 0) flashMessage = ""
@@ -804,18 +799,20 @@ class ConwayHex2020Day24 : GameLogic {
 //        alive.forEach { hex ->
 //            hexStorage.getData(hex)!!.gameItem.colour.set(colourOn)
 //        }
+//        println("step: $animationStep, pc: $animationPercentage, alive: ${alive.count()}, creating: ${creating.count()}, destroying: ${destroying.count()}")
+//        println("creating: ${creating.map { it.simpleValue() }}")
+//        println("destroying: ${destroying.map { it.simpleValue() }}")
+        val animationCurveValue = calculatePercentage(animationPercentage)
         creating.forEach { gridItem ->
-            setAnimationColour(gridItem, animationPercentage, true)
+            setAnimationColour(gridItem, 1f - animationCurveValue)
         }
         destroying.forEach { gridItem ->
-            setAnimationColour(gridItem, animationPercentage, false)
+            setAnimationColour(gridItem, animationCurveValue)
         }
     }
 
-    private fun setAnimationColour(gridItem: GridItem, animationPercentage: Float, creating: Boolean) {
-        var p: Float = calculatePercentage(animationPercentage)
-        if (creating) p = 1f - p
-        val newColour = itemToColour(gridItem).sub(conwayOptions.gameOptions.aliveColour).mul(p).add(conwayOptions.gameOptions.aliveColour)
+    private fun setAnimationColour(gridItem: GridItem, animationCurveValue: Float) {
+        val newColour = itemToColour(gridItem).sub(conwayOptions.gameOptions.aliveColour).mul(animationCurveValue).add(conwayOptions.gameOptions.aliveColour)
         storage.getData(gridItem)!!.gameItem.colour.set(newColour)
         storage.getData(gridItem)!!.gameItem.mesh.texture = null
     }

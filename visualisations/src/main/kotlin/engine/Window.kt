@@ -52,7 +52,7 @@ data class Window(
                 visible = false
                 resizable = true
                 decorated = true
-                transparentFramebuffer = true
+                transparentFramebuffer = false
                 context.version = "4.6"
                 samples = 4
                 maximized = true

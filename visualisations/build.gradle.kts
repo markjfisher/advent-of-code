@@ -80,9 +80,13 @@ dependencies {
     runtimeOnly("org.lwjgl", "lwjgl-stb", classifier = lwjglNatives)
     runtimeOnly("org.lwjgl", "lwjgl-jemalloc", classifier = lwjglNatives)
 
-    implementation("com.github.kotlin-graphics.imgui:core:-SNAPSHOT")
-    implementation("com.github.kotlin-graphics.imgui:gl:-SNAPSHOT")
-    implementation("com.github.kotlin-graphics.imgui:glfw:-SNAPSHOT")
+    // Check https://jitpack.io/#kotlin-graphics/imgui/jitpack-SNAPSHOT for latest version, click "Releases"
+//    val imguiVersion = "-SNAPSHOT"
+    val imguiVersion = "v1.79" // '-SNAPSHOT' not working anymore...
+    implementation("com.github.kotlin-graphics.imgui:core:$imguiVersion")
+    implementation("com.github.kotlin-graphics.imgui:gl:$imguiVersion")
+    implementation("com.github.kotlin-graphics.imgui:glfw:$imguiVersion")
+
     // additional libs
     implementation("com.github.kotlin-graphics:gln:$glnVersion")
     implementation("org.joml:joml:$jomlVersion")

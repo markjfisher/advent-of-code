@@ -1,5 +1,6 @@
 package net.fish.geometry.hex
 
+import java.lang.Exception
 import kotlin.math.sqrt
 
 data class Orientation(
@@ -20,6 +21,11 @@ data class Orientation(
     }
 
     enum class ORIENTATION(val o: Orientation) {
-        FLAT(flat), POINTY(pointy)
+        FLAT(flat), POINTY(pointy);
+        companion object {
+            fun from(o: String): ORIENTATION? {
+                return values().firstOrNull { it.name.equals(o, ignoreCase = true) }
+            }
+        }
     }
 }

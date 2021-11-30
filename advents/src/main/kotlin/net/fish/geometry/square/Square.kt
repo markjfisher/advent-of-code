@@ -11,6 +11,10 @@ data class Square(
     operator fun minus(other: Square) = subtract(other)
     operator fun times(k: Int) = scale(k)
 
+    override fun simpleValue(): String {
+        return String.format("Sq[%d, %d]", x, y)
+    }
+
     fun add(other: Square): Square = constrainer.constrain(Square(x + other.x, y + other.y, constrainer))
     fun subtract(other: Square): Square = constrainer.constrain(Square(x - other.x, y - other.y, constrainer))
     fun scale(k: Int): Square = constrainer.constrain(Square(x * k, y * k, constrainer))

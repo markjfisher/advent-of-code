@@ -18,6 +18,10 @@ data class Hex(
         require(q + r + s == 0) { "q + r + s must be 0, got [$q, $r, $s]" }
     }
 
+    override fun simpleValue(): String {
+        return String.format("Hex[%d, %d, %d]", q, r, s)
+    }
+
     operator fun plus(other: Hex) = add(other)
     operator fun minus(other: Hex) = subtract(other)
     operator fun times(k: Int) = scale(k)
