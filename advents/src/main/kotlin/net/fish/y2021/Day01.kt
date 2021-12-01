@@ -9,22 +9,14 @@ object Day01 : Day {
     override fun part1() = doPart1(heights)
     override fun part2() = doPart2(heights)
 
-    fun doPart1(heights: List<Int>): Int = calculateIncreasesOverWindow(heights, 1)
-    fun doPart2(heights: List<Int>): Int = calculateIncreasesOverWindow(heights, 3)
+    fun doPart1(heights: List<Int>): Int = calcIncreasesOverWindow(heights, 1)
+    fun doPart2(heights: List<Int>): Int = calcIncreasesOverWindow(heights, 3)
 
-    private fun calculateIncreasesOverWindow(heights: List<Int>, windowSize: Int): Int {
-        var increases = 0
-        var previousSum = 0
-        val windows = heights.windowed(size = windowSize, step = 1)
-        windows.forEachIndexed { i, hs ->
-            if (i > 0) {
-                val windowSum = hs.sum()
-                if (windowSum > previousSum) increases++
-            }
-            previousSum = hs.sum()
-        }
-        return increases
-    }
+    private fun calcIncreasesOverWindow(heights: List<Int>, windowSize: Int): Int =
+        heights.windowed(windowSize, 1)
+            .map { it.sum() }
+             .windowed(2, 1)
+            .count { it[0] < it[1] }
 
     @JvmStatic
     fun main(args: Array<String>) {
