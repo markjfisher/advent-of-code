@@ -15,7 +15,7 @@ object Day01 : Day {
     private fun calcIncreasesOverWindow(heights: List<Int>, windowSize: Int): Int =
         heights.windowed(windowSize, 1)
             .map { it.sum() }
-             .windowed(2, 1)
+            .windowed(2, 1)
             .count { it[0] < it[1] }
 
     @JvmStatic
