@@ -39,14 +39,14 @@ object Day03 : Day {
     }
 
     private fun calculateCarb(data: List<String>): Int {
-        return commonCalc(data, ::lsb)
+        return findDataMatchingBitFnAsDecimal(data, ::lsb)
     }
 
     private fun calculateOxygen(data: List<String>): Int {
-        return commonCalc(data, ::msb)
+        return findDataMatchingBitFnAsDecimal(data, ::msb)
     }
 
-    private fun commonCalc(data: List<String>, bitFn: (List<String>, Int) -> Int): Int {
+    private fun findDataMatchingBitFnAsDecimal(data: List<String>, bitFn: (List<String>, Int) -> Int): Int {
         var mutData = data.toMutableList()
         var currentDigit = 0
         while(mutData.size > 1 && currentDigit < data[0].length) {
