@@ -1,6 +1,7 @@
 package net.fish.y2021
 
 import net.fish.Day
+import net.fish.maths.transpose
 import net.fish.resourceLines
 
 
@@ -50,37 +51,24 @@ object Day04 : Day {
         println(part2())
     }
 
-data class Board(
-    val numbers: List<Int>
-) {
-    fun score(calls: List<Int>): Int {
-        val latestCall = calls.last()
-        val unmarked = numbers - calls.toSet()
-        return unmarked.sum() * latestCall
-    }
+    data class Board(
+        val numbers: List<Int>
+    ) {
+        private val rows = numbers.windowed(5, 5)
+        private val columns = transpose(rows)
 
-    fun hasWon(calls: List<Int>): Boolean {
-        // check for horizontal wins
-        val rows = numbers.windowed(5, 5)
-        if (rows.any { (it - calls.toSet()).isEmpty() }) return true
-        val columns = transpose(rows)
-        if (columns.any { (it - calls.toSet()).isEmpty() }) return true
-        return false
-    }
-
-}
-
-    fun transpose(table: List<List<Int>>): List<List<Int>> {
-        val columns: MutableList<List<Int>> = ArrayList()
-        val size: Int = table[0].size
-        for (i in 0 until size) {
-            val col: MutableList<Int> = ArrayList()
-            for (row in table) {
-                col.add(row[i])
-            }
-            columns.add(col)
+        fun score(calls: List<Int>): Int {
+            val latestCall = calls.last()
+            val unmarked = numbers - calls.toSet()
+            return unmarked.sum() * latestCall
         }
-        return columns
+
+        fun hasWon(calls: List<Int>): Boolean {
+            if (rows.any { (it - calls.toSet()).isEmpty() }) return true
+            if (columns.any { (it - calls.toSet()).isEmpty() }) return true
+            return false
+        }
+
     }
 
     fun createBoards(data: List<String>): Pair<List<Int>, List<Board>> {

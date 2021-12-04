@@ -73,3 +73,16 @@ fun normalFromPoints(p1: Vector3f, p2: Vector3f, p3: Vector3f): Vector3f {
     if (cross.lengthSquared() > 0.0001f) cross.normalize()
     return cross
 }
+
+fun transpose(table: List<List<Int>>): List<List<Int>> {
+    val columns: MutableList<List<Int>> = ArrayList()
+    val size: Int = table[0].size
+    for (i in 0 until size) {
+        val col: MutableList<Int> = ArrayList()
+        for (row in table) {
+            col.add(row[i])
+        }
+        columns.add(col)
+    }
+    return columns
+}
