@@ -5,5 +5,5 @@ interface Day {
     fun part2(): Any
 
     val warmUps: Int
-        get() = 5
+        get() = 50
 }
