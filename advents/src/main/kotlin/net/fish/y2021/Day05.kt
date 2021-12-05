@@ -1,8 +1,10 @@
 package net.fish.y2021
 
 import net.fish.Day
+import net.fish.geometry.Point
 import net.fish.resourceLines
 import kotlin.math.abs
+import kotlin.math.sign
 
 object Day05 : Day {
     private val vectorExtractor by lazy { Regex("""(\d+),(\d+) -> (\d+),(\d+)""") }
@@ -27,8 +29,6 @@ object Day05 : Day {
     fun toThermalVectors(lines: List<String>): List<ThermalVector> = lines.map { line ->
         vectorExtractor.find(line)?.destructured!!.let { (x1, y1, x2, y2) -> ThermalVector(Point(x1.toInt(), y1.toInt()), Point(x2.toInt(), y2.toInt())) }
     }
-
-    data class Point(val x: Int, val y: Int)
 
     class Grid {
         private val pointToCount: MutableMap<Point, Int> = mutableMapOf()
@@ -70,16 +70,10 @@ object Day05 : Day {
         }
 
         fun walkDiagonal(): List<Point> {
-            val stepX = if (this.start.x < this.end.x) 1 else -1
-            val stepY = if (this.start.y < this.end.y) 1 else -1
-            var p = this.start
-            val allPoints = mutableListOf<Point>()
-            while (p != this.end) {
-                allPoints.add(p)
-                p = Point(p.x + stepX, p.y + stepY)
+            val numPoints = abs(this.start.x - this.end.x)
+            return (0 .. numPoints).map { i ->
+                this.start.plus(i * sign(this.end.x - this.start.x), i * sign(this.end.y - this.start.y))
             }
-            allPoints.add(p)
-            return allPoints
         }
     }
 
@@ -89,4 +83,12 @@ object Day05 : Day {
         println(part2())
     }
 
+}
+
+fun sign(x: Int): Int {
+    return when {
+        x < 0 -> -1
+        x > 0 -> 1
+        else -> 0
+    }
 }

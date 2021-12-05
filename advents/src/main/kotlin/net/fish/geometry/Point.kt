@@ -13,6 +13,8 @@ data class Point(val x: Int, val y: Int): Comparable<Point> {
     }
 
     fun plus(x: Int, y: Int) = Point(this.x + x, this.y + y)
+    fun plus(x: Double, y: Double) = Point(this.x + x.toInt(), this.y + y.toInt())
+    fun plus(x: Float, y: Float) = Point(this.x + x.toInt(), this.y + y.toInt())
     operator fun plus(other: Pair<Int, Int>) = Point(x + other.first, y + other.second)
     operator fun plus(other: Point) = Point(x + other.x, y + other.y)
     operator fun plus(direction: Direction) = when(direction) {
