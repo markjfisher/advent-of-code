@@ -6,8 +6,11 @@ import net.fish.resourceLines
 object DayTemplate : Day {
     private val data = resourceLines(2021, 0)
 
-    override fun part1() = ""
-    override fun part2() = ""
+    override fun part1() = doPart1(data)
+    override fun part2() = doPart2(data)
+
+    fun doPart1(data: List<String>): Int = 0
+    fun doPart2(data: List<String>): Int = 0
 
     @JvmStatic
     fun main(args: Array<String>) {
