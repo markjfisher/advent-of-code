@@ -1,6 +1,7 @@
 package net.fish.y2021
 
 import net.fish.Day
+import net.fish.maths.CircularArray
 import net.fish.resourceString
 
 object Day06 : Day {
@@ -11,26 +12,18 @@ object Day06 : Day {
 
     fun doIterations(initialTimes: List<Int>, iterations: Int): Long {
         // initialise the 8 counts
-        val fishTimes = (Array(9) { 0L }).toMutableList()
+        val fishTimes = CircularArray(Array(9) { 0L }.toList())
         initialTimes.forEach { t ->
             fishTimes[t] = fishTimes[t] + 1
         }
         // move all counts down 1, the old 0s become 6s but spawn that many 8s
-        (0 until iterations).forEach { i ->
-            val old0 = fishTimes[0]
-            fishTimes[0] = fishTimes[1]
-            fishTimes[1] = fishTimes[2]
-            fishTimes[2] = fishTimes[3]
-            fishTimes[3] = fishTimes[4]
-            fishTimes[4] = fishTimes[5]
-            fishTimes[5] = fishTimes[6]
-            fishTimes[6] = fishTimes[7] + old0
-            fishTimes[7] = fishTimes[8]
-            fishTimes[8] = old0
+        (0 until iterations).forEach {
+            val zero = fishTimes[0]
+            fishTimes.rotateLeft()
+            fishTimes[6] += zero
         }
 
         return fishTimes.sum()
-
     }
 
 
