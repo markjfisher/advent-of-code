@@ -5,7 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class Day07Test {
-    val initialInput = resourcePath("/2021/day07-test.txt").first().split(",").map { it.toInt() }
+    private val initialInput = resourcePath("/2021/day07-test.txt").first().split(",").map { it.toInt() }
 
     @Test
     fun `should minimize input data part 1`() {

@@ -19,26 +19,21 @@ object Day07 : Day {
     }
 
     private fun calculateMinimum(data: List<Int>, minFn: (Int, List<Int>) -> Int): Pair<Int, Int> {
-        return (data.indices).fold(Pair(-1, 0)) { solution, i ->
+        return (data.indices).fold(Pair(0, 0)) { solution, i ->
             val fuelCost = minFn(i, data)
             when {
-                solution.first == -1 -> Pair(fuelCost, i)
-                fuelCost < solution.first -> Pair(fuelCost, i)
+                solution.first == 0 || fuelCost < solution.first -> Pair(fuelCost, i)
                 fuelCost > solution.first -> solution
                 else -> throw Exception("Duplicate cost at $i, cost: $fuelCost, old solution: $solution")
             }
         }
     }
 
-    private fun fuelCost(pos: Int, positions: List<Int>): Int {
-        return positions.sumBy { abs(it - pos) }
-    }
+    private fun fuelCost(pos: Int, positions: List<Int>): Int = positions.sumBy { abs(it - pos) }
 
-    private fun fuelCost2(pos: Int, positions: List<Int>): Int {
-        return positions.sumBy {
-            val diff = abs(it - pos)
-            diff * (diff + 1) / 2
-        }
+    private fun fuelCost2(pos: Int, positions: List<Int>): Int = positions.sumBy {
+        val diff = abs(it - pos)
+        diff * (diff + 1) / 2
     }
 
 
