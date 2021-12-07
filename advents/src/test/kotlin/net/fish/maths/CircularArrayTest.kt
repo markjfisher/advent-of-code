@@ -20,4 +20,5 @@ class CircularArrayTest {
         assertThat(ca[0]).isEqualTo(2)
         assertThat(ca[1]).isEqualTo(1)
     }
+
 }
