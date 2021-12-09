@@ -25,20 +25,12 @@ object Day09 : Day {
     override fun part2() = doPart2(grid)
 
     fun doPart1(grid: Grid): Int {
-        // find the local minima of grid.
-        // look at each point, and check the neighbours are all lower than it
-        return grid.allPoints().fold(0) { acc, p ->
-            val currentPointValue = grid.at(p) ?: throw Exception("couldn't find point $p in grid")
-            val isLocalMinima = grid.neighbourValuesNSEW(p).all { currentPointValue < it }
-            acc + if (isLocalMinima) currentPointValue + 1 else 0
-        }
-
+        return grid.localMinima().fold(0) { acc, p -> acc + grid.at(p) + 1 }
     }
 
-    fun doPart2(grid: Grid): Long {
-        val basins = grid.basins()
-        return basins.sortedByDescending { it.basinPoints.size }.take(3).fold(1L) { product, basin ->
-            product * basin.basinPoints.size.toLong()
+    fun doPart2(grid: Grid): Int {
+        return grid.basins().sortedByDescending { it.basinPoints.size }.take(3).fold(1) { product, basin ->
+            product * basin.basinPoints.size
         }
     }
 
@@ -48,12 +40,13 @@ object Day09 : Day {
         println(part2())
     }
 
-    data class Basin(val localMinimum: Point, val basinPoints: List<Point>)
+    data class Basin(val localMinimum: Point, val basinPoints: Set<Point>)
 
     data class Grid(private val gridData: Map<Point, Int>) {
         val boundary: Pair<Point, Point> = gridData.keys.bounds()
+        private val localMinima = localMinima()
 
-        fun at(p: Point): Int? = gridData[p]
+        fun at(p: Point): Int = gridData[p] ?: throw Exception("Unknown point $p")
 
         fun neighbourPointsNSEW(p: Point): List<Point> {
             val neighbours = listOf(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)
@@ -62,6 +55,7 @@ object Day09 : Day {
                 if ((newP.x >= 0 && newP.x <= boundary.second.x) && (newP.y >= 0 && newP.y <= boundary.second.y)) newP else null
             }
         }
+
         fun neighbourValuesNSEW(p: Point): List<Int> {
             return neighbourPointsNSEW(p).mapNotNull { gridData[it] }
         }
@@ -72,7 +66,7 @@ object Day09 : Day {
 
         fun localMinima(): List<Point> {
             return allPoints().fold(mutableListOf()) { acc, p ->
-                val currentPointValue = at(p) ?: throw Exception("couldn't find point $p in grid")
+                val currentPointValue = at(p)
                 val isLocalMinima = neighbourValuesNSEW(p).all { currentPointValue < it }
                 if (isLocalMinima) acc.add(p)
                 acc
@@ -80,24 +74,25 @@ object Day09 : Day {
         }
 
         fun basins(): List<Basin> {
-            val localMinima = localMinima()
-            return localMinima.map { p ->
-                val basinPoints = connectPoints(mutableListOf(p), neighbourPointsNSEW(p).toMutableSet())
-                Basin(p, basinPoints)
-            }
+            return localMinima.map { calculateBasinFor(it) }
         }
 
-        fun connectPoints(connected: MutableList<Point>, pointsToCheck: MutableSet<Point>, pointsChecked: MutableSet<Point> = mutableSetOf()): List<Point> {
+        fun calculateBasinFor(p: Point): Basin {
+            val connectedPoints = connectPoints(mutableSetOf(p), neighbourPointsNSEW(p).toMutableSet())
+            return Basin(localMinima.intersect(connectedPoints).first(), connectedPoints)
+        }
+
+        fun connectPoints(connected: MutableSet<Point>, pointsToCheck: MutableSet<Point>, pointsChecked: MutableSet<Point> = mutableSetOf()): Set<Point> {
             if (pointsToCheck.isEmpty()) return connected
-            val newP = pointsToCheck.first()
-            pointsToCheck.remove(newP)
-            if (at(newP) != 9 && !connected.contains(newP)) {
-                connected.add(newP)
-                val neighboursOfNewPoint = neighbourPointsNSEW(newP).toSet()
+            val currentPoint = pointsToCheck.first()
+            pointsToCheck.remove(currentPoint)
+            if (at(currentPoint) != 9) {
+                connected.add(currentPoint)
+                val neighboursOfNewPoint = neighbourPointsNSEW(currentPoint).toSet()
                 val unvisitedNeighbours = neighboursOfNewPoint - pointsChecked
                 pointsToCheck.addAll(unvisitedNeighbours)
             }
-            pointsChecked.add(newP)
+            pointsChecked.add(currentPoint)
             return connectPoints(connected, pointsToCheck, pointsChecked)
         }
     }

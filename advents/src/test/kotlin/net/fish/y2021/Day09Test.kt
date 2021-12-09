@@ -25,24 +25,24 @@ internal class Day09Test {
 
     @Test
     fun `connected points`() {
-        assertThat(testGrid.connectPoints(mutableListOf(Point(1, 0)), testGrid.neighbourPointsNSEW(Point(1, 0)).toMutableSet())).containsExactlyInAnyOrder(
+        assertThat(testGrid.connectPoints(mutableSetOf(Point(1, 0)), testGrid.neighbourPointsNSEW(Point(1, 0)).toMutableSet())).containsExactlyInAnyOrder(
             Point(0, 0), Point(1, 0), Point(0, 1)
         )
 
-        assertThat(testGrid.connectPoints(mutableListOf(Point(9, 0)), testGrid.neighbourPointsNSEW(Point(9, 0)).toMutableSet())).containsExactlyInAnyOrder(
+        assertThat(testGrid.connectPoints(mutableSetOf(Point(9, 0)), testGrid.neighbourPointsNSEW(Point(9, 0)).toMutableSet())).containsExactlyInAnyOrder(
             Point(9,0), Point(8, 0), Point(7, 0), Point(6, 0), Point(5, 0),
             Point(9,1), Point(8, 1), Point(6, 1),
             Point(9,2)
         )
 
-        assertThat(testGrid.connectPoints(mutableListOf(Point(2, 2)), testGrid.neighbourPointsNSEW(Point(2, 2)).toMutableSet())).containsExactlyInAnyOrder(
+        assertThat(testGrid.connectPoints(mutableSetOf(Point(2, 2)), testGrid.neighbourPointsNSEW(Point(2, 2)).toMutableSet())).containsExactlyInAnyOrder(
             Point(2, 1), Point(3, 1), Point(4, 1),
             Point(1, 2), Point(2, 2), Point(3, 2), Point(4, 2), Point(5, 2),
             Point(0, 3), Point(1, 3), Point(2, 3), Point(3, 3), Point(4, 3),
             Point(1, 4)
         )
 
-        assertThat(testGrid.connectPoints(mutableListOf(Point(6, 4)), testGrid.neighbourPointsNSEW(Point(6, 4)).toMutableSet())).containsExactlyInAnyOrder(
+        assertThat(testGrid.connectPoints(mutableSetOf(Point(6, 4)), testGrid.neighbourPointsNSEW(Point(6, 4)).toMutableSet())).containsExactlyInAnyOrder(
             Point(7, 2),
             Point(6, 3), Point(7, 3), Point(8, 3),
             Point(5, 4), Point(6, 4), Point(7, 4), Point(8, 4), Point(9, 4)
@@ -54,6 +54,15 @@ internal class Day09Test {
     fun `grid basins`() {
         val basins = testGrid.basins()
         assertThat(basins.map { it.localMinimum }).containsExactlyInAnyOrder(Point(1, 0), Point(9, 0), Point(2, 2), Point(6, 4))
+
+        // test basin from any point in a basin gives that basin
+        basins.forEach { basin ->
+            val points = basin.basinPoints
+            points.forEach { point ->
+                println("checking point $point belongs to basin $basin")
+                assertThat(testGrid.calculateBasinFor(point)).isEqualTo(basin)
+            }
+        }
     }
 
     @Test
