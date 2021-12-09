@@ -5,7 +5,6 @@ import net.fish.resourceLines
 
 object Day08 : Day {
     private val data = resourceLines(2021, 8)
-    private val powersOf10 = listOf(1, 10, 100, 1000)
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)
@@ -19,6 +18,7 @@ object Day08 : Day {
     }
 
     fun doPart2(data: List<String>): Int {
+        val powersOf10 = listOf(1, 10, 100, 1000)
         return data.fold(0) { acc, line ->
             val (lhs, rhs) = line.split(" | ").let { (a, b) -> Pair(a.split(" ").toMutableSet(), b.split(" ")) }
 
