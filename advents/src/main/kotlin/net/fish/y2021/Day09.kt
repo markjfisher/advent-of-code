@@ -82,7 +82,7 @@ object Day09 : Day {
             return Basin(localMinima.intersect(connectedPoints).first(), connectedPoints)
         }
 
-        fun connectPoints(connected: MutableSet<Point>, pointsToCheck: MutableSet<Point>, pointsChecked: MutableSet<Point> = mutableSetOf()): Set<Point> {
+        tailrec fun connectPoints(connected: MutableSet<Point>, pointsToCheck: MutableSet<Point>, pointsChecked: MutableSet<Point> = mutableSetOf()): Set<Point> {
             if (pointsToCheck.isEmpty()) return connected
             val currentPoint = pointsToCheck.first()
             pointsToCheck.remove(currentPoint)
