@@ -1,5 +1,6 @@
-package advents.conwayhex.game.ui
+package advents.ui
 
+import advents.conwayhex.game.ui.GameOptionsWidget
 import commands.KeyCommand
 import commands.PrintState
 import glm_.vec2.Vec2
@@ -13,12 +14,11 @@ import imgui.ImGui.end
 import imgui.ImGui.nextColumn
 import imgui.ImGui.popItemWidth
 import imgui.ImGui.pushItemWidth
-import imgui.dsl.collapsingHeader
-import net.fish.geometry.projection.Surface
-import org.joml.Vector4f
+import imgui.dsl
 import kotlin.reflect.KFunction1
 
-data class ConwayOptions(
+data class GlobalOptions(
+    val optionsName: String,
     var gameOptions: GameOptions,
     var surfaceOptions: SurfaceOptions,
     var cameraOptions: CameraOptions,
@@ -28,7 +28,7 @@ data class ConwayOptions(
     fun render(width: Int) {
         ImGui.setNextWindowSize(Vec2(INITIAL_WIDTH, INITIAL_HEIGHT), Cond.FirstUseEver)
         ImGui.setNextWindowPos(Vec2(width - INITIAL_WIDTH - 2, 2), Cond.Appearing)
-        if (!begin("Conway Options")) {
+        if (!begin(optionsName)) {
             end()
             return
         }
@@ -38,7 +38,7 @@ data class ConwayOptions(
         CameraOptionsWidget(cameraOptions, stateChangeFunction)
         SurfaceOptionsWidget(surfaceOptions, stateChangeFunction)
 
-        collapsingHeader("Debug") {
+        dsl.collapsingHeader("Debug") {
             columns(2, "debug_options", false)
             checkbox("Show Hud", debugOptions::showHud); nextColumn()
             checkbox("Show Messages", debugOptions::showMessage); nextColumn()
@@ -58,34 +58,3 @@ data class ConwayOptions(
         val fullSize = Vec2(-Float.MIN_VALUE, 0f)
     }
 }
-
-data class GameOptions(
-    var pauseGame: Boolean,
-    var gameSpeed: Int,
-    var useTexture: Boolean,
-    var aliveColour: Vector4f
-)
-
-data class SurfaceOptions(
-    var globalAlpha: Float,
-    var animationPercentages: MutableMap<Int, Float>,
-    var surface: Surface,
-    var surfaces: List<Surface>
-)
-
-data class DebugOptions(
-    var showHud: Boolean,
-    var showMessage: Boolean,
-    var showPolygons: Boolean
-)
-
-data class CameraOptions(
-    var cameraFrameNumber: Int,
-    var maxCameraFrames: Int,
-    var movingCamera: Boolean,
-    var loopCamera: Boolean,
-    var currentCameraPath: Int,
-    val cameraPathNames: List<String>,
-    var lookAhead: Int,
-    var fov: Float
-)

@@ -1,6 +1,6 @@
-package advents.conwayhex.game.ui
+package advents.ui
 
-import advents.conwayhex.game.ui.ConwayOptions.Companion.fullSize
+import advents.ui.GlobalOptions.Companion.fullSize
 import commands.KeyCommand
 import commands.LoadCamera
 import commands.ResetCamera

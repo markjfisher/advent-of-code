@@ -5,6 +5,7 @@ interface PathCreator {
 }
 
 enum class PathType(val requiredFields: List<String>) {
+    StaticPoint(emptyList()),
     TorusKnot(listOf("p", "q", "a", "b")),
     DecoratedTorusKnot(listOf("pattern")),
     SimpleTorus(listOf("majorRadius")),

@@ -1,15 +1,12 @@
-package advents.conwayhex.game.ui
+package advents.ui
 
 import commands.CreateSurface
 import commands.KeyCommand
 import commands.SetGlobalAlpha
 import imgui.ImGui
 import imgui.dsl
-import imgui.dsl.collapsingHeader
 import net.fish.geometry.grid.GridType
 import net.fish.geometry.hex.Orientation
-import net.fish.geometry.hex.Orientation.ORIENTATION.FLAT
-import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.projection.Surface
 
 object SurfaceOptionsWidget {
@@ -17,7 +14,7 @@ object SurfaceOptionsWidget {
         val gridWidth = surface.surfaceData["width"]!!.toInt()
         val gridHeight = surface.surfaceData["height"]!!.toInt()
         val gridType = GridType.from(surface.surfaceData["gridType"]!!)!!
-        val gridSize = intArrayOf(gridWidth, gridHeight, 2000, ConwayOptions.MAX_M_BY_N / gridHeight.coerceAtLeast(2))
+        val gridSize = intArrayOf(gridWidth, gridHeight, 2000, GlobalOptions.MAX_M_BY_N / gridHeight.coerceAtLeast(2))
         return SurfaceData(gridWidth, gridHeight, gridType, gridSize)
     }
 
@@ -25,7 +22,7 @@ object SurfaceOptionsWidget {
         var currentSurface = surfaceOptions.surface
         var surfaceData = createData(currentSurface)
 
-        collapsingHeader("Surface") {
+        dsl.collapsingHeader("Surface") {
             if (ImGui.sliderFloat("Global Alpha", surfaceOptions::globalAlpha, 0f, 1f)) {
                 stateChangeFunction(SetGlobalAlpha)
             }
@@ -33,7 +30,7 @@ object SurfaceOptionsWidget {
             if (ImGui.dragInt2("Grid Size", surfaceData.size, 2f, 2, 2000)) {
                 var newWidth = surfaceData.size[0].coerceAtLeast(2)
                 if (newWidth % 2 == 1) newWidth--
-                var maxV = ConwayOptions.MAX_M_BY_N / newWidth
+                var maxV = GlobalOptions.MAX_M_BY_N / newWidth
                 if (maxV % 2 == 1) maxV--
                 currentSurface.surfaceData["width"] = newWidth.toString()
                 val newHeight = surfaceData.size[1].coerceAtMost(maxV).coerceAtLeast(2)
@@ -49,12 +46,12 @@ object SurfaceOptionsWidget {
             }
             if (surfaceData.gridType == GridType.HEX) {
                 val orientation = Orientation.ORIENTATION.from(currentSurface.surfaceData["orientation"]!!)
-                dsl.radioButton("Pointy", orientation == POINTY) {
-                    currentSurface.surfaceData["orientation"] = POINTY.toString()
+                dsl.radioButton("Pointy", orientation == Orientation.ORIENTATION.POINTY) {
+                    currentSurface.surfaceData["orientation"] = Orientation.ORIENTATION.POINTY.toString()
                 }
                 ImGui.sameLine()
-                dsl.radioButton("Flat", orientation == FLAT) {
-                    currentSurface.surfaceData["orientation"] = FLAT.toString()
+                dsl.radioButton("Flat", orientation == Orientation.ORIENTATION.FLAT) {
+                    currentSurface.surfaceData["orientation"] = Orientation.ORIENTATION.FLAT.toString()
                 }
             }
             ImGui.separator()
@@ -110,37 +107,8 @@ object SurfaceOptionsWidget {
 
             ImGui.sliderFloat("Scale", currentSurface::scale, 0.2f, 10f)
             ImGui.separator()
-            if (ImGui.button("Create Surface", ConwayOptions.fullSize)) stateChangeFunction(CreateSurface)
+            if (ImGui.button("Create Surface", GlobalOptions.fullSize)) stateChangeFunction(CreateSurface)
         }
 
-    }
-}
-
-data class SurfaceData(
-    val width: Int,
-    val height: Int,
-    val gridType: GridType,
-    val size: IntArray
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as SurfaceData
-
-        if (width != other.width) return false
-        if (height != other.height) return false
-        if (gridType != other.gridType) return false
-        if (!size.contentEquals(other.size)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = width
-        result = 31 * result + height
-        result = 31 * result + gridType.hashCode()
-        result = 31 * result + size.contentHashCode()
-        return result
     }
 }
