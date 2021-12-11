@@ -87,7 +87,7 @@ class SquareSurfaceMapper(
         if (centres.isEmpty()) centres = calculateSquareCentres()
         val neighboursToAverage = listOf(Triple(0, 6, 7), Triple(2, 0, 1), Triple(4, 2, 3), Triple(6, 4, 5))
         val corners = neighboursToAverage.map { neighbours ->
-            averageCentres(item, item.neighbour(neighbours.first), item.neighbour(neighbours.second), item.neighbour(neighbours.third))
+            averageCentres(item, item.neighbour(neighbours.first)!!, item.neighbour(neighbours.second)!!, item.neighbour(neighbours.third)!!)
         }
         return corners + centres[item]!!
     }
@@ -108,7 +108,7 @@ class SquareSurfaceMapper(
             var squareToAdd = grid.square(segment, 0)
             squares.add(squareToAdd)
             (0 until (grid.height - 1)).forEach { _ ->
-                squareToAdd = squareToAdd.neighbour(2) // "North" of this square
+                squareToAdd = squareToAdd.neighbour(2)!! // "North" of this square
                 squares.add(squareToAdd)
             }
             squares.forEachIndexed { index, square ->

@@ -10,15 +10,7 @@ object Day09 : Day {
     private val grid = toGrid(resourceLines(2021, 9))
 
     fun toGrid(input: List<String>): Grid {
-        val gridMap = input.foldIndexed(mutableMapOf<Point, Int>()) { row, m, line ->
-            val valuesForLine = line.windowed(1, 1).map { it.toInt() }
-            valuesForLine.forEachIndexed { lineIndex, gridValue ->
-                m[Point(lineIndex, row)] = gridValue
-            }
-
-            m
-        }
-        return Grid(gridMap)
+        return Grid(GridDataUtils.mapPointsFromLines(input))
     }
 
     override fun part1() = doPart1(grid)

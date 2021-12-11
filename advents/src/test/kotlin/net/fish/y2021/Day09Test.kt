@@ -4,6 +4,8 @@ import net.fish.geometry.Point
 import net.fish.resourcePath
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import java.lang.Exception
 
 internal class Day09Test {
     private val testGrid = Day09.toGrid(resourcePath("/2021/day09-test.txt"))
@@ -81,7 +83,7 @@ internal class Day09Test {
         assertThat(grid.at(Point(1, 2))).isEqualTo(7)
         assertThat(grid.at(Point(2, 2))).isEqualTo(8)
 
-        assertThat(grid.at(Point(3, 3))).isNull()
+        assertThrows<Exception> { grid.at(Point(3, 3)) }
     }
 
     @Test

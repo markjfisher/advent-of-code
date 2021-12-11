@@ -15,12 +15,12 @@ data class Square(
         return String.format("Sq[%d, %d]", x, y)
     }
 
-    fun add(other: Square): Square = constrainer.constrain(Square(x + other.x, y + other.y, constrainer))
-    fun subtract(other: Square): Square = constrainer.constrain(Square(x - other.x, y - other.y, constrainer))
-    fun scale(k: Int): Square = constrainer.constrain(Square(x * k, y * k, constrainer))
+    fun add(other: Square): Square? = constrainer.constrain(Square(x + other.x, y + other.y, constrainer))
+    fun subtract(other: Square): Square? = constrainer.constrain(Square(x - other.x, y - other.y, constrainer))
+    fun scale(k: Int): Square? = constrainer.constrain(Square(x * k, y * k, constrainer))
 
     fun neighbour(d: Int) = constrainer.constrain(this + direction(d))
-    override fun neighbours(): List<Square> = directions.map { this + it }
+    override fun neighbours(): List<Square> = directions.mapNotNull { this + it }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
