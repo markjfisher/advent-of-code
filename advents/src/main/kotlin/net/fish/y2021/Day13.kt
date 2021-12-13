@@ -43,26 +43,26 @@ object Day13 : Day {
         val folds: List<Fold>
     ) {
         fun fold(count: Int = folds.size): FoldingGrid {
+            tailrec fun performFolds(count: Int, points: Set<Point>, folds: List<Fold>): FoldingGrid {
+                if (count == 0) return FoldingGrid(points, folds)
+                val fold = folds.first()
+                val newPoints = when {
+                    fold.isHorizontal -> horizontalFold(fold.foldAlong, points)
+                    else -> verticalFold(fold.foldAlong, points)
+                }
+                return performFolds(count - 1, newPoints, folds.drop(1))
+            }
+
             return performFolds(count, points, folds)
         }
 
-        fun performFolds(count: Int, points: Set<Point>, folds: List<Fold>): FoldingGrid {
-            if (count == 0) return FoldingGrid(points, folds)
-            val fold = folds.take(1)[0]
-            val newPoints = when {
-                fold.isHorizontal -> horizontalFold(fold.foldAlong, points)
-                else -> verticalFold(fold.foldAlong, points)
-            }
-            return performFolds(count - 1, newPoints, folds.drop(1))
-        }
-
-        fun horizontalFold(row: Int, points: Set<Point>): Set<Point> {
+        private fun horizontalFold(row: Int, points: Set<Point>): Set<Point> {
             return points.fold(setOf()) { newSet, point ->
                 newSet + if (point.y < row) point else Point(point.x, 2 * row - point.y)
             }
         }
 
-        fun verticalFold(column: Int, points: Set<Point>): Set<Point> {
+        private fun verticalFold(column: Int, points: Set<Point>): Set<Point> {
             return points.fold(setOf()) { newSet, point ->
                 newSet + if (point.x < column) point else Point(2 * column - point.x, point.y)
             }
