@@ -4,89 +4,67 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day12 : Day {
-    private val caves = toCaves(resourceLines(2021, 12))
+    // private val startCave = parseCaves(resourceLines(2021, 12))
 
-    override fun part1() = doPart1(caves)
-    override fun part2() = doPart2(caves)
+    override fun part1() = doPart1()
+    override fun part2() = doPart2()
 
-    fun doPart1(caves: Map<String, Cave>): Int = traverse("start", "end", caves).size
-    fun doPart2(caves: Map<String, Cave>): Int = traverseWithRevist("start", "end", caves).size
+    fun doPart1(): Int = 0//traverse(start, ::singleVisitSmallCaves).size
+    fun doPart2(): Int = 0//traverse(start, ::doubleVisitSmallCavesOnceOnly).size
 
-    fun toCaves(data: List<String>): Map<String, Cave> {
+    fun parseCaves(data: List<String>): Cave {
         val caves: MutableMap<String, Cave> = mutableMapOf()
         data.forEach { line ->
             val caveNames = line.split("-")
             val from = caveNames[0]
             val to = caveNames[1]
             if (caves[from] == null) {
-                caves[from] = Cave(from, from.first().isUpperCase())
+                caves[from] = Cave(from)
             }
             if (caves[to] == null) {
-                caves[to] = Cave(to, to.first().isUpperCase())
+                caves[to] = Cave(to)
             }
-            caves[from]!!.connected += caves[to]!!.name
-            caves[to]!!.connected += caves[from]!!.name
+            caves[from]!!.connected += caves[to]!!
+            caves[to]!!.connected += caves[from]!!
         }
-        return caves.toMap()
+        return caves["start"]!!
     }
 
-    fun traverse(from: String, to: String, caves: Map<String, Cave>): Set<List<String>> {
-        return getPaths(from, to, caves, mutableMapOf(), mutableListOf())
+    fun traverse(start: Cave, exitIsValid: (Cave, List<Cave>) -> Boolean): Set<List<Cave>> {
+        return getPaths(start, mutableListOf(), mutableSetOf(), exitIsValid)
     }
 
-    fun traverseWithRevist(from: String, to: String, caves: Map<String, Cave>): Set<List<String>> {
-        return caves.values.fold(setOf()) { acc, cave ->
-            val paths = if (!cave.isBig && cave.name != from && cave.name != to) {
-                // we have a small cave we can duplicate
-                val dupeName = "${cave.name}2"
-                val newCaves = mutableMapOf<String, Cave>().also { map ->
-                    caves.forEach { c -> map[c.key] = c.value.copy() }
-                }
-                newCaves[dupeName] = cave.copy()
-
-                // rework back references to include this duplicate cave
-                newCaves.values.forEach { cc ->
-                    if (cc.connected.contains(cave.name)) {
-                        cc.connected += dupeName
-                    }
-                }
-                // now get all paths. We're only interested in cases where we have duplicated a cave
-                val pathsWithDuplicate = getPaths(from, to, newCaves, mutableMapOf(), mutableListOf())
-                // we need to change the dupes back to normal caves, and reduce our output set, e.g. A-b-A-b2-A-end, and A-b2-A-b-A-end are actually the same routes
-                val paths = pathsWithDuplicate.fold(mutableSetOf<List<String>>()) { acc2, cavePath ->
-                    // Deduplicate by changing names back to original names, so clashes cancel each other
-                    val newPath = cavePath.map { it.substringBefore("2") }
-                    acc2.add(newPath)
-                    acc2
-                }
-                paths
-            } else emptySet()
-            acc + paths
+    fun getPaths(from: Cave, currentPath: MutableList<Cave>, routes: MutableSet<List<Cave>>, exitIsValid: (Cave, List<Cave>) -> Boolean): MutableSet<List<Cave>> {
+        println("cave: $from, path: $currentPath, routes: $routes")
+        if (from.isEnd()) {
+            routes.add(currentPath + from)
+            return routes
         }
+        currentPath.add(from)
+
+        from.connected.forEach { connectedCave ->
+            if (exitIsValid(connectedCave, currentPath)) {
+                return getPaths(connectedCave, currentPath, routes, exitIsValid)
+            }
+        }
+
+        return routes
     }
 
-    fun getPaths(currentCaveName: String, to: String, caves: Map<String, Cave>, traversed: MutableMap<String, Int>, currentPath: MutableList<String>): Set<MutableList<String>> {
-        // if it's a small cave and we've been here before, there's no more paths to be found
-        if (!caves[currentCaveName]!!.isBig && traversed.getOrDefault(currentCaveName, 0) > 0) {
-            return emptySet()
-        }
-        // increment visit count for this cave, and mark it on the path
-        val currentCave = caves[currentCaveName]!!
-        traversed[currentCaveName] = traversed.getOrDefault(currentCaveName, 0) + 1
-        currentPath += currentCaveName
+    fun singleVisitSmallCaves(to: Cave, currentPath: List<Cave>): Boolean {
+        return to.isBig() || !currentPath.contains(to)
+    }
 
-        // have we reached our end point?
-        if (currentCaveName == to) {
-            return setOf(currentPath)
-        }
+    fun doubleVisitSmallCavesOnceOnly(to: Cave, currentPath: List<Cave>): Boolean {
+        if (to.isStart()) return false
+        if (to.isEnd()) return true
+        if (to.isBig()) return true
 
-        // now look down all the connected paths from this point, recursing into hell
-        return currentCave.connected.fold(setOf()) { acc, cave ->
-            // We need copies of the current traversed and current path so the originals don't get blat in the recursion
-            val newTraversed = mutableMapOf<String, Int>().also { it.putAll(traversed) }
-            val newCurrentPath = mutableListOf<String>().also { it.addAll(currentPath) }
-            acc + getPaths(cave, to, caves, newTraversed, newCurrentPath)
-        }
+        val smallCavesVisited = currentPath.filter { !it.isBig() }
+        if (!smallCavesVisited.contains(to)) return true
+
+        // check if any of them have been visited twice, this is only allowed to happen a single time
+        return !smallCavesVisited.groupBy { it.name }.any { it.value.size == 2 }
     }
 
     @JvmStatic
@@ -95,13 +73,17 @@ object Day12 : Day {
         println(part2())
     }
 
-    data class Cave(
+    class Cave(
         val name: String,
-        val isBig: Boolean,
-        val connected: MutableList<String> = mutableListOf()
+        val connected: MutableSet<Cave> = mutableSetOf()
     ) {
-        fun copy(): Cave {
-            return Cave(this.name, this.isBig, mutableListOf<String>().also { it.addAll(this.connected) })
+        fun isBig() = (name.first().isUpperCase())
+        fun isStart() = (name == "start")
+        fun isEnd() = (name == "end")
+
+        override fun toString(): String {
+            // recursive hell in debug if we don't define this
+            return "Cave[$name]"
         }
     }
 
