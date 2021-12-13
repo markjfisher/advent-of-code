@@ -46,7 +46,7 @@ internal class Day13Test {
     fun `can fold grid once`() {
         val grid = Day13.createFoldingGrid(testData)
         val newGrid = grid.fold(1)
-        newGrid.printGrid()
+        println(newGrid.toGridString())
         assertThat(newGrid.points).hasSize(17)
         assertThat(newGrid.points).containsExactlyInAnyOrder(
             Point(0, 0), Point(2, 0), Point(3, 0), Point(6, 0), Point(9, 0),
@@ -61,6 +61,14 @@ internal class Day13Test {
     fun `can complete all folds`() {
         val grid = Day13.createFoldingGrid(testData)
         val newGrid = grid.fold()
-        newGrid.printGrid()
+        assertThat(newGrid.toGridString()).isEqualTo("""
+
+            █████
+            █   █
+            █   █
+            █   █
+            █████
+
+        """.trimIndent())
     }
 }

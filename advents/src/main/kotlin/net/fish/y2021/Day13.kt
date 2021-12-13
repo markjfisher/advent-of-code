@@ -1,7 +1,6 @@
 package net.fish.y2021
 
 import net.fish.Day
-import net.fish.geometry.Direction
 import net.fish.geometry.Point
 import net.fish.geometry.bounds
 import net.fish.resourceLines
@@ -12,18 +11,8 @@ object Day13 : Day {
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)
 
-    fun doPart1(data: List<String>): Int {
-        val grid = createFoldingGrid(data)
-        val newGrid = grid.fold(1)
-        return newGrid.points.size
-    }
-
-    fun doPart2(data: List<String>): Int {
-        val grid = createFoldingGrid(data).fold()
-        grid.printGrid()
-        return 0
-    }
-
+    fun doPart1(data: List<String>): Int = createFoldingGrid(data).fold(1).points.size
+    fun doPart2(data: List<String>): String = createFoldingGrid(data).fold().toGridString()
 
     fun createFoldingGrid(data: List<String>): FoldingGrid {
         val points = mutableSetOf<Point>()
@@ -68,17 +57,18 @@ object Day13 : Day {
             }
         }
 
-        fun printGrid(ps: Set<Point> = points) {
+        fun toGridString(ps: Set<Point> = points): String {
             val bounds = ps.bounds()
             val (maxX, maxY) = bounds.second
+            var output = "\n"
             (0 .. maxY).forEach { y ->
                 (0 .. maxX).forEach { x ->
                     val hasPoint = ps.contains(Point(x, y))
-                    if (hasPoint) print("#") else print(".")
+                    output += if (hasPoint) "█" else " "
                 }
-                println("")
+                output += "\n"
             }
-            println("")
+            return output
         }
     }
 
