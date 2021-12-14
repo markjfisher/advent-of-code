@@ -1,6 +1,5 @@
 package advents.dumbooctopus
 
-import advents.ui.SurfaceOptions.Companion.defaultSurfaces
 import engine.GameEngine
 import engine.GameLogic
 import engine.GameWorld
@@ -17,7 +16,7 @@ import net.fish.resourceLines
 import org.joml.Vector4f
 import org.lwjgl.system.Configuration
 
-class DumboOctopus2021Day11 : GameLogic, GameWorld(
+class DumboOctopusGame : GameLogic, GameWorld(
     allSurfaces = listOf(Surface("(Square) Simple Grid", mutableMapOf("gridType" to "square", "width" to "10", "height" to "10"), PathType.StaticPoint, 0f, 1f)),
     storage = HashMapBackedGridItemDataStorage<DumboOctopusItemData>(),
     hud = OctopusHud()
@@ -101,7 +100,7 @@ class DumboOctopus2021Day11 : GameLogic, GameWorld(
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val logic = DumboOctopus2021Day11()
+            val logic = DumboOctopusGame()
             val engine = GameEngine("Dumbo Octopus", 1200, 800, true, logic)
             Configuration.DEBUG.set(true)
             engine.run()

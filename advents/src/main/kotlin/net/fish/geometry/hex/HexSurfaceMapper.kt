@@ -34,8 +34,9 @@ class HexSurfaceMapper(
         // Generate faces as follows to be more rounded than the 5 version by blender which doesn't bend well
         // 0/1/6, 1/2/6, 2/3/6, 3/4/6, 4/5/6, 5/0/6
         // This uses my origin which is SE for pointy, E for flat
+        // i.e. 0/1/6 means make a triangle from points 0, 1 and 6 (6 = centre), and 0 being SE for pointy, E for flat.
 
-        val coordinates = coordinates(hex)
+        val coordinates = coordinates(hex) // gives the locations of all the hex corners, and the centre position. 0 = pos 0, ... 5 = pos 5, 6 = centre
 
         // vetices (last one is the centre)
         for(i in (0..6)) {
