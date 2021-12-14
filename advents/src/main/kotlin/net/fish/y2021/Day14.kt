@@ -41,23 +41,23 @@ object Day14 : Day {
     )
 
     fun grow(iterations: Int, templateInstructions: TemplateInstructions): Map<Char, Long> {
-        val counts = templateInstructions.template.windowed(2, 1).groupBy { it }.map { it.key to it.value.size.toLong() }.toMap()
-        val grown = (0 until iterations).fold(counts) { c, _ ->
-            val newCounts = mutableMapOf<String, Long>()
-            c.forEach { (pair, pairCount) ->
-                templateInstructions.insertions[pair]!!.forEach { newPair ->
-                    newCounts[newPair] = newCounts.getOrDefault(newPair, 0L) + pairCount
+        val initialPairCounts = templateInstructions.template.windowed(2, 1).groupBy { it }.map { it.key to it.value.size.toLong() }.toMap()
+        val grown = (0 until iterations).fold(initialPairCounts) { counts, _ ->
+            counts.entries.fold(mutableMapOf()) { newCounts, (pair, count) ->
+                templateInstructions.insertions.getOrDefault(pair, emptyList()).forEach {
+                    newCounts[it] = newCounts.getOrDefault(it, 0L) + count
                 }
+                newCounts
             }
-            newCounts
         }
 
-        // convert the pair counts into letters count. Care on last letter! it doesn't overlap, so has to be incremented at the end
+        // convert the pair counts into letters count.
         val lettersCount = grown.map { it.key.first() to it.value }
             .groupBy { it.first }
             .map { it.key to it.value.sumOf { (_, c) -> c } }.toMap()
             .toMutableMap()
             .also { c2l ->
+                // Care on last letter! it doesn't overlap one after it, so would be missed in the final count
                 val lastChar = templateInstructions.template.last()
                 c2l[lastChar] = c2l.getOrDefault(lastChar, 0) + 1
             }
