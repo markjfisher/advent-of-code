@@ -9,22 +9,26 @@ object Day14 : Day {
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)
 
-    fun doPart1(data: List<String>): Int {
-        val ti = parseInput(data)
-        val letterLengths = grow(10, ti).groupingBy { it }.eachCount().values
-        val minSize = letterLengths.minOrNull() ?: throw Exception("crazy min")
-        val maxSize = letterLengths.maxOrNull() ?: throw Exception("crazy max")
-        return maxSize - minSize
-    }
+    fun doPart1(data: List<String>): Long = solution(data, 10)
+    fun doPart2(data: List<String>): Long = solution(data, 40)
 
-    fun doPart2(data: List<String>): Long = 0
+    private fun solution(data: List<String>, iterations: Int): Long {
+        val ti = parseInput(data)
+        val counts = grow(iterations, ti)
+        val minSize = counts.minByOrNull { it.value } ?: throw Exception("crazy min")
+        val maxSize = counts.maxByOrNull { it.value } ?: throw Exception("crazy max")
+        return maxSize.value - minSize.value
+    }
 
     fun parseInput(data: List<String>): TemplateInstructions {
         var template = ""
-        val insertions = mutableMapOf<String, String>()
+        val insertions = mutableMapOf<String, List<String>>()
         data.forEach { line ->
             when {
-                line.contains("->") -> insertions[line.split(" -> ")[0]] = line.split(" -> ")[1]
+                line.contains("->") -> {
+                    val (pair, newCharAsStr) = line.split(" -> ")
+                    insertions[pair] = listOf(pair[0] + newCharAsStr, newCharAsStr + pair[1])
+                }
                 line.isNotEmpty() -> template = line
             }
         }
@@ -33,22 +37,32 @@ object Day14 : Day {
 
     data class TemplateInstructions(
         val template: String,
-        val insertions: Map<String, String>
+        val insertions: Map<String, List<String>>
     )
 
-    fun grow(iterations: Int, templateInstructions: TemplateInstructions): String {
-        tailrec fun doGrow(pairs: List<String>, newTemplate: String): String {
-            if (pairs.isEmpty()) return newTemplate
-            val currentPair = pairs.first()
-            val insertion = templateInstructions.insertions[currentPair]!!
-            val reducedPairs = pairs.drop(1)
-            val lastChar = if(reducedPairs.isEmpty()) currentPair[1] else ""
-            return doGrow(reducedPairs, "${newTemplate}${currentPair[0]}${insertion}${lastChar}")
+    fun grow(iterations: Int, templateInstructions: TemplateInstructions): Map<Char, Long> {
+        val counts = templateInstructions.template.windowed(2, 1).groupBy { it }.map { it.key to it.value.size.toLong() }.toMap()
+        val grown = (0 until iterations).fold(counts) { c, _ ->
+            val newCounts = mutableMapOf<String, Long>()
+            c.forEach { (pair, pairCount) ->
+                templateInstructions.insertions[pair]!!.forEach { newPair ->
+                    newCounts[newPair] = newCounts.getOrDefault(newPair, 0L) + pairCount
+                }
+            }
+            newCounts
         }
 
-        return (0 until iterations).fold(templateInstructions.template) { template, iter ->
-            doGrow(template.windowed(2, 1), "")
-        }
+        // convert the pair counts into letters count. Care on last letter! it doesn't overlap, so has to be incremented at the end
+        val lettersCount = grown.map { it.key.first() to it.value }
+            .groupBy { it.first }
+            .map { it.key to it.value.sumOf { (_, c) -> c } }.toMap()
+            .toMutableMap()
+            .also { c2l ->
+                val lastChar = templateInstructions.template.last()
+                c2l[lastChar] = c2l.getOrDefault(lastChar, 0) + 1
+            }
+
+        return lettersCount
 
     }
 
