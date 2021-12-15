@@ -1,16 +1,18 @@
 package net.fish.geometry.square
 
 import net.fish.geometry.grid.GridItem
-import net.fish.graph.Graph
+import kotlin.math.abs
 
 data class Square(
     val x: Int,
     val y: Int,
     val constrainer: SquareConstrainer = DefaultSquareConstrainer()
-): GridItem, Graph.Vertex {
+): GridItem {
     operator fun plus(other: Square) = add(other)
     operator fun minus(other: Square) = subtract(other)
     operator fun times(k: Int) = scale(k)
+
+    fun manhattenDistance() = abs(x) + abs(y)
 
     override fun simpleValue(): String {
         return String.format("Sq[%d, %d]", x, y)
