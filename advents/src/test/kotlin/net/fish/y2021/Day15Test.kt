@@ -9,7 +9,40 @@ internal class Day15Test {
     private val testData = resourcePath("/2021/day15-test.txt")
 
     @Test
-    fun `can read test data and create part 1 path`() {
+    fun `can read test data and create part 1 path with a star search`() {
+        val chitonGrid = Day15.createChitonGraph(testData, 1)
+
+        val start = chitonGrid.grid.square(0, 0)!!
+        val end = chitonGrid.grid.square(9, 9)!!
+        val result = chitonGrid.aStarSearch(start, end, true)
+        val path = result.first
+        assertThat(path.map { Point(it.x, it.y) }).containsExactly(
+            Point(x=0, y=0),
+            Point(x=0, y=1),
+            Point(x=0, y=2),
+            Point(x=1, y=2),
+            Point(x=2, y=2),
+            Point(x=3, y=2),
+            Point(x=4, y=2),
+            Point(x=5, y=2),
+            Point(x=6, y=2),
+            Point(x=6, y=3),
+            Point(x=7, y=3),
+            Point(x=7, y=4),
+            Point(x=8, y=4),
+            Point(x=8, y=5),
+            Point(x=8, y=6),
+            Point(x=8, y=7),
+            Point(x=8, y=8),
+            Point(x=9, y=8),
+            Point(x=9, y=9)
+        )
+        val cost = result.second
+        assertThat(cost).isEqualTo(40)
+    }
+
+    @Test
+    fun `can read test data and create part 1 path with dijkstra search`() {
         val chitonGrid = Day15.createChitonGraph(testData, 1)
 
         val start = chitonGrid.grid.square(0, 0)!!

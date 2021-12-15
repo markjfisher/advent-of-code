@@ -8,9 +8,11 @@ import net.fish.geometry.square.NonWrappingSquareGrid
 import net.fish.geometry.square.Square
 import net.fish.resourceLines
 import java.util.PriorityQueue
+import kotlin.math.abs
 
 object Day15 : Day {
     private val data = resourceLines(2021, 15)
+    override val warmUps: Int = 1
 
     override fun part1() = solve(data, 1)
     override fun part2() = solve(data, 5)
@@ -71,7 +73,7 @@ data class ChitonGraph(
 
     data class RiskSquare(
         val square: Square,
-        val risk: Int = Int.MAX_VALUE
+        val risk: Int
     )
 
     fun dijkstraSearch(from: Square, to: Square, returnPath: Boolean = false): Pair<List<Square>, Int> {
@@ -92,6 +94,36 @@ data class ChitonGraph(
                 if (newCost < costSoFar.getOrDefault(next, Int.MAX_VALUE)) {
                     costSoFar[next] = newCost
                     frontier.add(RiskSquare(next, newCost))
+                    cameFrom[next] = current
+                }
+            }
+        }
+
+        return Pair(if (returnPath) reconstructPath(cameFrom, from, to) else emptyList(), costSoFar.getOrDefault(to, -1))
+    }
+
+    fun aStarSearch(from: Square, to: Square, returnPath: Boolean = false): Pair<List<Square>, Int> {
+        fun heuristic(a: Square, b: Square): Int {
+            return abs(a.x - b.x) + abs(a.y - b.y)
+        }
+
+        val frontier = PriorityQueue(costBasedSquareComparator)
+
+        frontier.add(RiskSquare(from, 0))
+        val cameFrom = mutableMapOf<Square, Square>()
+        val costSoFar = mutableMapOf<Square, Int>()
+
+        costSoFar[from] = 0
+
+        while (frontier.isNotEmpty()) {
+            val current = frontier.poll().square
+            if (current == to) break
+
+            for (next in current.cardinals()) {
+                val newCost = costSoFar[current]!! + storage.getData(next)!!.cost
+                if (newCost < costSoFar.getOrDefault(next, Int.MAX_VALUE)) {
+                    costSoFar[next] = newCost
+                    frontier.add(RiskSquare(next, newCost + heuristic(next, to)))
                     cameFrom[next] = current
                 }
             }
