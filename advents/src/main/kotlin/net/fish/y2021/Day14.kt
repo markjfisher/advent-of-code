@@ -54,7 +54,7 @@ object Day14 : Day {
         // convert the pair counts into letters count.
         val lettersCount = grown.map { it.key.first() to it.value }
             .groupBy { it.first }
-            .map { it.key to it.value.sumOf { (_, c) -> c } }.toMap()
+            .map { it.key to it.value.sumOf { p -> p.second } }.toMap()
             .toMutableMap()
             .also { c2l ->
                 // Care on last letter! it doesn't overlap one after it, so would be missed in the final count

@@ -4,10 +4,11 @@ import net.fish.geometry.Direction.EAST
 import net.fish.geometry.Direction.NORTH
 import net.fish.geometry.Direction.SOUTH
 import net.fish.geometry.Direction.WEST
+import net.fish.graph.Graph
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
-data class Point(val x: Int, val y: Int): Comparable<Point> {
+data class Point(val x: Int, val y: Int): Comparable<Point>, Graph.Vertex {
     override fun compareTo(other: Point): Int {
         return if (y == other.y) x.compareTo(other.x) else y.compareTo(other.y)
     }

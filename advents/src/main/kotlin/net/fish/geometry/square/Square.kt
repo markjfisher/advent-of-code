@@ -1,12 +1,13 @@
 package net.fish.geometry.square
 
 import net.fish.geometry.grid.GridItem
+import net.fish.graph.Graph
 
 data class Square(
     val x: Int,
     val y: Int,
     val constrainer: SquareConstrainer = DefaultSquareConstrainer()
-): GridItem {
+): GridItem, Graph.Vertex {
     operator fun plus(other: Square) = add(other)
     operator fun minus(other: Square) = subtract(other)
     operator fun times(k: Int) = scale(k)
@@ -21,6 +22,7 @@ data class Square(
 
     fun neighbour(d: Int) = constrainer.constrain(this + direction(d))
     override fun neighbours(): List<Square> = directions.mapNotNull { this + it }
+    override fun cardinals(): List<Square> = cardinalPoints.mapNotNull { this + it }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -38,6 +40,7 @@ data class Square(
 
     companion object {
         val directions = listOf(Square(1, 0), Square(1, 1), Square(0, 1), Square(-1, 1), Square(-1, 0), Square(-1, -1), Square(0, -1), Square(1, -1))
+        val cardinalPoints = listOf(Square(1, 0), Square(0, 1), Square(-1, 0), Square(0, -1))
         fun direction(d: Int) = directions[d]
     }
 }

@@ -70,9 +70,9 @@ class SquareSurfaceMapper(
         val mp01 = corners[0].add(corners[1], Vector3f()).mul(0.5f)
         val mp12 = corners[1].add(corners[2], Vector3f()).mul(0.5f)
         val mp23 = corners[2].add(corners[3], Vector3f()).mul(0.5f)
-        val mp34 = corners[3].add(corners[4], Vector3f()).mul(0.5f)
+        val mp30 = corners[3].add(corners[0], Vector3f()).mul(0.5f)
         val xDir = mp01.sub(mp23).normalize()
-        val yDir = mp34.sub(mp12).normalize()
+        val yDir = mp30.sub(mp12).normalize()
         if (xDir.x.isNaN() || yDir.x.isNaN()) {
             println("ERROR IN NORMALS: square: $square, xDir: $xDir, yDir: $yDir")
         }
