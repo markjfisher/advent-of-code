@@ -42,6 +42,10 @@ data class Point(val x: Int, val y: Int): Comparable<Point> {
         fun distance(a: Point, b: Point): Double =
             sqrt(((b.y - a.y) * (b.y - a.y) + (b.x - a.x) * (b.x - a.x)).toDouble())
     }
+
+    fun within(bounds: Pair<Point, Point>): Boolean {
+        return x >= bounds.first.x && x <= bounds.second.x && y >= bounds.first.y && y <= bounds.second.y
+    }
 }
 
 fun Collection<Point>.minX() = this.map { it.x }.minOrNull()

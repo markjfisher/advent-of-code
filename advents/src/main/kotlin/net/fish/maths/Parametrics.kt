@@ -14,3 +14,12 @@ data class Parametrics(
     val ny: IFunction = Differentiation.secondDerivative(fy),
     val nz: IFunction = Differentiation.secondDerivative(fz),
 )
+
+data class Parametrics2D(
+    val fx: IFunction,
+    val fy: IFunction,
+    val tx: IFunction = Differentiation.derivative(fx),
+    val ty: IFunction = Differentiation.derivative(fy),
+    val nx: IFunction = Differentiation.secondDerivative(fx),
+    val ny: IFunction = Differentiation.secondDerivative(fy),
+)
