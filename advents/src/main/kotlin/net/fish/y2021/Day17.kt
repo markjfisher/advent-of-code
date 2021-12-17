@@ -3,17 +3,10 @@ package net.fish.y2021
 import net.fish.Day
 import net.fish.geometry.Point
 import net.fish.geometry.bounds
-import net.fish.maths.Parametrics
 import net.fish.maths.Parametrics2D
-import net.fish.resourceLines
 import net.fish.resourceString
 import kotlin.math.abs
-import kotlin.math.ceil
-import kotlin.math.cos
 import kotlin.math.floor
-import kotlin.math.max
-import kotlin.math.sin
-import kotlin.math.sqrt
 
 object Day17 : Day {
     private val targetExtractor by lazy { Regex("""target area: x=(\d+)\.\.(\d+), y=(-\d+)\.\.(-\d+)""") }
@@ -38,7 +31,7 @@ object Day17 : Day {
         // it turns out it's from t = 2*|yMin| to 2*|yMax| - TODO: WHY!!?? spreadsheet proof isn't good enough!
         // Actually, it turns out there's a local max at t = 2*abs(minY)
 
-        val t = 2*abs(data.minY)
+        val t = 2 * abs(data.minY)
         val maxVyAtT = data.maxY / t.toDouble() + (t - 1) / 2.0
         val maxVy = floor(maxVyAtT).toInt()
 
@@ -53,7 +46,7 @@ object Day17 : Day {
                 val vxp1 = vx + 1
                 if (t >= vxp1) 0.5 * vx * vxp1 else 0.5 * t * (2 * vx + 1 - t)
             },
-            fy = { t -> 0.5 * t * (2 * vy + 1 - t)}
+            fy = { t -> 0.5 * t * (2 * vy + 1 - t) }
         )
     }
 
@@ -63,8 +56,8 @@ object Day17 : Day {
         val bounds = listOf(Point(data.minX, data.minY), Point(data.maxX, data.maxY)).bounds()
 
         val hitTarget = mutableSetOf<Point>()
-        for(vy in data.minY .. abs(data.minY)) {
-            for (vx in 1 .. data.maxX) {
+        for (vy in data.minY..abs(data.minY)) {
+            for (vx in 1..data.maxX) {
                 val params = createParametrics(vx, vy)
                 var t = 0
                 var hasHit = false
