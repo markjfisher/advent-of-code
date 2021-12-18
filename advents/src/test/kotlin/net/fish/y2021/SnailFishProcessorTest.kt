@@ -103,21 +103,6 @@ class SnailFishProcessorTest {
     }
 
     @Test
-    fun `can find parent with a side value`() {
-        val t1pair = SnailFishProcessor.convertToSnailFish("[[[[[9,8],1],2],3],4]")
-        val t1exp = SnailFishProcessor.findPairToExplode(t1pair)
-        assertThat(SnailFishProcessor.findParentPairWithValueOn(t1exp!!, true)).isNull()
-
-        val t2pair = SnailFishProcessor.convertToSnailFish("[7,[6,[5,[4,[3,2]]]]]")
-        val t2exp = SnailFishProcessor.findPairToExplode(t2pair)
-        assertThat(SnailFishProcessor.findParentPairWithValueOn(t2exp!!, true)!!.left).isEqualTo(SnailFishValue(4))
-
-        val t3pair = SnailFishProcessor.convertToSnailFish("[[[[[1,2],3],4],5],6]")
-        val t3exp = SnailFishProcessor.findPairToExplode(t3pair)
-        assertThat(SnailFishProcessor.findParentPairWithValueOn(t3exp!!, false)!!.right).isEqualTo(SnailFishValue(3))
-    }
-
-    @Test
     fun `can explode`() {
         val t1pair = SnailFishProcessor.convertToSnailFish("[[[[[9,8],1],2],3],4]")
         SnailFishProcessor.explode(t1pair)

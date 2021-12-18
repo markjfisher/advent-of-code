@@ -89,7 +89,6 @@ object SnailFishProcessor {
 
         // EXPLODE RIGHT
         // we have to find the next value node to explode into
-        // TODO: we should be able to just use previous index here
         val rightValueNode = (firstDepth4Pair.right as SnailFishValue)
         if (rightValueNode.value != 0) {
             val rightIndex = dfsValues.indexOfFirst { value -> value === rightValueNode }
@@ -113,7 +112,6 @@ object SnailFishProcessor {
     }
 
     fun split(pair: SnailFish) {
-        // find any values >= 10 and split them into new pairs
         val dfsValues = dfsValues(pair)
         val firstToSplit = dfsValues.firstOrNull { it.value >= 10 } ?: return
 
@@ -140,7 +138,8 @@ object SnailFishProcessor {
     }
 
     fun process(pair: SnailFish) {
-        // explode it, and split it until its magnitude doesn't change
+        // explode it, and split it until it doesn't change any more.
+        // I was using magnitude, but that didn't catch some cases, so straight strings FTW
         var hasFinished = false
         while (!hasFinished) {
             val valueBefore = pair.toString()
@@ -155,16 +154,6 @@ object SnailFishProcessor {
         return snails.reduce { acc, snailFish ->
             add(acc, snailFish)
         }
-    }
-
-    fun findParentPairWithValueOn(pair: SnailFish, isLeft: Boolean): SnailFishPair? {
-        val parent = pair.parent ?: return null
-        parent as SnailFishPair
-        val sideToCheck = if (isLeft) parent.left else parent.right
-        if (sideToCheck is SnailFishValue) {
-            return parent
-        }
-        return findParentPairWithValueOn(parent, isLeft)
     }
 
     fun dfsList(node: SnailFish): List<SnailFish> {

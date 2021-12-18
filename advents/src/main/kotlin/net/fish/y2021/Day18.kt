@@ -1,7 +1,6 @@
 package net.fish.y2021
 
 import net.fish.Day
-import net.fish.maths.Permutations
 import net.fish.resourceLines
 
 object Day18 : Day {
@@ -18,7 +17,7 @@ object Day18 : Day {
     fun doPart2(data: List<String>): Long {
         var largestSum = Long.MIN_VALUE
         for(i in 0 until data.size - 1) {
-            for (j in i+1 .. data.size - 1) {
+            for (j in i+1 until data.size) {
                 val l1 = data[i]
                 val l2 = data[j]
                 val s1 = SnailFishProcessor.convertToSnailFish(l1)
