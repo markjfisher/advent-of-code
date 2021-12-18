@@ -1,7 +1,7 @@
 package net.fish.y2021
 
 object SnailFishProcessor {
-    fun convertToSnailFish(input: String): SnailFish {
+    fun convertToSnailFish(input: String): SnailFishPair {
         var currentInputPointer = 0
         fun parse(d: Int = 0, left: SnailFish? = null, right: SnailFish? = null): SnailFish {
             // there's no space to skip, we either have [, ], <int>, or ","
@@ -38,12 +38,12 @@ object SnailFishProcessor {
             }
         }
 
-        val pair = parse()
+        val pair = parse() as SnailFishPair
         pair.assignParent(null)
         return pair
     }
 
-    fun add(left: SnailFish, right: SnailFish): SnailFish {
+    fun add(left: SnailFishPair, right: SnailFishPair): SnailFishPair {
         // increment all depths, then return a new depth 0 pair
         left.incrementDepth()
         right.incrementDepth()
@@ -54,8 +54,7 @@ object SnailFishProcessor {
         return newRoot
     }
 
-    fun findPairToExplode(pair: SnailFish): SnailFishPair? {
-        if (pair !is SnailFishPair) return null
+    fun findPairToExplode(pair: SnailFishPair): SnailFishPair? {
         if (pair.depth == 4) return pair
         val leftDepth4Pair = if (pair.left is SnailFishPair) {
             val leftPair = pair.left as SnailFishPair
@@ -68,7 +67,7 @@ object SnailFishProcessor {
         } else null
     }
 
-    fun explode(pair: SnailFish) {
+    fun explode(pair: SnailFishPair) {
         // find the first child that has depth 4 in a dfs
         val firstDepth4Pair = findPairToExplode(pair) ?: return
         // safety check, data shouldn't trigger this though. we are expecting that any depth 4 pair ONLY has left/right values so we can explode them
@@ -111,7 +110,7 @@ object SnailFishProcessor {
         explode(pair)
     }
 
-    fun split(pair: SnailFish) {
+    fun split(pair: SnailFishPair) {
         val dfsValues = dfsValues(pair)
         val firstToSplit = dfsValues.firstOrNull { it.value >= 10 } ?: return
 
@@ -137,7 +136,7 @@ object SnailFishProcessor {
 
     }
 
-    fun process(pair: SnailFish) {
+    fun process(pair: SnailFishPair) {
         // explode it, and split it until it doesn't change any more.
         // I was using magnitude, but that didn't catch some cases, so straight strings FTW
         var hasFinished = false
@@ -156,7 +155,7 @@ object SnailFishProcessor {
         }
     }
 
-    fun dfsList(node: SnailFish): List<SnailFish> {
+    fun dfsList(node: SnailFishPair): List<SnailFish> {
         fun doDFS(node: SnailFish, builtList: MutableList<SnailFish>) {
             builtList.add(node)
             if (node is SnailFishValue) {
@@ -172,7 +171,7 @@ object SnailFishProcessor {
         return builtList
     }
 
-    fun dfsValues(node: SnailFish): List<SnailFishValue> {
+    fun dfsValues(node: SnailFishPair): List<SnailFishValue> {
         return dfsList(node).filterIsInstance<SnailFishValue>()
     }
 }

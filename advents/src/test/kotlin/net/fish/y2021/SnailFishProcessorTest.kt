@@ -69,7 +69,7 @@ class SnailFishProcessorTest {
 
     @Test
     fun `parents are set`() {
-        val pair = SnailFishProcessor.convertToSnailFish("[[3,4],5]") as SnailFishPair
+        val pair = SnailFishProcessor.convertToSnailFish("[[3,4],5]")
         val left = pair.left
         val right = pair.right
         assertThat(pair.parent).isNull()
@@ -273,6 +273,7 @@ class SnailFishProcessorTest {
         )
         assertThat(result1).isEqualTo(SnailFishProcessor.convertToSnailFish("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]"))
     }
+
     @Test
     fun `can process test homework`() {
         val result1 = SnailFishProcessor.process(
