@@ -1,7 +1,5 @@
-package advents.conwayhex.game.ui
+package advents.ui
 
-import advents.ui.GameOptions
-import advents.ui.GlobalOptions
 import commands.KeyCommand
 import commands.ResetGame
 import commands.SingleStep
@@ -12,12 +10,10 @@ import imgui.StyleVar
 import imgui.dsl.collapsingHeader
 import imgui.internal.sections.ButtonFlag
 import imgui.internal.sections.ItemFlag
-import org.joml.Vector4f
+import kotlin.reflect.KFunction
 
 object GameOptionsWidget {
-    operator fun invoke(gameOptions: GameOptions, stateChangeFunction: (KeyCommand) -> Unit) {
-        val aliveColour = gameOptions.getVector4f("aliveColour")!!
-        val aliveColour4v = Vec4(aliveColour.x, aliveColour.y, aliveColour.z, aliveColour.w)
+    operator fun invoke(gameOptions: GameOptions, stateChangeFunction: (KeyCommand) -> Unit, uiExtensionFunction: KFunction<Unit>?) {
         collapsingHeader("Game") {
             ImGui.columns(2, "game1", false)
             ImGui.checkbox("Pause", gameOptions::pauseGame); ImGui.nextColumn()
@@ -38,12 +34,10 @@ object GameOptionsWidget {
 
             if (ImGui.button("Reset Game", GlobalOptions.fullSize)) stateChangeFunction(ResetGame)
             ImGui.columns(1)
-            if (ImGui.colorEdit4("Alive colour", aliveColour4v)) {
-                gameOptions.setGSData("aliveColour", Vector4f(aliveColour4v.x, aliveColour4v.y, aliveColour4v.z, aliveColour4v.w))
-            }
             if (ImGui.checkbox("Use Texture", gameOptions::useTexture)) {
                 stateChangeFunction(ToggleTexture)
             }
+            uiExtensionFunction?.call()
         }
     }
 }

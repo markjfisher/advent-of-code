@@ -4,7 +4,6 @@ import advents.conwayhex.game.ConwayItemState.ALIVE
 import advents.conwayhex.game.ConwayItemState.CREATING
 import advents.conwayhex.game.ConwayItemState.DEAD
 import advents.conwayhex.game.ConwayItemState.DESTROYING
-import advents.conwayhex.game.ui.ConwayHud
 import advents.ui.HudData
 import advents.ui.SurfaceOptions.Companion.defaultSurfaces
 import engine.GameEngine
@@ -16,6 +15,8 @@ import engine.graph.CameraLoader
 import engine.graph.OBJLoader.loadMesh
 import engine.graph.Texture
 import engine.item.GameItem
+import glm_.vec4.Vec4
+import imgui.ImGui
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -50,7 +51,7 @@ class ConwayHex2020Day24 : GameLogic, GameWorld<ConwayItemData>(
     private val alive = mutableSetOf<GridItem>()
     private val creating = mutableSetOf<GridItem>()
     private val destroying = mutableSetOf<GridItem>()
-    private val initialPoints = 25 // we have up to 597 initial points from the original game
+    private val initialPoints = 300 // we have up to 597 initial points from the original game
     private var createdCount = 0
     private var destroyedCount = 0
 
@@ -72,6 +73,21 @@ class ConwayHex2020Day24 : GameLogic, GameWorld<ConwayItemData>(
 
     override fun setGameOptions() {
         globalOptions.gameOptions.setGSData("aliveColour", colourOn)
+        globalOptions.uiExtensionFunction = ::addUiExtensions
+    }
+
+    // This can't be private silly IntelliJ, as it's invoked indirectly in GameOptionsWidget
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun addUiExtensions() {
+        // i'm shocked this works. a call back function from the UI.
+        // (•_•)
+        // ( •_•)>⌐■-■
+        // (⌐■_■)
+        val aliveColour = globalOptions.gameOptions.getVector4f("aliveColour")!!
+        val aliveColour4v = Vec4(aliveColour.x, aliveColour.y, aliveColour.z, aliveColour.w)
+        if (ImGui.colorEdit4("Alive colour", aliveColour4v)) {
+            globalOptions.gameOptions.setGSData("aliveColour", Vector4f(aliveColour4v.x, aliveColour4v.y, aliveColour4v.z, aliveColour4v.w))
+        }
     }
 
     private fun readInitialPosition(): Set<GridItem> {

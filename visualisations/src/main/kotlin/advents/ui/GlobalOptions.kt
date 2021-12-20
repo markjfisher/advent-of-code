@@ -1,6 +1,5 @@
 package advents.ui
 
-import advents.conwayhex.game.ui.GameOptionsWidget
 import commands.KeyCommand
 import commands.PrintState
 import glm_.vec2.Vec2
@@ -15,6 +14,7 @@ import imgui.ImGui.nextColumn
 import imgui.ImGui.popItemWidth
 import imgui.ImGui.pushItemWidth
 import imgui.dsl
+import kotlin.reflect.KFunction
 import kotlin.reflect.KFunction1
 
 data class GlobalOptions(
@@ -23,7 +23,8 @@ data class GlobalOptions(
     var surfaceOptions: SurfaceOptions,
     var cameraOptions: CameraOptions,
     var debugOptions: DebugOptions,
-    val stateChangeFunction: KFunction1<KeyCommand, Unit>
+    val stateChangeFunction: KFunction1<KeyCommand, Unit>,
+    var uiExtensionFunction: KFunction<Unit>? = null
 ) {
     fun render(width: Int) {
         ImGui.setNextWindowSize(Vec2(INITIAL_WIDTH, INITIAL_HEIGHT), Cond.FirstUseEver)
@@ -34,7 +35,7 @@ data class GlobalOptions(
         }
 
         pushItemWidth(-140f)
-        GameOptionsWidget(gameOptions, stateChangeFunction)
+        GameOptionsWidget(gameOptions, stateChangeFunction, uiExtensionFunction)
         CameraOptionsWidget(cameraOptions, stateChangeFunction)
         SurfaceOptionsWidget(surfaceOptions, stateChangeFunction)
 
