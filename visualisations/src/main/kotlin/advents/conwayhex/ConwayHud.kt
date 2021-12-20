@@ -1,4 +1,4 @@
-package advents.conwayhex.game
+package advents.conwayhex
 
 import advents.ui.Hud
 import advents.ui.HudData

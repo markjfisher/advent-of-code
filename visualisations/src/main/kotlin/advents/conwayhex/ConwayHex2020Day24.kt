@@ -1,9 +1,9 @@
-package advents.conwayhex.game
+package advents.conwayhex
 
-import advents.conwayhex.game.ConwayItemState.ALIVE
-import advents.conwayhex.game.ConwayItemState.CREATING
-import advents.conwayhex.game.ConwayItemState.DEAD
-import advents.conwayhex.game.ConwayItemState.DESTROYING
+import advents.conwayhex.ConwayItemState.ALIVE
+import advents.conwayhex.ConwayItemState.CREATING
+import advents.conwayhex.ConwayItemState.DEAD
+import advents.conwayhex.ConwayItemState.DESTROYING
 import advents.ui.HudData
 import advents.ui.SurfaceOptions.Companion.defaultSurfaces
 import engine.GameEngine

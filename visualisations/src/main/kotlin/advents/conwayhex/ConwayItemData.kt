@@ -1,4 +1,4 @@
-package advents.conwayhex.game
+package advents.conwayhex
 
 import engine.item.GameItem
 import net.fish.geometry.grid.GridItemData
