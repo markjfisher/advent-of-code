@@ -1,13 +1,9 @@
 package net.fish.y2021
 
-import mu.KotlinLogging
 import net.fish.Day
 import net.fish.geometry.Point
 import net.fish.geometry.bounds
 import net.fish.resourceLines
-import kotlin.math.log
-
-private val logger = KotlinLogging.logger {}
 
 object Day20 : Day {
     private val data by lazy { resourceLines(2021, 20) }
@@ -28,27 +24,24 @@ object Day20 : Day {
     }
 
     data class TrenchMap(
-        val algorithm: Set<Int>,
+        val algorithm: String,
         val imageMap: Set<Point>,
         val shouldConsiderInfinite: Boolean = false
     ) {
         fun evolve(iterations: Int): TrenchMap {
             var isInfinite = shouldConsiderInfinite
+            val bit0 = if(algorithm[0] == '#') "1" else "0"
             val data = (0 until iterations).foldIndexed(this.imageMap) { i, map, _ ->
-                logger.info { "Doing iteration $i" }
                 val newImageMap = mutableSetOf<Point>()
-                logger.info { "calculating bounds..." }
                 val bounds = map.bounds()
-                logger.info { "Doing grid with bounds: $bounds" }
                 for (y in bounds.first.y - 1..bounds.second.y + 1) {
                     for (x in bounds.first.x - 1..bounds.second.x + 1) {
                         val p = Point(x, y)
-                        val pv = pointValue(p, algorithm, map, isInfinite)
-                        if (algorithm.contains(pv)) newImageMap.add(p)
+                        val pv = pointValue(p, bit0, map, bounds, isInfinite)
+                        if (algorithm[pv] == '#') newImageMap.add(p)
                     }
                 }
                 isInfinite = !isInfinite
-                logger.info { "new image contains ${newImageMap.size}" }
                 newImageMap
             }
             return TrenchMap(algorithm, data, isInfinite)
@@ -75,7 +68,7 @@ object Day20 : Day {
             )
 
             fun parseInput(data: List<String>): TrenchMap {
-                val algorithm = data[0].mapIndexedNotNull { i, c -> if (c == '#') i else null }.toSet()
+                val algorithm = data[0]
 
                 val imageMap = mutableSetOf<Point>()
                 for (y in 2 until data.size) {
@@ -86,29 +79,19 @@ object Day20 : Day {
                 return TrenchMap(algorithm, imageMap)
             }
 
-            fun pointValue(point: Point, algorithm: Set<Int>, imageMap: Set<Point>, shouldConsiderInfinite: Boolean): Int {
-                val bit0 = if (algorithm.contains(0)) "1" else "0"
-                val v = Integer.parseInt(surroundingPointsDeltas.joinToString("") {
+            fun pointValue(point: Point, bit0: String, imageMap: Set<Point>, bounds: Pair<Point, Point>, shouldConsiderInfinite: Boolean): Int {
+                return Integer.parseInt(surroundingPointsDeltas.joinToString("") {
                     val neighbour = it + point
-                    val bounds = imageMap.bounds()
-                    val isInsideBounds = neighbour.within(bounds)
                     val bit = when {
-                        imageMap.contains(neighbour) -> "1"
-                        shouldConsiderInfinite -> {
-                            if (isInsideBounds) {
-                                // the grid values within bounds are fine, the grid tracks correctly the set bits.
-                                // TODO: What about if bounds calculation goes wrong because entire side misses values?
-                                "0"
-                            } else {
-                                // we're at the whim of algorithm bit 0
-                                bit0
-                            }
+                        !neighbour.within(bounds) -> {
+                            if (shouldConsiderInfinite) bit0 else "0"
                         }
-                        else -> "0"
+                        else -> {
+                            if (imageMap.contains(neighbour)) "1" else "0"
+                        }
                     }
                     bit
                 }, 2)
-                return v
             }
 
         }
