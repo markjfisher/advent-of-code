@@ -12,10 +12,12 @@ import imgui.StyleVar
 import imgui.dsl.collapsingHeader
 import imgui.internal.sections.ButtonFlag
 import imgui.internal.sections.ItemFlag
+import org.joml.Vector4f
 
 object GameOptionsWidget {
     operator fun invoke(gameOptions: GameOptions, stateChangeFunction: (KeyCommand) -> Unit) {
-        val aliveColour4v = Vec4(gameOptions.aliveColour.x, gameOptions.aliveColour.y, gameOptions.aliveColour.z, gameOptions.aliveColour.w)
+        val aliveColour = gameOptions.getVector4f("aliveColour")!!
+        val aliveColour4v = Vec4(aliveColour.x, aliveColour.y, aliveColour.z, aliveColour.w)
         collapsingHeader("Game") {
             ImGui.columns(2, "game1", false)
             ImGui.checkbox("Pause", gameOptions::pauseGame); ImGui.nextColumn()
@@ -37,7 +39,7 @@ object GameOptionsWidget {
             if (ImGui.button("Reset Game", GlobalOptions.fullSize)) stateChangeFunction(ResetGame)
             ImGui.columns(1)
             if (ImGui.colorEdit4("Alive colour", aliveColour4v)) {
-                gameOptions.aliveColour.set(aliveColour4v.x, aliveColour4v.y, aliveColour4v.z, aliveColour4v.w)
+                gameOptions.setGSData("aliveColour", Vector4f(aliveColour4v.x, aliveColour4v.y, aliveColour4v.z, aliveColour4v.w))
             }
             if (ImGui.checkbox("Use Texture", gameOptions::useTexture)) {
                 stateChangeFunction(ToggleTexture)

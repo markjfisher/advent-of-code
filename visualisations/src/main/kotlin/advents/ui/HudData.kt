@@ -10,5 +10,5 @@ data class HudData(
 //    val createdCount: Int = 0,
 //    val destroyedCount: Int = 0,
     val showBar: Boolean = false,
-    val customData: Map<String, Long> = mutableMapOf()
+    val customData: MutableMap<String, Long> = mutableMapOf()
 )

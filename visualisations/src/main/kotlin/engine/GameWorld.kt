@@ -1,11 +1,10 @@
 package engine
 
-import advents.conwayhex.game.ConwayHex2020Day24
-import advents.dumbooctopus.OctopusHud
 import advents.ui.CameraOptions
 import advents.ui.DebugOptions
 import advents.ui.GameOptions
 import advents.ui.GlobalOptions
+import advents.ui.Hud
 import advents.ui.HudData
 import advents.ui.SurfaceOptions
 import commands.CreateSurface
@@ -40,6 +39,7 @@ import engine.item.GameItem
 import imgui.ImGui
 import imgui.font.Font
 import net.fish.geometry.grid.GridItem
+import net.fish.geometry.grid.GridItemData
 import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
 import net.fish.geometry.paths.CameraData
 import net.fish.geometry.paths.CameraPath
@@ -55,12 +55,12 @@ import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11C
 
-abstract class GameWorld(
+abstract class GameWorld<T: GridItemData>(
     val allSurfaces: List<Surface>,
     var surface: Surface = allSurfaces.first().copy(),
     var surfaceMapper: SurfaceMapper = surface.createSurfaceMapper(),
-    val storage: HashMapBackedGridItemDataStorage<*>,
-    val hud: OctopusHud
+    val storage: HashMapBackedGridItemDataStorage<T>,
+    val hud: Hud
 ) {
     abstract fun performStep()
     abstract fun loadTextures()
@@ -68,10 +68,12 @@ abstract class GameWorld(
     abstract fun resetGame()
     abstract fun toggleTextureMode()
     abstract fun setGameItemsAlpha()
+    abstract fun createSurface()
     abstract fun setAnimationColours(animationStep: Int)
     abstract fun getCameraPaths(): Map<String, () -> List<CameraData>>
-
-    // lateinit var storage: HashMapBackedGridItemDataStorage<*>
+    abstract fun getItemsToRender(): List<GameItem>
+    abstract fun addCustomHudData(hudData: HudData)
+    abstract fun setGameOptions()
 
     // Gfx helpers
     val renderer = Renderer()
@@ -117,15 +119,13 @@ abstract class GameWorld(
     val newCameraVector = Vector3f()
     val cameraDelta = Vector3f()
 
-    // Main Options for application
+    // Main Options for application, games should set any additional data needed on the gameOptions extensions
     val globalOptions = GlobalOptions(
         optionsName = "Octopus Options",
         gameOptions = GameOptions(
             pauseGame = true,
             gameSpeed = 5,
-            useTexture = false,
-            // TODO: needs moving, this is conway specific
-            aliveColour = Vector4f(0f, 0f, 0f, 0f)
+            useTexture = false
         ),
         surfaceOptions = SurfaceOptions(
             globalAlpha = 1f,
@@ -137,7 +137,7 @@ abstract class GameWorld(
             maxCameraFrames = -1,
             movingCamera = false,
             loopCamera = false,
-            cameraPathNames = getCameraPaths().keys.sorted(),
+            cameraPathNames = this.getCameraPaths().keys.sorted(),
             currentCameraPath = -1,
             lookAhead = 10,
             fov = Renderer.FOV
@@ -147,10 +147,11 @@ abstract class GameWorld(
             showMessage = false,
             showPolygons = false
         ),
-        stateChangeFunction = ::changeState
+        stateChangeFunction = ::changeState // this could bite
     )
 
     fun gameInit(window: Window) {
+        setGameOptions()
         loadTextures()
         createGameItems()
 
@@ -197,7 +198,7 @@ abstract class GameWorld(
         if (command is SingleKeyPressCommand) {
             // Stop key repeats when this is meant to be a 1 shot press
             val pressedAt = keyPressedTimer.time
-            if ((pressedAt - lastPressedAt) < ConwayHex2020Day24.KEYBOARD_REPEAT_DELAY) {
+            if ((pressedAt - lastPressedAt) < KEYBOARD_REPEAT_DELAY) {
                 return
             }
             lastPressedAt = pressedAt
@@ -223,7 +224,7 @@ abstract class GameWorld(
             ToggleMessages -> globalOptions.debugOptions.showMessage = !globalOptions.debugOptions.showMessage
             ToggleHud -> globalOptions.debugOptions.showHud = !globalOptions.debugOptions.showHud
             ToggleImgUI -> showImgUI = !showImgUI
-            CreateSurface -> createSurface()
+            CreateSurface -> gameCreateSurface()
             ToggleTexture -> toggleTextureMode()
             SetGlobalAlpha -> setGameItemsAlpha()
 
@@ -339,7 +340,7 @@ abstract class GameWorld(
         loadInitialCameraPosition(false)
     }
 
-    fun createSurface() {
+    fun gameCreateSurface() {
         // re-initialise everything with new surface
         loadTextures()
         gameIteration = 0
@@ -472,8 +473,10 @@ abstract class GameWorld(
 
         val polygonMode = if (globalOptions.debugOptions.showPolygons) GL11C.GL_LINE else GL11C.GL_FILL
         GL11C.glPolygonMode(GL11C.GL_FRONT_AND_BACK, polygonMode)
-        // sort the gameItems so that the "on" items are at the start - vertices don't seem to get overwritten by later items (expected it to be other way around!)
-        val items = emptyList<GameItem>()
+
+        // get the game specific items to render
+        val items: List<GameItem> = getItemsToRender()
+
         renderer.render(window, camera, items, globalOptions.cameraOptions.fov)
         GL11C.glPolygonMode(GL11C.GL_FRONT_AND_BACK, GL11C.GL_FILL)
         doHud(window)
@@ -501,6 +504,7 @@ abstract class GameWorld(
             flashPercentage = flashPercentage,
             showBar = globalOptions.debugOptions.showHud
         )
+        addCustomHudData(hudData)
         hud.render(window, hudData)
     }
 

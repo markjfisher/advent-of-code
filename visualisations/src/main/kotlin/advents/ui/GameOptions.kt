@@ -6,6 +6,16 @@ data class GameOptions(
     var pauseGame: Boolean,
     var gameSpeed: Int,
     var useTexture: Boolean,
-    var aliveColour: Vector4f
-)
+    var gameSpecificData: MutableMap<String, Any> = mutableMapOf()
+) {
+    fun setGSData(key: String, value: Any) {
+        gameSpecificData[key] = value
+    }
+
+    // Create getter functions for type convenience. Hideous but works
+    fun getVector4f(key: String): Vector4f? {
+        val v = gameSpecificData[key]
+        return if (v == null) null else (v as Vector4f)
+    }
+}
 

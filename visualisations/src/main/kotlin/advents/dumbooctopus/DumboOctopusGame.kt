@@ -1,11 +1,13 @@
 package advents.dumbooctopus
 
+import advents.ui.HudData
 import engine.GameEngine
 import engine.GameLogic
 import engine.GameWorld
 import engine.MouseInput
 import engine.Window
 import engine.graph.CameraLoader
+import engine.item.GameItem
 import net.fish.geometry.grid.GridItem
 import net.fish.geometry.grid.GridType
 import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
@@ -16,9 +18,9 @@ import net.fish.resourceLines
 import org.joml.Vector4f
 import org.lwjgl.system.Configuration
 
-class DumboOctopusGame : GameLogic, GameWorld(
+class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
     allSurfaces = listOf(Surface("(Square) Simple Grid", mutableMapOf("gridType" to "square", "width" to "10", "height" to "10"), PathType.StaticPoint, 0f, 1f)),
-    storage = HashMapBackedGridItemDataStorage<DumboOctopusItemData>(),
+    storage = HashMapBackedGridItemDataStorage(),
     hud = OctopusHud()
 ) {
 
@@ -29,6 +31,18 @@ class DumboOctopusGame : GameLogic, GameWorld(
         "Circle Path Quick" to { CameraLoader.loadCamera("/conwayhex/quick-simple-circle.txt") },
         "Current Tunnel" to { calculateTunnelPath() }
     )
+
+    override fun setGameOptions() {}
+
+    override fun createSurface() {
+    }
+
+    override fun getItemsToRender(): List<GameItem> {
+        return emptyList()
+    }
+
+    override fun addCustomHudData(hudData: HudData) {
+    }
 
     private fun readInitialPosition(): Set<GridItem> {
         return when (surfaceMapper.mappingType()) {
@@ -49,13 +63,11 @@ class DumboOctopusGame : GameLogic, GameWorld(
     }
 
     override fun createGameItems() {
-        // todo
     }
 
     override fun input(window: Window, mouseInput: MouseInput) {
         gameInput(window, mouseInput)
     }
-
 
     override fun loadTextures() {
     }
@@ -75,7 +87,7 @@ class DumboOctopusGame : GameLogic, GameWorld(
     }
 
     override fun performStep() {
-        // Do the work of an world step
+        // Do the work of a world step
     }
 
     override fun render(window: Window) {
@@ -90,11 +102,9 @@ class DumboOctopusGame : GameLogic, GameWorld(
     }
 
     override fun toggleTextureMode() {
-
     }
 
     override fun setGameItemsAlpha() {
-
     }
 
     companion object {
@@ -106,4 +116,5 @@ class DumboOctopusGame : GameLogic, GameWorld(
             engine.run()
         }
     }
+
 }
