@@ -64,8 +64,8 @@ class Day20Test {
     @Test
     fun `can evolve grid`() {
         val trench = Day20.TrenchMap.parseInput(testData)
-        val e1 = trench.evolve(1)
-        assertThat(e1.stringGrid()).isEqualTo(
+        trench.evolve(1)
+        assertThat(trench.stringGrid()).isEqualTo(
             """
             .........
             ..##.##..
@@ -80,8 +80,8 @@ class Day20Test {
             """.trimIndent()
         )
 
-        val e2 = trench.evolve(2)
-        assertThat(e2.stringGrid()).isEqualTo(
+        trench.evolve(1)
+        assertThat(trench.stringGrid()).isEqualTo(
             """
             ...........
             ........#..
@@ -97,5 +97,17 @@ class Day20Test {
             
             """.trimIndent()
         )
+    }
+
+    @Test
+    fun `conway iterator`() {
+        val conwayData = resourcePath("/2021/day20-conway.txt")
+        val trench = Day20.TrenchMap.parseInput(conwayData)
+        for (i in 0 until 5) {
+            println("iteration $i")
+            println(trench.stringGrid(onChar = '█', offChar = ' '))
+            trench.evolve(1)
+        }
+
     }
 }

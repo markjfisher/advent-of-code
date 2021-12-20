@@ -25,8 +25,8 @@ object Day20 : Day {
 
     data class TrenchMap(
         val algorithm: String,
-        val imageMap: Set<Point>,
-        val shouldConsiderInfinite: Boolean = false
+        var imageMap: Set<Point>,
+        var shouldConsiderInfinite: Boolean = false
     ) {
         fun evolve(iterations: Int): TrenchMap {
             var isInfinite = shouldConsiderInfinite
@@ -44,16 +44,18 @@ object Day20 : Day {
                 isInfinite = !isInfinite
                 newImageMap
             }
-            return TrenchMap(algorithm, data, isInfinite)
+            imageMap = data
+            shouldConsiderInfinite = isInfinite
+            return this
         }
 
 
-        fun stringGrid(): String {
+        fun stringGrid(onChar: Char = '#', offChar: Char = '.'): String {
             val bounds = imageMap.bounds()
             var outString = ""
             for (y in bounds.first.y - 1..bounds.second.y + 1) {
                 for (x in bounds.first.x - 1..bounds.second.x + 1) {
-                    outString += if (imageMap.contains(Point(x, y))) "#" else "."
+                    outString += if (imageMap.contains(Point(x, y))) onChar else offChar
                 }
                 outString += "\n"
             }
