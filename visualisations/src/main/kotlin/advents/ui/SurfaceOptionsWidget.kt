@@ -2,6 +2,7 @@ package advents.ui
 
 import commands.CreateSurface
 import commands.KeyCommand
+import commands.ResetGame
 import commands.SetGlobalAlpha
 import imgui.ImGui
 import imgui.dsl
@@ -55,7 +56,7 @@ object SurfaceOptionsWidget {
                 }
             }
             ImGui.separator()
-            // for the given surface type, show its controls
+            // for the given surface type, show its controls - TODO for new surface mappers. Also, not here.
 //            when (currentSurface) {
 //                is SimpleTorusSurface -> {
 //                    ImGui.sliderFloat("Major Radius", currentSurface::majorRadius, 0.0001f, 20f)

@@ -1,5 +1,6 @@
 package net.fish.geometry.hex
 
+import mu.KotlinLogging
 import net.fish.geometry.grid.GridItem
 import net.fish.geometry.grid.GridItemAxis
 import net.fish.geometry.paths.PathCreator
@@ -13,6 +14,8 @@ import java.io.OutputStream
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+
+private val logger = KotlinLogging.logger { }
 
 class HexSurfaceMapper(
     private var grid: WrappingHexGrid,

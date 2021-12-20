@@ -224,7 +224,7 @@ abstract class GameWorld<T: GridItemData>(
             ToggleMessages -> globalOptions.debugOptions.showMessage = !globalOptions.debugOptions.showMessage
             ToggleHud -> globalOptions.debugOptions.showHud = !globalOptions.debugOptions.showHud
             ToggleImgUI -> showImgUI = !showImgUI
-            CreateSurface -> gameCreateSurface()
+            CreateSurface -> createSurface()
             ToggleTexture -> toggleTextureMode()
             SetGlobalAlpha -> setGameItemsAlpha()
 
@@ -466,6 +466,7 @@ abstract class GameWorld<T: GridItemData>(
             if (!globalOptions.gameOptions.useTexture) {
                 setAnimationColours(animationStep)
             }
+            // we need to turn this off again as we are paused anyway, and leaving it on will keep stepping == running!
             performSingleStep = false
         }
         flashPercentage = Math.max(flashPercentage - 7, 0)

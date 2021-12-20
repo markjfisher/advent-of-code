@@ -329,13 +329,6 @@ class ConwayHex2020Day24 : GameLogic, GameWorld<ConwayItemData>(
 
     override fun setAnimationColours(animationStep: Int) {
         val animationPercentage = (animationStep + 1) / globalOptions.gameOptions.gameSpeed.toFloat()
-        // Now find all hexes that are animating and work out their new colours
-//        alive.forEach { hex ->
-//            hexStorage.getData(hex)!!.gameItem.colour.set(colourOn)
-//        }
-//        println("step: $animationStep, pc: $animationPercentage, alive: ${alive.count()}, creating: ${creating.count()}, destroying: ${destroying.count()}")
-//        println("creating: ${creating.map { it.simpleValue() }}")
-//        println("destroying: ${destroying.map { it.simpleValue() }}")
         val animationCurveValue = calculatePercentage(animationPercentage)
         creating.forEach { gridItem ->
             setAnimationColour(gridItem, 1f - animationCurveValue)

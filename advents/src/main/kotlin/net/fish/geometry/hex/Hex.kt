@@ -19,7 +19,7 @@ data class Hex(
     }
 
     override fun simpleValue(): String {
-        return String.format("Hex[%d, %d, %d]", q, r, s)
+        return String.format("Hex[%d, %d, %d, %s]", q, r, s, constrainer.simpleName())
     }
 
     operator fun plus(other: Hex) = add(other)

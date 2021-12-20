@@ -24,6 +24,10 @@ data class WrappingHexGrid(
         }
     }
 
+    override fun simpleName(): String {
+        return String.format("%s[m: %d, n: %d, l: %s]", this.javaClass.simpleName, m, n, layout.orientation)
+    }
+
     override var width: Int = m
         set(value) {
             m = value
