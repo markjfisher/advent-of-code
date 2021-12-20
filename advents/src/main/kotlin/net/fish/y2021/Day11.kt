@@ -8,8 +8,8 @@ object Day11 : Day {
     override fun part1() = doPart1(simulator)
     override fun part2() = doPart2(simulator)
 
-    fun doPart1(simulator: DumboOctopusSimulator): Long = simulator.doSteps(100)
-    fun doPart2(simulator: DumboOctopusSimulator): Long = simulator.findSync() + 100
+    fun doPart1(simulator: DumboOctopusSimulator): Int = simulator.doSteps(100)
+    fun doPart2(simulator: DumboOctopusSimulator): Int = simulator.findSync() + 100
 
     @JvmStatic
     fun main(args: Array<String>) {

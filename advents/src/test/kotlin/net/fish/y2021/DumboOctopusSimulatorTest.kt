@@ -45,7 +45,7 @@ internal class DumboOctopusSimulatorTest {
             "11111"
         )
 
-        var score = simulator.step()
+        var score = simulator.engine.step()
         assertThat(score).isEqualTo(9)
 
         var gridValues = simulator.gridValues()
@@ -57,7 +57,7 @@ internal class DumboOctopusSimulatorTest {
             "34543"
         )
 
-        score = simulator.step()
+        score = simulator.engine.step()
         assertThat(score).isEqualTo(0)
 
         gridValues = simulator.gridValues()
