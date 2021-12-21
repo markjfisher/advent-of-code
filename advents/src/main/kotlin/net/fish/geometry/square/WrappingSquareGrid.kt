@@ -5,7 +5,7 @@ import net.fish.geometry.grid.Grid
 class WrappingSquareGrid(
     override var width: Int,
     override var height: Int
-): SquareConstrainer, Grid {
+): SquareConstrainer, SquareGrid {
     init {
         require(width > 2 && height > 2) {
             "Invalid dimensions for square grid. Width and height should be > 2. Given width: $width, height: $height"
@@ -21,7 +21,7 @@ class WrappingSquareGrid(
         }.asIterable()
     }
 
-    fun square(x: Int, y: Int): Square = constrain(Square(x, y, this))
+    override fun square(x: Int, y: Int): Square = constrain(Square(x, y, this))
 
     override fun constrain(item: Square?): Square {
         if (item == null) throw Exception("Cannot constrain null square")

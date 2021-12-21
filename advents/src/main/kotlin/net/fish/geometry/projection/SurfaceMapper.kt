@@ -11,7 +11,10 @@ interface SurfaceMapper {
     fun itemAxis(item: GridItem): GridItemAxis
 
     fun grid(): Grid
-    var pathCreator: PathCreator
 
     fun mappingType(): GridType
+}
+
+interface PathingSurfaceMapper: SurfaceMapper {
+    var pathCreator: PathCreator
 }

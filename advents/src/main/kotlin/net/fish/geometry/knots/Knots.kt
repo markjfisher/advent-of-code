@@ -22,7 +22,7 @@ object Knots {
         val fns = Parametrics(
             { x -> r * cos(x) * scale },
             { x -> r * sin(x) * scale },
-            { x -> 0.0 }
+            { _ -> 0.0 }
         )
         return createPath(segments, fns)
     }

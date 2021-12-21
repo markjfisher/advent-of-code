@@ -43,6 +43,7 @@ import net.fish.geometry.grid.GridItemData
 import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
 import net.fish.geometry.paths.CameraData
 import net.fish.geometry.paths.CameraPath
+import net.fish.geometry.projection.PathingSurfaceMapper
 import net.fish.geometry.projection.Surface
 import net.fish.geometry.projection.SurfaceMapper
 import org.joml.Math
@@ -306,7 +307,12 @@ abstract class GameWorld<T: GridItemData>(
     }
 
     fun calculateTunnelPath(): List<CameraData> {
-        return CameraPath.generateCameraPath(surfaceMapper.pathCreator, surfaceMapper.grid().width, globalOptions.cameraOptions.lookAhead)
+        if (surfaceMapper is PathingSurfaceMapper) {
+            // hmmm...
+            val pathingSurfaceMapper = surfaceMapper as PathingSurfaceMapper
+            return CameraPath.generateCameraPath(pathingSurfaceMapper.pathCreator, surfaceMapper.grid().width, globalOptions.cameraOptions.lookAhead)
+        }
+        return emptyList()
     }
 
     fun moveCamera() {
@@ -370,6 +376,7 @@ abstract class GameWorld<T: GridItemData>(
             """
             camera: $camera
             world centre: $worldCentre
+            items: ${storage.items.toList().count()}
             """.trimIndent()
         )
     }

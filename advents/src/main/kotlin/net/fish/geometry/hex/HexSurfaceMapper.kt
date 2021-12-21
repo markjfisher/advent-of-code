@@ -7,6 +7,7 @@ import net.fish.geometry.paths.PathCreator
 import net.fish.geometry.paths.PathData
 import net.fish.geometry.projection.SurfaceMapper
 import net.fish.geometry.grid.GridType
+import net.fish.geometry.projection.PathingSurfaceMapper
 import net.fish.maths.normalFromPoints
 import org.joml.Matrix3f
 import org.joml.Vector3f
@@ -21,7 +22,7 @@ class HexSurfaceMapper(
     private var grid: WrappingHexGrid,
     override var pathCreator: PathCreator,
     private val sweepRadius: Float
-): SurfaceMapper {
+): PathingSurfaceMapper {
     private var hexCentres: Map<Hex, Vector3f> = emptyMap()
 
     override fun grid() = grid

@@ -7,8 +7,8 @@ import net.fish.geometry.hex.Orientation
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.geometry.paths.DecoratedTorusKnotPathCreator
 import net.fish.geometry.paths.EpitrochoidPathCreator
+import net.fish.geometry.paths.NullPathCreator
 import net.fish.geometry.paths.PathCreator
-import net.fish.geometry.paths.PathData
 import net.fish.geometry.paths.PathType
 import net.fish.geometry.paths.PathType.DecoratedTorusKnot
 import net.fish.geometry.paths.PathType.Epitrochoid
@@ -22,7 +22,8 @@ import net.fish.geometry.paths.ThreeFactorParametricPathCreator
 import net.fish.geometry.paths.TorusKnotPathCreator
 import net.fish.geometry.paths.TrefoilPathCreator
 import net.fish.geometry.square.NonWrappingSquareGrid
-import net.fish.geometry.square.SquareSurfaceMapper
+import net.fish.geometry.square.PathingSquareSurfaceMapper
+import net.fish.geometry.square.SimpleSquareSurfaceMapper
 import net.fish.geometry.square.WrappingSquareGrid
 
 data class Surface(
@@ -44,27 +45,19 @@ data class Surface(
             GridType.SQUARE -> {
                 val (width, height) = getSquareGridConfig()
                 val grid = WrappingSquareGrid(width, height)
-                SquareSurfaceMapper(grid, pathCreator, sweepRadius)
+                PathingSquareSurfaceMapper(grid, pathCreator, sweepRadius)
             }
             GridType.NON_WRAPPING_SQUARE -> {
                 val (width, height) = getSquareGridConfig()
                 val grid = NonWrappingSquareGrid(width, height)
-                // TODO: work out a simple mapper for this. there's no path, so it should just be a grid out in space on a flat plane to start
-                throw Exception("not implemented fully")
+                SimpleSquareSurfaceMapper(grid, 1.0f) // TODO: allow scale to be configured
             }
         }
     }
 
     private fun createPath(pathType: PathType): PathCreator {
         return when (pathType) {
-            StaticPoint -> {
-                // TODO: Implement this correctly. It probably just needs to know what to point at.
-                object: PathCreator {
-                    override fun createPath(segments: Int): List<PathData> {
-                        return emptyList()
-                    }
-                }
-            }
+            StaticPoint -> NullPathCreator()
             SimpleTorus -> {
                 val majorRadius = surfaceData["majorRadius"]?.toFloat() ?: throw Exception("Could not get majorRadius in data: $surfaceData")
                 SimpleTorusPathCreator(majorRadius, scale)

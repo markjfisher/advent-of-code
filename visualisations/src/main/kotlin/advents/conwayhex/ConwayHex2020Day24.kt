@@ -30,7 +30,6 @@ import net.fish.geometry.hex.HexConstrainer
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
 import net.fish.geometry.hex.WrappingHexGrid
 import net.fish.geometry.paths.CameraData
-import net.fish.geometry.square.Square
 import net.fish.geometry.square.WrappingSquareGrid
 import net.fish.resourceLines
 import net.fish.y2020.Day24
@@ -106,15 +105,18 @@ class ConwayHex2020Day24 : GameLogic, GameWorld<ConwayItemData>(
             }
             GridType.SQUARE -> {
                 val constrainer = surfaceMapper.grid() as WrappingSquareGrid
-                val slider = setOf(
-                    Square(0, 2, constrainer),
-                    Square(1, 2, constrainer),
-                    Square(2, 2, constrainer),
-                    Square(2, 1, constrainer),
-                    Square(1, 0, constrainer)
-                )
-                val squares = constrainer.items().mapNotNull { if (Random.nextBoolean()) it else null }
-                return squares.toSet()
+
+//                val sliderOffsets = listOf(Pair(0, 2), Pair(1, 2), Pair(2, 2), Pair(2, 1), Pair(1, 0))
+//                val sliderCount = 25
+//                val sliders = mutableSetOf<Square>()
+//                for (s in 0..sliderCount) {
+//                    sliderOffsets.forEach {
+//                        sliders.add(Square(it.first + s * 6, it.second + s, constrainer))
+//                    }
+//                }
+//                return sliders
+
+                return constrainer.items().mapNotNull { if (Random.nextInt(10) < 5) it else null }.toSet()
             }
             else -> throw Exception("Not implemented")
         }

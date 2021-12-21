@@ -4,6 +4,10 @@ interface PathCreator {
     fun createPath(segments: Int): List<PathData>
 }
 
+class NullPathCreator: PathCreator {
+    override fun createPath(segments: Int): List<PathData> = emptyList()
+}
+
 enum class PathType(val requiredFields: List<String>) {
     StaticPoint(emptyList()),
     TorusKnot(listOf("p", "q", "a", "b")),

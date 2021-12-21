@@ -11,7 +11,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-internal class SquareSurfaceMapperTest {
+internal class PathingSquareSurfaceMapperTest {
     private val wrapper = WrappingSquareGrid(8, 4)
     @Test
     fun `calculate centres`() {
@@ -20,7 +20,7 @@ internal class SquareSurfaceMapperTest {
         val sqrt2tp4 = (sqrt(2.0) * 0.4).toFloat()
 
         val pathCreator = TestPathCreator()
-        val mapper = SquareSurfaceMapper(grid = wrapper, pathCreator = pathCreator, 0.2f)
+        val mapper = PathingSquareSurfaceMapper(grid = wrapper, pathCreator = pathCreator, 0.2f)
 
         val centres = mapper.calculateSquareCentres()
 
