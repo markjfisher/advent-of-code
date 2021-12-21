@@ -2,6 +2,7 @@ package net.fish.y2021
 
 import net.fish.Day
 import java.lang.Integer.min
+import java.lang.Long.max
 
 object Day21 : Day {
     private val data = Pair(10, 2)
@@ -16,11 +17,11 @@ object Day21 : Day {
     }
 
     fun doPart2(data: Pair<Int, Int>): Long {
-        return solveP2(data)
+//        return solveP2(data)
 
         // alternate crazy fast
-        // val (w1, w2) = solveP2(data)
-        // return max(w1, w2)
+         val (w1, w2) = solveP2Crazy(data)
+         return max(w1, w2)
     }
 
     private fun solveP2(data: Pair<Int, Int>): Long {
@@ -29,16 +30,14 @@ object Day21 : Day {
         gameStates[initGame] = 1
 
         while(gameStates.any {it.key.winner(21) == null}) {
-            val newGameStates = mutableMapOf<Game, Long>()
-            gameStates.forEach { (game, count) ->
+            gameStates = gameStates.entries.fold(mutableMapOf<Game, Long>()) { newGameStates, (game, count) ->
                 if (game.winner(21) != null) {
                     newGameStates[game] = newGameStates.getOrDefault(game, 0L) + count
                 } else {
-                    val newGames: List<Game> = splitToNewGames(game)
-                    newGames.forEach { newGameStates[it] = newGameStates.getOrDefault(it, 0L) + count }
+                    splitToNewGames(game).forEach { newGameStates[it] = newGameStates.getOrDefault(it, 0L) + count }
                 }
+                newGameStates
             }
-            gameStates = newGameStates
         }
 
         return gameStates.map { Pair(it.key.winner(21)!!.who, it.value ) }
@@ -68,7 +67,7 @@ object Day21 : Day {
             return this
         }
 
-        fun advance(player: Player, roll: Int) {
+        private fun advance(player: Player, roll: Int) {
             player.move(roll)
             currentRoll++
             if (currentRoll == 3) {
@@ -166,6 +165,9 @@ object Day21 : Day {
         val i: Int
     )
 
+    // Generated sequences of the initial game for part 0,
+    // e.g. Triple(10, 0, 3), Triple(10, 3, 6), Triple(14, 3, 9), Triple(14, 9, 12)
+    // but sadly couldn't shoehorn into part 2 solution yet.
     fun generateScores(p1Pos: Int, p2Pos: Int): Sequence<Triple<Int, Int, Int>> {
         var i = 0
         var p1Data = Pair(p1Pos, 0)
