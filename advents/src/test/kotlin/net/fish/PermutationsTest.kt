@@ -1,5 +1,6 @@
 package net.fish
 
+import net.fish.maths.D3
 import net.fish.maths.combinations
 import net.fish.maths.permutations
 import org.assertj.core.api.Assertions.assertThat
@@ -7,6 +8,22 @@ import org.junit.jupiter.api.Test
 
 class PermutationsTest {
     private fun genList(n: Int) = (0 until n).map { it }
+
+    @Test
+    fun `permutations of 3 lots of 1 to 3`() {
+        val d3x3 = D3(3)
+        assertThat(d3x3.toList()).containsExactly(
+            listOf(1, 1, 1), listOf(1, 1, 2), listOf(1, 1, 3),
+            listOf(1, 2, 1), listOf(1, 2, 2), listOf(1, 2, 3),
+            listOf(1, 3, 1), listOf(1, 3, 2), listOf(1, 3, 3),
+            listOf(2, 1, 1), listOf(2, 1, 2), listOf(2, 1, 3),
+            listOf(2, 2, 1), listOf(2, 2, 2), listOf(2, 2, 3),
+            listOf(2, 3, 1), listOf(2, 3, 2), listOf(2, 3, 3),
+            listOf(3, 1, 1), listOf(3, 1, 2), listOf(3, 1, 3),
+            listOf(3, 2, 1), listOf(3, 2, 2), listOf(3, 2, 3),
+            listOf(3, 3, 1), listOf(3, 3, 2), listOf(3, 3, 3)
+        )
+    }
 
     @Test
     fun `should return paired combinations of list`() {
