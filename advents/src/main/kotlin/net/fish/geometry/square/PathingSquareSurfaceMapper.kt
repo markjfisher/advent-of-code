@@ -33,7 +33,7 @@ class PathingSquareSurfaceMapper(
         return sc0.add(sc1, Vector3f()).add(sc2).add(sc3).div(4f)
     }
 
-    private fun calculateSquareCentres(): Map<Square, Vector3f> {
+    fun calculateSquareCentres(): Map<Square, Vector3f> {
         val centres = mutableMapOf<Square, Vector3f>()
         val pathCoordinates = pathCreator.createPath(grid.width)
         pathCoordinates.forEachIndexed { segment, pathData ->
