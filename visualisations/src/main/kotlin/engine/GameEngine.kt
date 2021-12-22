@@ -7,6 +7,7 @@ class GameEngine(
     width: Int,
     height: Int,
     vSync: Boolean,
+    private val targetUPS: Int = 30,
     private val gameLogic: GameLogic
 ) : Runnable {
 
@@ -16,7 +17,6 @@ class GameEngine(
 
     companion object {
         const val TARGET_FPS = 75
-        const val TARGET_UPS = 30
     }
 
     override fun run() {
@@ -41,7 +41,7 @@ class GameEngine(
     private fun gameLoop() {
         var elapsedTime: Float
         var accumulator = 0f
-        val interval = 1f / TARGET_UPS
+        val interval = 1f / targetUPS
 
         val running = true
         while (running && !window.windowShouldClose()) {

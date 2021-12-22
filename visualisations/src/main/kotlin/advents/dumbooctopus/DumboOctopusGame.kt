@@ -97,6 +97,7 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
 
     override fun performStep() {
         // Do the work of a world step
+
     }
 
     override fun render(window: Window) {
@@ -124,7 +125,7 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
         @JvmStatic
         fun main(args: Array<String>) {
             val logic = DumboOctopusGame()
-            val engine = GameEngine("Dumbo Octopus", 1200, 800, true, logic)
+            val engine = GameEngine(windowTitle = "Dumbo Octopus", width = 1200, height = 800, vSync = true, gameLogic = logic, targetUPS = 2000)
             Configuration.DEBUG.set(true)
             engine.run()
         }

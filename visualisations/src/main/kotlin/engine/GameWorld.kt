@@ -38,6 +38,7 @@ import engine.graph.Renderer
 import engine.item.GameItem
 import imgui.ImGui
 import imgui.font.Font
+import mu.KotlinLogging
 import net.fish.geometry.grid.GridItem
 import net.fish.geometry.grid.GridItemData
 import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
@@ -56,7 +57,9 @@ import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11C
 
-abstract class GameWorld<T: GridItemData>(
+private val logger = KotlinLogging.logger { }
+
+abstract class GameWorld<T : GridItemData>(
     val allSurfaces: List<Surface>,
     var surface: Surface = allSurfaces.first().copy(),
     var surfaceMapper: SurfaceMapper = surface.createSurfaceMapper(),
@@ -483,7 +486,7 @@ abstract class GameWorld<T: GridItemData>(
         GL11C.glPolygonMode(GL11C.GL_FRONT_AND_BACK, polygonMode)
 
         // get the game specific items to render
-        val items: List<GameItem> = getItemsToRender()
+        val items = getItemsToRender()
 
         renderer.render(window, camera, items, globalOptions.cameraOptions.fov)
         GL11C.glPolygonMode(GL11C.GL_FRONT_AND_BACK, GL11C.GL_FILL)
