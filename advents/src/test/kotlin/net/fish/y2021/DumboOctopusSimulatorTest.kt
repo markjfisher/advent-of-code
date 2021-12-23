@@ -63,15 +63,17 @@ internal class DumboOctopusSimulatorTest {
         )
         assertThat(flashing.size).isEqualTo(35)
         val remapped = flashing.map { it.iterationStarted to Pair((it.item as Square).x, (it.item as Square).y) }
-        // check that the iteration to (x, y) values are correct - interestingly some cantake 31 iterations to flash
+        // check that the iteration to (x, y) values are correct, the iterationStarted tracks how long before this flash should actually start.
+        // i.e. any value at 9 will become flashing in round 0, any 8 that was touching this will first become 9 (its step), then become flashing at round 1
+        // creating a ripple effect of flashing
         assertThat(remapped).containsExactlyInAnyOrder(
             Pair(0, Pair(2, 0)), Pair(0, Pair(4, 1)), Pair(0, Pair(5, 4)), Pair(0, Pair(9, 4)), Pair(0, Pair(4, 6)),
             Pair(0, Pair(1, 7)), Pair(0, Pair(2, 7)), Pair(0, Pair(4, 7)), Pair(0, Pair(5, 7)), Pair(0, Pair(1, 8)),
-            Pair(0, Pair(4, 8)), Pair(0, Pair(6, 8)), Pair(0, Pair(2, 9)), Pair(1, Pair(1, 1)), Pair(4, Pair(8, 4)),
-            Pair(5, Pair(3, 5)), Pair(6, Pair(2, 6)), Pair(7, Pair(3, 6)), Pair(8, Pair(3, 8)), Pair(10, Pair(0, 7)),
-            Pair(11, Pair(4, 9)), Pair(12, Pair(5, 8)), Pair(13, Pair(2, 8)), Pair(15, Pair(9, 3)), Pair(16, Pair(3, 4)),
-            Pair(16, Pair(4, 5)), Pair(17, Pair(2, 5)), Pair(18, Pair(3, 7)), Pair(21, Pair(5, 9)), Pair(23, Pair(3, 9)),
-            Pair(24, Pair(8, 2)), Pair(26, Pair(5, 6)), Pair(27, Pair(2, 4)), Pair(31, Pair(7, 1)), Pair(31, Pair(8, 3))
+            Pair(0, Pair(4, 8)), Pair(0, Pair(6, 8)), Pair(0, Pair(2, 9)), Pair(1, Pair(1, 1)), Pair(1, Pair(8, 4)),
+            Pair(1, Pair(3, 5)), Pair(1, Pair(2, 6)), Pair(1, Pair(3, 6)), Pair(1, Pair(0, 7)), Pair(1, Pair(2, 8)),
+            Pair(1, Pair(3, 8)), Pair(1, Pair(5, 8)), Pair(1, Pair(4, 9)), Pair(2, Pair(9, 3)), Pair(2, Pair(3, 4)),
+            Pair(2, Pair(2, 5)), Pair(2, Pair(4, 5)), Pair(2, Pair(3, 7)), Pair(2, Pair(3, 9)), Pair(2, Pair(5, 9)),
+            Pair(3, Pair(8, 2)), Pair(3, Pair(2, 4)), Pair(3, Pair(5, 6)), Pair(4, Pair(7, 1)), Pair(4, Pair(8, 3))
         )
     }
 

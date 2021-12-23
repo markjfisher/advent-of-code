@@ -31,7 +31,7 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
     storage = HashMapBackedGridItemDataStorage(),
     hud = OctopusHud()
 ) {
-    // keep the state of the
+    // keep the state of the engine
     private var engine = DumboOctopusEngine(surfaceMapper.grid(), storage)
     private val inputData = resourceLines(2021, 11)
 
@@ -60,17 +60,15 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
     override fun createGameItems() {
         surfaceMapper.grid().items().forEachIndexed { _, item ->
             val newMesh = OBJLoader.loadMesh(surfaceMapper.itemToObj(item))
-            val hexColour = itemToColour(item)
-
             val gameItem = GameItem(newMesh)
-//            gameItem.colour = hexColour
+            // For now, give them a random colour
             gameItem.colour = Vector4f(Random.nextFloat(), Random.nextFloat(), Random.nextFloat(), 0.6f)
 
             gameItem.setPosition(Vector3f(0f, 0f, 0f))
             gameItem.scale = 1f
 
             gameItems += gameItem
-            storage.addItem(item, DumboOctopusItemData(gameItem, 0))
+            storage.addItem(item, DumboOctopusItemData(gameItem, 0, 0))
         }
     }
 
@@ -96,7 +94,10 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
     }
 
     override fun performStep() {
+        // turn off the flashing items, they will become black
         // Do the work of a world step
+        val flashing = engine.step()
+
 
     }
 
@@ -105,7 +106,7 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
     }
 
     override fun setAnimationColours(animationStep: Int) {
-        // Between states, we can animate any spreading fire here
+        // Between states, we can animate any spreading flashing here
 
     }
 

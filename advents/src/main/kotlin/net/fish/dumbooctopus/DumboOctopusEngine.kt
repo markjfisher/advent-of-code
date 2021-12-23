@@ -29,13 +29,13 @@ data class DumboOctopusEngine<T : DumboOctopus>(
     private fun flashNeighbours(flashersToProcess: MutableSet<Flashing>, allFlashersThisStep: MutableSet<Flashing>, iteration: Int) {
         if (flashersToProcess.isEmpty()) return
 
-        // get a flasher to process
-        val flasher = flashersToProcess.first()
-        flashersToProcess.remove(flasher)
-
-        // find its neighbours, and increment them
-        val neighbours = flasher.item.neighbours()
-        incrementSquares(neighbours)
+        // Get all current flashers to process, increment their neighbours, find any in those that need to now be processed.
+        // This new behaviour ensures that flashing iterations are set correctly as the current set of flashing should happen simultaneously
+        // and only recurse with a new level on the ones this causes to now flash.
+        flashersToProcess.forEach { flasher ->
+            incrementSquares(flasher.item.neighbours())
+        }
+        flashersToProcess.clear()
 
         // find any that are now flashing because of this. it will be any squares with energy level above 9 that are not already in the flashing this step list
         val newFlashersItems = grid.items().filter { storage.getData(it)!!.energyLevel >= 10 } - allFlashersThisStep.map { it.item }.toSet()
