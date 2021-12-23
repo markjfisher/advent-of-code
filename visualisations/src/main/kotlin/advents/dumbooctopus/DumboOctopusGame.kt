@@ -31,7 +31,7 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
     storage = HashMapBackedGridItemDataStorage(),
     hud = OctopusHud()
 ) {
-
+    // keep the state of the
     private var engine = DumboOctopusEngine(surfaceMapper.grid(), storage)
     private val inputData = resourceLines(2021, 11)
 
@@ -105,6 +105,8 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
     }
 
     override fun setAnimationColours(animationStep: Int) {
+        // Between states, we can animate any spreading fire here
+
     }
 
     override fun cleanup() {

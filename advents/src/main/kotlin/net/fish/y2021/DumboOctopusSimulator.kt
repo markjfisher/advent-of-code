@@ -32,14 +32,14 @@ class DumboOctopusSimulator(input: List<String>) {
     }
 
     fun doSteps(count: Int): Int {
-        return (0 until count).sumOf { engine.step() }
+        return (0 until count).sumOf { engine.step().size }
     }
 
     fun findSync(): Int {
         var currentStep = 0
         var currentScore = 0
         while (currentScore != 100) {
-            currentScore = engine.step()
+            currentScore = engine.step().size
             currentStep++
         }
         return currentStep

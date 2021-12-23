@@ -337,12 +337,14 @@ class ConwayHex2020Day24 : GameLogic, GameWorld<ConwayItemData>(
     }
 
     override fun getItemsToRender(): List<GameItem> {
-        // TODO, work out how to use generics properly so we don't need the casts
-        val aliveGameItems = storage.data.filter { data -> setOf(ALIVE).contains(data.state) }.map { it.gameItem }
-        val creatingGameItems = storage.data.filter { data -> setOf(CREATING).contains(data.state) }.map { it.gameItem }
-        val destroyingGameItems = storage.data.filter { data -> setOf(DESTROYING).contains(data.state) }.map { it.gameItem }
-        val notAliveGameItems = gameItems - aliveGameItems.toSet() - creatingGameItems.toSet() - destroyingGameItems.toSet()
-        return aliveGameItems + creatingGameItems + destroyingGameItems + notAliveGameItems
+//        val aliveGameItems = storage.data.filter { data -> setOf(ALIVE).contains(data.state) }.map { it.gameItem }
+//        val creatingGameItems = storage.data.filter { data -> setOf(CREATING).contains(data.state) }.map { it.gameItem }
+//        val destroyingGameItems = storage.data.filter { data -> setOf(DESTROYING).contains(data.state) }.map { it.gameItem }
+//        val notAliveGameItems = gameItems - aliveGameItems.toSet() - creatingGameItems.toSet() - destroyingGameItems.toSet()
+//        val calculatedItems = aliveGameItems + creatingGameItems + destroyingGameItems + notAliveGameItems
+
+        // This seems to work, the above just equate to making the list in a different order, but can't see why it's needed.
+        return storage.data.map { it.gameItem }
     }
 
     override fun setAnimationColours(animationStep: Int) {
