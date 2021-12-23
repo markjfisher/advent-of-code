@@ -17,7 +17,7 @@ object GameOptionsWidget {
         collapsingHeader("Game") {
             ImGui.columns(2, "game1", false)
             ImGui.checkbox("Pause", gameOptions::pauseGame); ImGui.nextColumn()
-            ImGui.sliderInt("Speed", gameOptions::gameSpeed, 1, 50); ImGui.nextColumn()
+            ImGui.sliderInt("Speed", gameOptions::gameSpeed, 1, gameOptions.maxGameSpeed); ImGui.nextColumn()
 
             // Single Step - only enabled if in pause mode
             if (!gameOptions.pauseGame) {

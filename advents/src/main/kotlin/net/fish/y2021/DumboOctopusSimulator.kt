@@ -45,19 +45,4 @@ class DumboOctopusSimulator(input: List<String>) {
         return currentStep
     }
 
-
-    // convenience function for turning grid into list of strings of the values to make it easy to test iterations
-    // e.g.
-    // 5483143223
-    // ...
-    // 5283751526
-    fun gridValues(): List<String> {
-        return (0 until grid.height).fold(emptyList()) { acc, y ->
-            acc + (0 until grid.width).fold("") { acc2, x ->
-                val square = grid.square(x, y)!!
-                val level = storage.getData(square)!!.energyLevel
-                "${acc2}${level}"
-            }
-        }
-    }
 }

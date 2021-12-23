@@ -3,6 +3,8 @@ package net.fish.dumbooctopus
 import net.fish.geometry.grid.Grid
 import net.fish.geometry.grid.GridItem
 import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
+import net.fish.geometry.square.Square
+import net.fish.geometry.square.SquareGrid
 
 data class DumboOctopusEngine<T : DumboOctopus>(
     val grid: Grid,
@@ -61,6 +63,23 @@ data class DumboOctopusEngine<T : DumboOctopus>(
         }
     }
 
+    // convenience function for turning grid into list of strings of the values to make it easy to test iterations
+    // e.g.
+    // 5483143223
+    // ...
+    // 5283751526
+    fun gridValues(): List<String> {
+        return (0 until grid.height).fold(emptyList()) { acc, y ->
+            acc + (0 until grid.width).fold("") { acc2, x ->
+                val item = when {
+                    grid is SquareGrid -> grid.square(x, y) as Square
+                    else -> throw Exception("can't handle items not in square yet")
+                }
+                val level = storage.getData(item)!!.energyLevel
+                "${acc2}${level}"
+            }
+        }
+    }
 }
 
 data class Flashing(

@@ -5,6 +5,7 @@ import org.joml.Vector4f
 data class GameOptions(
     var pauseGame: Boolean,
     var gameSpeed: Int,
+    var maxGameSpeed: Int = 50,
     var useTexture: Boolean,
     var gameSpecificData: MutableMap<String, Any> = mutableMapOf()
 ) {

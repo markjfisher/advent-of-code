@@ -13,7 +13,7 @@ internal class DumboOctopusSimulatorTest {
         assertThat(simulator.grid.width).isEqualTo(10)
         assertThat(simulator.grid.height).isEqualTo(10)
 
-        val gridValues = simulator.gridValues()
+        val gridValues = simulator.engine.gridValues()
         assertThat(gridValues).containsExactly(
             "5483143223",
             "2745854711",
@@ -32,7 +32,7 @@ internal class DumboOctopusSimulatorTest {
     fun `flashing iteration is correct`() {
         val simulator = DumboOctopusSimulator(testData)
         var flashing = simulator.engine.step()
-        var gridValues = simulator.gridValues()
+        var gridValues = simulator.engine.gridValues()
         assertThat(gridValues).containsExactly(
             "6594254334",
             "3856965822",
@@ -48,7 +48,7 @@ internal class DumboOctopusSimulatorTest {
         assertThat(flashing.size).isEqualTo(0)
 
         flashing = simulator.engine.step()
-        gridValues = simulator.gridValues()
+        gridValues = simulator.engine.gridValues()
         assertThat(gridValues).containsExactly(
             "8807476555",
             "5089087054",
@@ -87,7 +87,7 @@ internal class DumboOctopusSimulatorTest {
             "11111"
         )
         val simulator = DumboOctopusSimulator(simpleData)
-        assertThat(simulator.gridValues()).containsExactly(
+        assertThat(simulator.engine.gridValues()).containsExactly(
             "11111",
             "19991",
             "19191",
@@ -99,7 +99,7 @@ internal class DumboOctopusSimulatorTest {
         var score = flashing.size
         assertThat(score).isEqualTo(9)
 
-        var gridValues = simulator.gridValues()
+        var gridValues = simulator.engine.gridValues()
         assertThat(gridValues).containsExactly(
             "34543",
             "40004",
@@ -112,7 +112,7 @@ internal class DumboOctopusSimulatorTest {
         score = flashing.size
         assertThat(score).isEqualTo(0)
 
-        gridValues = simulator.gridValues()
+        gridValues = simulator.engine.gridValues()
         assertThat(gridValues).containsExactly(
             "45654",
             "51115",
