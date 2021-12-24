@@ -43,6 +43,18 @@ data class SurfaceOptions(
             Surface("(Square) Simple Grid", mutableMapOf("gridType" to "square", "width" to "10", "height" to "10"), PathType.StaticPoint, 0f, 1f)
         )
 
+        fun calculatePercentage(animationPercentage: Float, percentageMap: Map<Int, Float>, boundary: Int = 10): Float {
+            val factA = 100f / boundary
+            val step = 1 / factA
+            val lower = (animationPercentage * factA).toInt() * boundary
+            val upper = ((animationPercentage + step) * factA).toInt() * boundary
+            val between = (animationPercentage * 100f).toInt() - lower
+            val lowerP = percentageMap.getOrDefault(lower, 1f)
+            val upperP = percentageMap.getOrDefault(upper, 1f)
+            return lowerP.toFloat() * (boundary - between) / boundary + upperP.toFloat() * between / boundary
+        }
+
+
     }
 
 }

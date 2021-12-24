@@ -1,6 +1,7 @@
 package advents.dumbooctopus
 
 import advents.ui.HudData
+import advents.ui.SurfaceOptions
 import engine.GameEngine
 import engine.GameLogic
 import engine.GameWorld
@@ -9,24 +10,29 @@ import engine.Window
 import engine.graph.CameraLoader
 import engine.graph.OBJLoader
 import engine.item.GameItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import net.fish.dumbooctopus.DumboOctopusEngine
 import net.fish.dumbooctopus.Flashing
-import net.fish.geometry.Point
 import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
 import net.fish.geometry.paths.CameraData
 import net.fish.geometry.paths.PathType
 import net.fish.geometry.projection.Surface
-import net.fish.geometry.square.Square
 import net.fish.resourceLines
-import net.fish.y2021.GridDataUtils
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.system.Configuration
+import java.lang.Integer.max
 import kotlin.random.Random
 
 class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
     allSurfaces = listOf(
-        Surface("(SS) 10,10 grid", mutableMapOf("gridType" to "non_wrapping_square", "width" to "10", "height" to "10"), PathType.StaticPoint, 0.0f, 1.0f),
+        Surface("(SS) 10,10 grid", mutableMapOf("gridType" to "non_wrapping_square", "width" to "10", "height" to "10"), PathType.StaticPoint, 0.0f, 0.95f),
+        Surface("(SS) 50,50 grid", mutableMapOf("gridType" to "non_wrapping_square", "width" to "50", "height" to "50"), PathType.StaticPoint, 0.0f, 0.2f),
+        Surface("(SS) 200,200 grid", mutableMapOf("gridType" to "non_wrapping_square", "width" to "200", "height" to "200"), PathType.StaticPoint, 0.0f, 0.05f),
 //        Surface("(Square) 3,7 Torus Knot", mutableMapOf("gridType" to "square", "width" to "800", "height" to "16", "p" to "3", "q" to "7", "a" to "1.0", "b" to "0.2"), PathType.TorusKnot, 0.2f, 5.0f),
 //        Surface("(Square) Simple Grid", mutableMapOf("gridType" to "square", "width" to "10", "height" to "10"), PathType.StaticPoint, 0f, 1f)
     ),
@@ -39,6 +45,31 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
     private var flashing: Set<Flashing> = emptySet()
     private var needToLoadInitialData = true
 
+    private val flashingBrightnessMap = mapOf(
+        0 to 0.7f,
+        5 to 0.85f,
+        10 to 0.975f,
+        15 to 0.975f,
+        20 to 0.87f,
+        25 to 0.625f,
+        30 to 0.35f,
+        35 to 0.25f,
+        40 to 0.1375f,
+        45 to 0.075f,
+        50 to 0.05f,
+        55 to 0.0375f,
+        60 to 0.025f,
+        65 to 0.018f,
+        70 to 0.0125f,
+        75 to 0.0094f,
+        80 to 0.00625f,
+        85 to 0.0047f,
+        90 to 0.00312f,
+        95 to 0.0015f,
+        100 to 0f,
+
+    )
+
     override fun getCameraPaths(): Map<String, () -> List<CameraData>> = mutableMapOf(
         "Simple Circle Path" to { CameraLoader.loadCamera("/conwayhex/simple-circle-path.txt") },
         "Circle Path Quick" to { CameraLoader.loadCamera("/conwayhex/quick-simple-circle.txt") },
@@ -46,12 +77,15 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
     )
 
     override fun setGameOptions() {
-        globalOptions.gameOptions.gameSpeed = 500
+        globalOptions.gameOptions.gameSpeed = 750
         globalOptions.gameOptions.maxGameSpeed = 1500
     }
 
     override fun createSurface() {
+        flashing = emptySet()
         gameCreateSurface()
+        engine = DumboOctopusEngine(surfaceMapper.grid(), storage)
+        needToLoadInitialData = true
     }
 
     override fun getItemsToRender(): List<GameItem> {
@@ -88,13 +122,12 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
 
     override fun resetGame() {
         gameIteration = 0
-        surfaceMapper.grid().items().forEach { item ->
-            val data = storage.getData(item)!!
-            data.energyLevel = 0
-            data.gameItem.colour = Vector4f(0.0f, 0.0f, 0.0f, 0.0f)
-            data.gameItem.mesh.texture = null
-        }
+        globalOptions.gameOptions.pauseGame = true
+        storage.clearAll()
         needToLoadInitialData = true
+        flashing = emptySet()
+        createGameItems()
+        engine = DumboOctopusEngine(surfaceMapper.grid(), storage)
     }
 
     override fun update(interval: Float, mouseInput: MouseInput, window: Window) {
@@ -112,12 +145,9 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
         // check to load initial data
         if (needToLoadInitialData) {
             needToLoadInitialData = false
-            val mapOfPoints = GridDataUtils.mapPointsFromLines(inputData)
             engine.grid.items().forEach { item ->
-                val square = item as Square
-                val luminescence = mapOfPoints[Point(square.x, square.y)] ?: throw Exception("Couldn't find data for square: $square in $mapOfPoints")
                 val gameItem = storage.getData(item)!!
-                gameItem.energyLevel = luminescence
+                gameItem.energyLevel = Random.nextInt(9) + 1
                 gameItem.flashingIteration = 0
             }
         }
@@ -126,7 +156,11 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
         engine.grid.items().forEach { item ->
             val octopus = storage.getData(item)!!
             if (octopus.energyLevel > 0) {
-                octopus.gameItem.colour = Vector4f(octopus.energyLevel * 0.1f, octopus.energyLevel * 0.1f / 3, octopus.energyLevel * 0.1f / 3, 1f)
+                // levels go from 1-9, we need to scale to 0-0.7
+                val red = (octopus.energyLevel - 1) * 0.7f / 8f
+                val green = red * 2 / 3
+                val blue = green
+                octopus.gameItem.colour = Vector4f(red, blue, green, 1f)
             }
         }
 
@@ -137,16 +171,38 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
     }
 
     override fun setAnimationColours(animationStep: Int) {
-        // all the current flashing items need to
-        // between 0 and 1 following gives 0.9 at x=0, 1 at x=0.24, 0 at x=1, nice inverted parabola.
-        // y = -1.7325 x^2 + 0.8325 x + 0.9
+        if (flashing.isEmpty()) return
+        val gameSpeed = globalOptions.gameOptions.gameSpeed.toFloat()
 
-        val x = (animationStep + 1) / globalOptions.gameOptions.gameSpeed.toFloat()
-        val y = -1.7325f * x * x + 0.8325f * x + 0.9f
-        flashing.forEach { flasher ->
-            val octopus = storage.getData(flasher.item)!!
-            octopus.gameItem.colour = Vector4f(y)
+        // we want to split the flashing iterations up between all the animation steps evenly, and only start them when they reach that frame
+        val largestFlashingIteration = flashing.maxOf { it.iterationStarted }
+        val animationPercentageBlocks = gameSpeed / (largestFlashingIteration + 1) / 100f
+
+        // async the flashing setup
+        val splitSize = max(flashing.size / 12, 1)
+        val blocks = flashing.chunked(splitSize)
+        runBlocking {
+            val defs = blocks.map { flashBlock ->
+                async(Dispatchers.Default) { performFlashAsync(flashBlock, animationStep, gameSpeed, animationPercentageBlocks) }
+            }
+            defs.awaitAll()
         }
+    }
+
+    private suspend fun performFlashAsync(flashing: List<Flashing>, animationStep: Int, gameSpeed: Float, animationPercentageBlocks: Float) = withContext(Dispatchers.Default) {
+        flashing.forEach { flasher ->
+            val startsOn = (flasher.iterationStarted * animationPercentageBlocks).toInt()
+            if (animationStep >= startsOn) {
+                // now work out the compressed pulse flashing colour for this item.
+                // Normally, if it started at animation 0, then we look up the animation colours at x position directly.
+                // Buf it we have less steps to take, we need to speed through the animation
+                val percentageThrough = (animationStep + 1 - startsOn) / (gameSpeed - startsOn)
+                val brightness = SurfaceOptions.calculatePercentage(percentageThrough, flashingBrightnessMap, 5)
+                val octopus = storage.getData(flasher.item)!!
+                octopus.gameItem.colour = Vector4f(brightness, brightness, brightness, 1f)
+            }
+        }
+
     }
 
     override fun cleanup() {

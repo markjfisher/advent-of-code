@@ -50,7 +50,7 @@ data class Surface(
             GridType.NON_WRAPPING_SQUARE -> {
                 val (width, height) = getSquareGridConfig()
                 val grid = NonWrappingSquareGrid(width, height)
-                SimpleSquareSurfaceMapper(grid, 1.0f) // TODO: allow scale to be configured
+                SimpleSquareSurfaceMapper(grid, scale) // TODO: allow scale to be configured
             }
         }
     }

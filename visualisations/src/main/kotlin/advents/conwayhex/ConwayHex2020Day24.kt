@@ -5,6 +5,7 @@ import advents.conwayhex.ConwayItemState.CREATING
 import advents.conwayhex.ConwayItemState.DEAD
 import advents.conwayhex.ConwayItemState.DESTROYING
 import advents.ui.HudData
+import advents.ui.SurfaceOptions
 import advents.ui.SurfaceOptions.Companion.defaultSurfaces
 import engine.GameEngine
 import engine.GameLogic
@@ -343,13 +344,13 @@ class ConwayHex2020Day24 : GameLogic, GameWorld<ConwayItemData>(
 //        val notAliveGameItems = gameItems - aliveGameItems.toSet() - creatingGameItems.toSet() - destroyingGameItems.toSet()
 //        val calculatedItems = aliveGameItems + creatingGameItems + destroyingGameItems + notAliveGameItems
 
-        // This seems to work, the above just equate to making the list in a different order, but can't see why it's needed.
+        // This seems to work, the above just equate to making the list in a different order, but can't see why it's needed anymore.
         return storage.data.map { it.gameItem }
     }
 
     override fun setAnimationColours(animationStep: Int) {
         val animationPercentage = (animationStep + 1) / globalOptions.gameOptions.gameSpeed.toFloat()
-        val animationCurveValue = calculatePercentage(animationPercentage)
+        val animationCurveValue = SurfaceOptions.calculatePercentage(animationPercentage, globalOptions.surfaceOptions.animationPercentages)
         creating.forEach { gridItem ->
             setAnimationColour(gridItem, 1f - animationCurveValue)
         }
@@ -364,15 +365,6 @@ class ConwayHex2020Day24 : GameLogic, GameWorld<ConwayItemData>(
         val data = storage.getData(gridItem)!!
         data.gameItem.colour.set(newColour)
         data.gameItem.mesh.texture = null
-    }
-
-    private fun calculatePercentage(animationPercentage: Float): Float {
-        val lower10 = (animationPercentage * 10f).toInt() * 10 // e.g. 0.47 -> 40
-        val upper10 = ((animationPercentage + 0.1f) * 10f).toInt() * 10
-        val between = (animationPercentage * 100f).toInt() - lower10
-        val lowerP = globalOptions.surfaceOptions.animationPercentages.getOrDefault(lower10, 1f)
-        val upperP = globalOptions.surfaceOptions.animationPercentages.getOrDefault(upper10, 1f)
-        return lowerP * (10f - between) / 10f + upperP * between / 10f
     }
 
     override fun addCustomHudData(hudData: HudData) {

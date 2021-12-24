@@ -213,7 +213,7 @@ abstract class GameWorld<T : GridItemData>(
         }
 
         when (command) {
-            DecreaseSpeed -> globalOptions.gameOptions.gameSpeed = (globalOptions.gameOptions.gameSpeed + 1).coerceAtMost(50)
+            DecreaseSpeed -> globalOptions.gameOptions.gameSpeed = (globalOptions.gameOptions.gameSpeed + 1).coerceAtMost(globalOptions.gameOptions.maxGameSpeed)
             IncreaseSpeed -> globalOptions.gameOptions.gameSpeed = (globalOptions.gameOptions.gameSpeed - 1).coerceAtLeast(1)
             ResetGame -> resetGame()
             TogglePause -> globalOptions.gameOptions.pauseGame = !globalOptions.gameOptions.pauseGame
