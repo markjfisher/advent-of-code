@@ -125,8 +125,8 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
         // Handle non flashing colours
         engine.grid.items().forEach { item ->
             val octopus = storage.getData(item)!!
-            if (octopus.energyLevel > -1) {
-                octopus.gameItem.colour = Vector4f(octopus.energyLevel * 0.1f, octopus.energyLevel * 0.1f / 3, octopus.energyLevel * 0.1f / 3, octopus.energyLevel * 0.1f)
+            if (octopus.energyLevel > 0) {
+                octopus.gameItem.colour = Vector4f(octopus.energyLevel * 0.1f, octopus.energyLevel * 0.1f / 3, octopus.energyLevel * 0.1f / 3, 1f)
             }
         }
 
@@ -137,9 +137,16 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
     }
 
     override fun setAnimationColours(animationStep: Int) {
-        // Between states, we can animate any spreading flashing here
+        // all the current flashing items need to
+        // between 0 and 1 following gives 0.9 at x=0, 1 at x=0.24, 0 at x=1, nice inverted parabola.
+        // y = -1.7325 x^2 + 0.8325 x + 0.9
 
-        // simple on flashing for now
+        val x = (animationStep + 1) / globalOptions.gameOptions.gameSpeed.toFloat()
+        val y = -1.7325f * x * x + 0.8325f * x + 0.9f
+        flashing.forEach { flasher ->
+            val octopus = storage.getData(flasher.item)!!
+            octopus.gameItem.colour = Vector4f(y)
+        }
     }
 
     override fun cleanup() {
