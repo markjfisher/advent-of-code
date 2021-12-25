@@ -1,10 +1,9 @@
-package net.fish.y2021
+package net.fish.dumbooctopus
 
-import net.fish.dumbooctopus.DumboOctopusEngine
-import net.fish.dumbooctopus.DumboOctopusSimple
 import net.fish.geometry.Point
 import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
 import net.fish.geometry.square.NonWrappingSquareGrid
+import net.fish.y2021.GridDataUtils
 
 class DumboOctopusSimulator(input: List<String>) {
     var grid: NonWrappingSquareGrid
@@ -23,7 +22,7 @@ class DumboOctopusSimulator(input: List<String>) {
         val height = input.size
         val nonWrappingSquareGrid = NonWrappingSquareGrid(width, height)
         val storage = HashMapBackedGridItemDataStorage<DumboOctopusSimple>()
-        val mapOfPoints = GridDataUtils.mapPointsFromLines(input)
+        val mapOfPoints = GridDataUtils.mapIntPointsFromLines(input)
         nonWrappingSquareGrid.items().forEach { square ->
             val luminescence = mapOfPoints[Point(square.x, square.y)] ?: throw Exception("Couldn't find data for square: $square in $mapOfPoints")
             storage.addItem(square, DumboOctopusSimple(luminescence))

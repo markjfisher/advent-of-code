@@ -1,5 +1,6 @@
 package net.fish.y2021
 
+import net.fish.dumbooctopus.DumboOctopusSimulator
 import net.fish.geometry.square.Square
 import net.fish.resourcePath
 import org.assertj.core.api.Assertions.assertThat

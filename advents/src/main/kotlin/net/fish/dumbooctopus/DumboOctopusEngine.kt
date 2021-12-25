@@ -71,8 +71,8 @@ data class DumboOctopusEngine<T : DumboOctopus>(
     fun gridValues(): List<String> {
         return (0 until grid.height).fold(emptyList()) { acc, y ->
             acc + (0 until grid.width).fold("") { acc2, x ->
-                val item = when {
-                    grid is SquareGrid -> grid.square(x, y) as Square
+                val item = when (grid) {
+                    is SquareGrid -> grid.square(x, y) as Square
                     else -> throw Exception("can't handle items not in square yet")
                 }
                 val level = storage.getData(item)!!.energyLevel

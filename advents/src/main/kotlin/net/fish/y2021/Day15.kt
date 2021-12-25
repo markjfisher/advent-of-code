@@ -31,7 +31,7 @@ object Day15 : Day {
         val width = data[0].length * expansions
         val height = data.size * expansions
         val nonWrappingSquareGrid = NonWrappingSquareGrid(width, height)
-        val costMap = GridDataUtils.mapPointsFromLines(data)
+        val costMap = GridDataUtils.mapIntPointsFromLines(data)
         val storage = HashMapBackedGridItemDataStorage<ChitonDataItem>()
         nonWrappingSquareGrid.items().forEach { square ->
             val x = square.x

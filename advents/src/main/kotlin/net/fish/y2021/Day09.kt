@@ -10,7 +10,7 @@ object Day09 : Day {
     private val grid = toGrid(resourceLines(2021, 9))
 
     fun toGrid(input: List<String>): Grid {
-        return Grid(GridDataUtils.mapPointsFromLines(input))
+        return Grid(GridDataUtils.mapIntPointsFromLines(input))
     }
 
     override fun part1() = doPart1(grid)
