@@ -18,16 +18,17 @@ class Renderer {
         val FOV = toRadians(35f)
         private const val Z_NEAR = 0.01f
         private const val Z_FAR = 1000f
+        val defaultShaders = ShaderResources(vertexShader = "/simple/shaders/vertex.vs", fragmentShader = "/simple/shaders/fragment.fs")
     }
 
-    fun init() {
-        setupSceneShader()
+    fun init(shaders: ShaderResources = defaultShaders) {
+        setupSceneShader(shaders)
     }
 
-    fun setupSceneShader() {
+    private fun setupSceneShader(shaders: ShaderResources) {
         sceneShaderProgram.createProgram()
-        sceneShaderProgram.createVertexShader(Utils.loadResource("/conwayhex/shaders/vertex.vs"))
-        sceneShaderProgram.createFragmentShader(Utils.loadResource("/conwayhex/shaders/fragment.fs"))
+        sceneShaderProgram.createVertexShader(Utils.loadResource(shaders.vertexShader))
+        sceneShaderProgram.createFragmentShader(Utils.loadResource(shaders.fragmentShader))
         sceneShaderProgram.link()
 
         // Create uniforms for world and projection matrices
