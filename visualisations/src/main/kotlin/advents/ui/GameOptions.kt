@@ -16,7 +16,7 @@ data class GameOptions(
     // Create getter functions for type convenience. Hideous but works
     fun getVector4f(key: String): Vector4f? {
         val v = gameSpecificData[key]
-        return if (v == null) null else (v as Vector4f)
+        return if (v == null) null else Vector4f((v as Vector4f))
     }
 }
 

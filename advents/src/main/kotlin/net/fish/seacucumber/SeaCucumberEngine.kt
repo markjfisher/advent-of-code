@@ -31,7 +31,7 @@ data class SeaCucumberEngine<T: SeaCucumberFloor>(
         // we aren't using a sparse array, so we can use grid size directly
         val splitSize = grid.height * grid.width / 12
         val blocks = storage.items.chunked(splitSize)
-        val moveable = mutableSetOf<GridItem>()
+        val moveable = mutableSetOf<Pair<GridItem, GridItem>>()
         runBlocking {
             val defs = blocks.map { gridItems ->
                 async { findMoveableAsync(gridItems, direction) }
@@ -52,22 +52,18 @@ data class SeaCucumberEngine<T: SeaCucumberFloor>(
     }
 
 
-    private suspend fun moveItemsAsync(items: List<GridItem>, direction: SeaCucumberFloorValue) = withContext(Dispatchers.Default) {
-        items.forEach { item ->
-            val floorOld = storage.getData(item) as SeaCucumberFloor
+    private suspend fun moveItemsAsync(items: List<Pair<GridItem, GridItem>>, direction: SeaCucumberFloorValue) = withContext(Dispatchers.Default) {
+        items.forEach { (old, new) ->
+            val floorOld = storage.getData(old) as SeaCucumberFloor
             floorOld.value = EMPTY
 
-            // TODO: Make this work off the grid, not just assume it's a Square
-            val neighourIndex = if (direction == E) 0 else 2 // only support E and S
-            val neighbour = (item as Square).neighbour(neighourIndex)!!
-
-            val into = storage.getData(neighbour) as SeaCucumberFloor
+            val into = storage.getData(new) as SeaCucumberFloor
             into.value = direction
         }
     }
 
-    private suspend fun findMoveableAsync(items: List<GridItem>, direction: SeaCucumberFloorValue): Set<GridItem> = withContext(Dispatchers.Default) {
-        val moveable = mutableSetOf<GridItem>()
+    private suspend fun findMoveableAsync(items: List<GridItem>, direction: SeaCucumberFloorValue): Set<Pair<GridItem, GridItem>> = withContext(Dispatchers.Default) {
+        val moveable = mutableSetOf<Pair<GridItem, GridItem>>()
         items.forEach { item ->
             val sc = storage.getData(item) as SeaCucumberFloor
             if (sc.value == direction) {
@@ -77,7 +73,7 @@ data class SeaCucumberEngine<T: SeaCucumberFloor>(
 
                 val neighbourSC = storage.getData(neighbour) as SeaCucumberFloor
                 if (neighbourSC.value == EMPTY) {
-                    moveable += item
+                    moveable.add(Pair(item, neighbour))
                 }
             }
         }

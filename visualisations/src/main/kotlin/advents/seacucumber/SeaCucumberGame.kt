@@ -116,7 +116,7 @@ class SeaCucumberGame : GameLogic, GameWorld<SeaCucumberFloorItemData>(
             gameItem.scale = 1f
 
             gameItems += gameItem
-            storage.addItem(item, SeaCucumberFloorItemData(gameItem, SeaCucumberFloorValue.EMPTY))
+            storage.addItem(item, SeaCucumberFloorItemData(gameItem, EMPTY))
         }
     }
 
@@ -163,8 +163,8 @@ class SeaCucumberGame : GameLogic, GameWorld<SeaCucumberFloorItemData>(
                 val gameItem = storage.getData(item)!!
                 gameItem.value = when(char) {
                     '>' -> E
-                    'v' -> SeaCucumberFloorValue.S
-                    '.' -> SeaCucumberFloorValue.EMPTY
+                    'v' -> S
+                    '.' -> EMPTY
                     else -> throw Exception("Unknown char in data: $char")
                 }
             }
@@ -172,11 +172,12 @@ class SeaCucumberGame : GameLogic, GameWorld<SeaCucumberFloorItemData>(
 
         engine.grid.items().forEach { item ->
             val floor = storage.getData(item)!!
-            floor.gameItem.colour = when (floor.value) {
-                E -> eastFacingColour
-                S -> southFacingColour
-                EMPTY -> Vector4f(0.6f, 0.6f, 0.6f, 1f).mul(itemToColour(item))
+            val colour = when (floor.value) {
+                E -> globalOptions.gameOptions.getVector4f("eastFacingColour")!!.let { it.w = globalOptions.surfaceOptions.globalAlpha; it }
+                S -> globalOptions.gameOptions.getVector4f("southFacingColour")!!.let { it.w = globalOptions.surfaceOptions.globalAlpha; it }
+                EMPTY -> itemToColour(item)
             }
+            floor.gameItem.colour.set(colour)
         }
 
     }
@@ -216,7 +217,7 @@ class SeaCucumberGame : GameLogic, GameWorld<SeaCucumberFloorItemData>(
         @JvmStatic
         fun main(args: Array<String>) {
             val logic = SeaCucumberGame()
-            val engine = GameEngine(windowTitle = "Sea Cucumber", width = 1200, height = 800, vSync = true, gameLogic = logic, targetUPS = 100)
+            val engine = GameEngine(windowTitle = "Sea Cucumber", width = 1200, height = 800, vSync = true, gameLogic = logic, targetUPS = 200)
             Configuration.DEBUG.set(true)
             engine.run()
         }
