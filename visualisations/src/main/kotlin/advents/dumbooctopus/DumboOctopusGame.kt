@@ -214,10 +214,6 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
     override fun setGameItemsAlpha() {
     }
 
-    // **************************************************************************
-    // Game Logic Code
-
-
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {

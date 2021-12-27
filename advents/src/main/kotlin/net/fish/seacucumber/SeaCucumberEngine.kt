@@ -1,5 +1,10 @@
 package net.fish.seacucumber
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import net.fish.geometry.grid.Grid
 import net.fish.geometry.grid.GridItem
 import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
@@ -8,55 +13,75 @@ import net.fish.geometry.square.SquareGrid
 import net.fish.seacucumber.SeaCucumberFloorValue.E
 import net.fish.seacucumber.SeaCucumberFloorValue.EMPTY
 import net.fish.seacucumber.SeaCucumberFloorValue.S
+import java.lang.Integer.max
 
 data class SeaCucumberEngine<T: SeaCucumberFloor>(
     val grid: Grid,
     val storage: HashMapBackedGridItemDataStorage<T>
 ) {
     fun step(): Int {
-        // Find all E facing SeaCucumbers that can move, and move them
-        val eastFacingThatCanMove = storage.items.filter { gridItem ->
-            val sc = storage.getData(gridItem) as SeaCucumberFloor
-            if (sc.value == E) {
-                val eastNeighbourItem = (gridItem as Square).neighbour(0)!! // East direction, with wrapping
-                val eastValue = storage.getData(eastNeighbourItem)!!.value
-                eastValue == EMPTY
-            } else false
-        }
-        moveEast(eastFacingThatCanMove)
+        val moveableEast = move(E)
+        val moveableSouth = move(S)
 
-        // Find all S facing SeaCucumbers that can move, and move them
-        val southFacingThatCanMove = storage.items.filter { gridItem ->
-            val sc = storage.getData(gridItem) as SeaCucumberFloor
-            if (sc.value == S) {
-                val southNeighbourItem = (gridItem as Square).neighbour(2)!! // South direction, with wrapping
-                val southValue = storage.getData(southNeighbourItem)!!.value
-                southValue == EMPTY
-            } else false
-        }
-        moveSouth(southFacingThatCanMove)
-
-        return (eastFacingThatCanMove + southFacingThatCanMove).size
+        return moveableEast + moveableSouth
     }
 
-    private fun moveEast(items: List<GridItem>) {
+    private fun move(direction: SeaCucumberFloorValue): Int {
+        // We have to find everything simultaneously, and then move them. can't find and move in ||el as that breaks the simultaneous requirement
+        // we aren't using a sparse array, so we can use grid size directly
+        val splitSize = grid.height * grid.width / 12
+        val blocks = storage.items.chunked(splitSize)
+        val moveable = mutableSetOf<GridItem>()
+        runBlocking {
+            val defs = blocks.map { gridItems ->
+                async { findMoveableAsync(gridItems, direction) }
+            }
+            defs.awaitAll().map { moveable += it }
+        }
+
+        // And move them
+        val splitSize2 = max(moveable.size / 12, 1)
+        val blocks2 = moveable.chunked(splitSize2)
+        runBlocking {
+            val defs = blocks2.map { items ->
+                async { moveItemsAsync(items, direction) }
+            }
+            defs.awaitAll()
+        }
+        return moveable.size
+    }
+
+
+    private suspend fun moveItemsAsync(items: List<GridItem>, direction: SeaCucumberFloorValue) = withContext(Dispatchers.Default) {
         items.forEach { item ->
             val floorOld = storage.getData(item) as SeaCucumberFloor
             floorOld.value = EMPTY
-            val eastNeighbourItem = (item as Square).neighbour(0)!!
-            val into = storage.getData(eastNeighbourItem) as SeaCucumberFloor
-            into.value = E
+
+            // TODO: Make this work off the grid, not just assume it's a Square
+            val neighourIndex = if (direction == E) 0 else 2 // only support E and S
+            val neighbour = (item as Square).neighbour(neighourIndex)!!
+
+            val into = storage.getData(neighbour) as SeaCucumberFloor
+            into.value = direction
         }
     }
 
-    private fun moveSouth(items: List<GridItem>) {
+    private suspend fun findMoveableAsync(items: List<GridItem>, direction: SeaCucumberFloorValue): Set<GridItem> = withContext(Dispatchers.Default) {
+        val moveable = mutableSetOf<GridItem>()
         items.forEach { item ->
-            val floorOld = storage.getData(item) as SeaCucumberFloor
-            floorOld.value = EMPTY
-            val southNeighbourItem = (item as Square).neighbour(2)!!
-            val into = storage.getData(southNeighbourItem) as SeaCucumberFloor
-            into.value = S
+            val sc = storage.getData(item) as SeaCucumberFloor
+            if (sc.value == direction) {
+                // TODO: Make this work off the grid, not just assume it's a Square
+                val neighourIndex = if (direction == E) 0 else 2
+                val neighbour = (item as Square).neighbour(neighourIndex)!!
+
+                val neighbourSC = storage.getData(neighbour) as SeaCucumberFloor
+                if (neighbourSC.value == EMPTY) {
+                    moveable += item
+                }
+            }
         }
+        moveable
     }
 
     fun gridValues(): List<String> {
