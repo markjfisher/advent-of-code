@@ -67,7 +67,6 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
         90 to 0.00312f,
         95 to 0.0015f,
         100 to 0f,
-
     )
 
     override fun getCameraPaths(): Map<String, () -> List<CameraData>> = mutableMapOf(

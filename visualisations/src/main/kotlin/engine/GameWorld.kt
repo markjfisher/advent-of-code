@@ -112,7 +112,7 @@ abstract class GameWorld<T : GridItemData>(
     val initialWorldCentre = Vector3f(0f, 0f, 0f)
     val worldCentre = Vector3f(initialWorldCentre)
 
-    val initialCameraPosition = Vector3f(0f, 0f, 16f)
+    val initialCameraPosition = Vector3f(0f, 0f, 20f)
     val initialCameraRotation = Quaternionf().lookAlong(worldCentre.sub(initialCameraPosition, Vector3f()), Vector3f(0f, 1f, 0f)).normalize()
     val camera = Camera(Vector3f(initialCameraPosition), Quaternionf(initialCameraRotation))
 
