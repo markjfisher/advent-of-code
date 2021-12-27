@@ -39,13 +39,9 @@ class SeaCucumberSimulator(input: List<String>) {
         return Pair(wrappingSquareGrid, storage)
     }
 
-    fun doStep(): Int {
-        return engine.step()
-    }
-
     fun findBlockStep(): Int {
         var stepsToBlock = 1
-        while (engine.step() != 0 || stepsToBlock > 100_000) {
+        while (engine.step() != 0 && stepsToBlock < 100_000) {
             stepsToBlock++
         }
         return stepsToBlock

@@ -58,7 +58,7 @@ internal class SeaCucumberSimulatorTest {
             ..........
         """.trimIndent().lines()
         val simulator = SeaCucumberSimulator(input)
-        val movedCount = simulator.doStep()
+        val movedCount = simulator.engine.step()
         assertThat(movedCount).isEqualTo(3)
         assertThat(simulator.engine.gridValues()).containsExactly(
             "..........",
