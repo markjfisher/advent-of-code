@@ -52,17 +52,22 @@ dependencies {
 
 tasks {
     register("advent2019", JavaExec::class) {
-        main = "net.fish.y2019.AdventOfCode2019"
+        mainClass.set("net.fish.y2019.AdventOfCode2019")
         classpath = sourceSets["main"].runtimeClasspath
     }
 
     register("advent2020", JavaExec::class) {
-        main = "net.fish.y2020.AdventOfCode2020"
+        mainClass.set("net.fish.y2020.AdventOfCode2020")
         classpath = sourceSets["main"].runtimeClasspath
     }
 
     register("advent2021", JavaExec::class) {
-        main = "net.fish.y2021.AdventOfCode2021"
+        mainClass.set("net.fish.y2021.AdventOfCode2021")
+        classpath = sourceSets["main"].runtimeClasspath
+    }
+
+    register("advent2022", JavaExec::class) {
+        mainClass.set("net.fish.y2022.AdventOfCode2022")
         classpath = sourceSets["main"].runtimeClasspath
     }
 
