@@ -10,5 +10,5 @@ object AdventOfCode {
 
 fun main(args: Array<String>) {
     val day = if(args.isEmpty()) 0 else args[0].toInt()
-    Runner.run(2021, AdventOfCode.days, day)
+    Runner.run(2022, AdventOfCode.days, day)
 }
