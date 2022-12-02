@@ -11,7 +11,23 @@ object Day02 : Day {
     override fun part2() = doPart2(data)
 
     enum class HandTypes(val score: Int) {
-        ROCK(1), PAPER(2), SCISSORS(3)
+        ROCK(1), PAPER(2), SCISSORS(3);
+
+        private fun beats(): HandTypes {
+            return when(this) {
+                ROCK -> SCISSORS
+                PAPER -> ROCK
+                SCISSORS -> PAPER
+            }
+        }
+
+        fun score(against: HandTypes): Int {
+            return this.score + when (against) {
+                this -> 3
+                this.beats() -> 6
+                else -> 0
+            }
+        }
     }
 
     private val r1StrategyMap = mapOf(
@@ -31,36 +47,23 @@ object Day02 : Day {
     )
 
     fun doPart1(data: List<String>): Int {
-        val score = data.fold(0) { acc, l ->
-            val (a,b) = l.split(" ", limit = 2)
-            val aPlay = getType(a, r1StrategyMap)
-            val bPlay = getType(b, r1StrategyMap)
-            acc + scoreOf(aPlay, bPlay)
-        }
-        return score
+        return calculateScore(data) { s, _ -> getType(s, r1StrategyMap) }
     }
 
-    fun scoreOf(aPlay: HandTypes, bPlay: HandTypes): Int {
-        if (aPlay == ROCK && bPlay == ROCK) return ROCK.score + 3
-        if (aPlay == ROCK && bPlay == PAPER) return PAPER.score + 6
-        if (aPlay == PAPER && bPlay == PAPER) return PAPER.score + 3
-        if (aPlay == PAPER && bPlay == SCISSORS) return SCISSORS.score + 6
-        if (aPlay == SCISSORS && bPlay == SCISSORS) return SCISSORS.score + 3
-        if (aPlay == SCISSORS && bPlay == ROCK) return ROCK.score + 6
-        return bPlay.score
+    fun doPart2(data: List<String>): Int {
+        return calculateScore(data) { s, opponentPlays -> r2StrategyMap[opponentPlays]!![s]!! }
+    }
+
+    private fun calculateScore(data: List<String>, strategyPicker: (String, HandTypes) -> HandTypes): Int {
+        return data.fold(0) { acc, l ->
+            val (a,b) = l.split(" ", limit = 2)
+            val aPlay = getType(a, r1StrategyMap)
+            val bPlay = strategyPicker(b, aPlay)
+            acc + bPlay.score(aPlay)
+        }
     }
 
     private fun getType(p: String, strategies: Map<String, HandTypes>): HandTypes = strategies[p] ?: throw Exception("Unknown play $p")
-
-    fun doPart2(data: List<String>): Int {
-        val score = data.fold(0) { acc, l ->
-            val (a,b) = l.split(" ", limit = 2)
-            val aPlay = getType(a, r1StrategyMap)
-            val bPlay = r2StrategyMap[aPlay]!![b]!!
-            acc + scoreOf(aPlay, bPlay)
-        }
-        return score
-    }
 
     @JvmStatic
     fun main(args: Array<String>) {

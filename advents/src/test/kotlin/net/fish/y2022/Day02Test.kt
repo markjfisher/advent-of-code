@@ -23,16 +23,14 @@ internal class Day02Test {
 
     @Test
     fun `scoring different hand types`() {
-        assertThat(Day02.scoreOf(ROCK, ROCK)).isEqualTo(4)
-        assertThat(Day02.scoreOf(ROCK, PAPER)).isEqualTo(8)
-        assertThat(Day02.scoreOf(ROCK, SCISSORS)).isEqualTo(3)
-
-        assertThat(Day02.scoreOf(PAPER, ROCK)).isEqualTo(1)
-        assertThat(Day02.scoreOf(PAPER, PAPER)).isEqualTo(5)
-        assertThat(Day02.scoreOf(PAPER, SCISSORS)).isEqualTo(9)
-
-        assertThat(Day02.scoreOf(SCISSORS, ROCK)).isEqualTo(7)
-        assertThat(Day02.scoreOf(SCISSORS, PAPER)).isEqualTo(2)
-        assertThat(Day02.scoreOf(SCISSORS, SCISSORS)).isEqualTo(6)
+        assertThat(ROCK.score(ROCK)).isEqualTo(4)
+        assertThat(PAPER.score(ROCK)).isEqualTo(8)
+        assertThat(SCISSORS.score(ROCK)).isEqualTo(3)
+        assertThat(ROCK.score(PAPER)).isEqualTo(1)
+        assertThat(PAPER.score(PAPER)).isEqualTo(5)
+        assertThat(SCISSORS.score(PAPER)).isEqualTo(9)
+        assertThat(ROCK.score(SCISSORS)).isEqualTo(7)
+        assertThat(PAPER.score(SCISSORS)).isEqualTo(2)
+        assertThat(SCISSORS.score(SCISSORS)).isEqualTo(6)
     }
 }
