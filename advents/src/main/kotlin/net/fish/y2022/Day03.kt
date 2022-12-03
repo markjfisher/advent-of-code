@@ -6,17 +6,11 @@ import net.fish.resourceLines
 object Day03 : Day {
     private val data = toRucksack(resourceLines(2022, 3))
 
-    fun itemScore(item: Char): Int {
-        return when (item) {
-            in 'a'..'z' -> item - 'a' + 1
-            in 'A'..'Z' -> item - 'A' + 27
-            else -> throw Exception("Unknown item: $item")
-        }
-    }
+    private val chars = ('a'..'z') + ('A'..'Z')
+    fun itemScore(item: Char): Int = chars.indexOf(item) + 1
 
     data class Group(val rucksacks: List<Rucksack>) {
         fun findCommonItem(): Char {
-            // reduce by intersecting all items in each group's rucksack
             val common = rucksacks.map { it.allItems().toSet() }.reduce { ac, items ->
                 ac.intersect(items.toSet())
             }
