@@ -1,7 +1,6 @@
 package net.fish.y2022
 
 import net.fish.resourcePath
-import net.fish.y2022.Day03.Compartment
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -12,28 +11,28 @@ internal class Day03Test {
     fun `can create rucksacks`() {
         assertThat(Day03.toRucksack(testData)).containsAll(listOf(
             Day03.Rucksack(
-                left  = Compartment("vJrwpWtwJgWr".toList()),
-                right = Compartment("hcsFMMfFFhFp".toList())
+                left  = "vJrwpWtwJgWr".toList(),
+                right = "hcsFMMfFFhFp".toList()
             ),
             Day03.Rucksack(
-                left  = Compartment("jqHRNqRjqzjGDLGL".toList()),
-                right = Compartment("rsFMfFZSrLrFZsSL".toList())
+                left  = "jqHRNqRjqzjGDLGL".toList(),
+                right = "rsFMfFZSrLrFZsSL".toList()
             ),
             Day03.Rucksack(
-                left  = Compartment("PmmdzqPrV".toList()),
-                right = Compartment("vPwwTWBwg".toList())
+                left  = "PmmdzqPrV".toList(),
+                right = "vPwwTWBwg".toList()
             ),
             Day03.Rucksack(
-                left  = Compartment("wMqvLMZHhHMvwLH".toList()),
-                right = Compartment("jbvcjnnSBnvTQFn".toList())
+                left  = "wMqvLMZHhHMvwLH".toList(),
+                right = "jbvcjnnSBnvTQFn".toList()
             ),
             Day03.Rucksack(
-                left  = Compartment("ttgJtRGJ".toList()),
-                right = Compartment("QctTZtZT".toList())
+                left  = "ttgJtRGJ".toList(),
+                right = "QctTZtZT".toList()
             ),
             Day03.Rucksack(
-                left  = Compartment("CrZsJsPPZsGz".toList()),
-                right = Compartment("wwsLwLmpwMDw".toList())
+                left  = "CrZsJsPPZsGz".toList(),
+                right = "wwsLwLmpwMDw".toList()
             ),
         ))
     }
@@ -41,8 +40,8 @@ internal class Day03Test {
     @Test
     fun `can get priority item`() {
         val rucksack = Day03.Rucksack(
-            left  = Compartment("vJrwpWtwJgWr".toList()),
-            right = Compartment("hcsFMMfFFhFp".toList())
+            left  = "vJrwpWtwJgWr".toList(),
+            right = "hcsFMMfFFhFp".toList()
         )
         assertThat(rucksack.priorityItem()).isEqualTo('p')
     }
