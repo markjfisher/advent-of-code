@@ -6,6 +6,18 @@ import net.fish.resourceLines
 object Day03 : Day {
     private val data = toRucksack(resourceLines(2022, 3))
 
+    fun doPart1(data: List<Rucksack>): Int = data.sumOf { itemScore(it.priorityItem()) }
+    fun doPart2(data: List<Rucksack>): Int = createGroups(data).sumOf { itemScore(it.findCommonItem()) }
+
+    fun toRucksack(data: List<String>): List<Rucksack> {
+        val rucksacks = data.fold(mutableListOf<Rucksack>()) { ac, s ->
+            val charLists = s.toList().chunked(s.length / 2)
+            ac += Rucksack(left = charLists[0], right = charLists[1])
+            ac
+        }
+        return rucksacks
+    }
+
     private val chars = ('a'..'z') + ('A'..'Z')
     fun itemScore(item: Char): Int = chars.indexOf(item) + 1
 
@@ -29,27 +41,10 @@ object Day03 : Day {
         fun allItems(): List<Char> = left + right
     }
 
-    fun toRucksack(data: List<String>): List<Rucksack> {
-        val rucksacks = data.fold(mutableListOf<Rucksack>()) { ac, s ->
-            val charLists = s.toList().chunked(s.length / 2)
-            ac += Rucksack(left = charLists[0], right = charLists[1])
-            ac
-        }
-        return rucksacks
-    }
-
     fun createGroups(rucksacks: List<Rucksack>): List<Group> = rucksacks.chunked(3).map { Group(it) }
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)
-
-    fun doPart1(data: List<Rucksack>): Int {
-        return data.sumOf { itemScore(it.priorityItem()) }
-    }
-
-    fun doPart2(data: List<Rucksack>): Int {
-        return createGroups(data).sumOf { itemScore(it.findCommonItem()) }
-    }
 
     @JvmStatic
     fun main(args: Array<String>) {
