@@ -1,5 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.apache.tools.ant.taskdefs.condition.Os
 
 plugins {
     kotlin("jvm")
@@ -29,7 +30,7 @@ val lwjglVersion: String by project
 val glnVersion: String by project
 val jomlVersion: String by project
 
-val lwjglNatives = "natives-linux"
+val lwjglNatives = "natives-" + if (Os.isFamily(Os.FAMILY_WINDOWS)) "windows" else "linux"
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))

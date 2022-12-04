@@ -1,0 +1,11 @@
+# force LF everywhere
+* text=lf
+
+# except .bat files
+*.bat text eol=crlf
+
+# add binary file types
+*.jar binary
+*.png binary
+*.obj binary
+*.ttf binary

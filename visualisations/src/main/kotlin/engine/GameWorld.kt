@@ -125,7 +125,7 @@ abstract class GameWorld<T : GridItemData>(
 
     // Main Options for application, games should set any additional data needed on the gameOptions extensions
     val globalOptions = GlobalOptions(
-        optionsName = "Octopus Options",
+        optionsName = "Options",
         gameOptions = GameOptions(
             pauseGame = true,
             gameSpeed = 5,
