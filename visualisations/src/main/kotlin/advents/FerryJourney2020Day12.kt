@@ -144,7 +144,8 @@ class FerryJourney2020Day12(private val ferryPositions: List<Pair<Int, Int>>) {
     }
 
     fun run() {
-        Configuration.DEBUG.set(true)
+        imgui.DEBUG = false
+        Configuration.DEBUG.set(false)
 
         init()
         window.loop(::loop)

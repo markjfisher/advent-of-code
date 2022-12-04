@@ -385,7 +385,8 @@ class ConwayHex2020Day24 : GameLogic, GameWorld<ConwayItemData>(
         fun main(args: Array<String>) {
             val logic = ConwayHex2020Day24()
             val engine = GameEngine(windowTitle = "Conway Hex", width = 1200, height = 800, vSync = true, gameLogic = logic)
-            Configuration.DEBUG.set(true)
+            imgui.DEBUG = false
+            Configuration.DEBUG.set(false)
             engine.run()
         }
     }

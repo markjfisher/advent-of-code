@@ -218,7 +218,8 @@ class SeaCucumberGame : GameLogic, GameWorld<SeaCucumberFloorItemData>(
         fun main(args: Array<String>) {
             val logic = SeaCucumberGame()
             val engine = GameEngine(windowTitle = "Sea Cucumber", width = 1200, height = 800, vSync = true, gameLogic = logic, targetUPS = 200)
-            Configuration.DEBUG.set(true)
+            imgui.DEBUG = false
+            Configuration.DEBUG.set(false)
             engine.run()
         }
     }

@@ -16,12 +16,9 @@ import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
 import org.lwjgl.opengl.GL.createCapabilities
 import org.lwjgl.opengl.GL11C.GL_BLEND
 import org.lwjgl.opengl.GL11C.GL_DEPTH_TEST
-import org.lwjgl.opengl.GL11C.GL_DST_ALPHA
-import org.lwjgl.opengl.GL11C.GL_ONE
 import org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA
 import org.lwjgl.opengl.GL11C.GL_SRC_ALPHA
 import org.lwjgl.opengl.GL11C.GL_STENCIL_TEST
-import org.lwjgl.opengl.GL11C.GL_ZERO
 import org.lwjgl.opengl.GL11C.glBlendFunc
 import org.lwjgl.opengl.GL11C.glClearColor
 import org.lwjgl.opengl.GL11C.glEnable
@@ -55,7 +52,7 @@ data class Window(
                 transparentFramebuffer = false
                 context.version = "4.6"
                 samples = 4
-                maximized = true
+                maximized = false
                 profile = core
                 forwardComp = true
             }
@@ -74,6 +71,7 @@ data class Window(
         val vidmode = glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor()) ?: throw Exception("Cannot get primary monitor information")
         // Center our window
         window.pos = Vec2i((vidmode.width() - width) / 2, (vidmode.height() - height) / 2)
+
 
         window.makeContextCurrent()
         if (isvSync()) {

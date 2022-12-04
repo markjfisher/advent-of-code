@@ -219,7 +219,8 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
         fun main(args: Array<String>) {
             val logic = DumboOctopusGame()
             val engine = GameEngine(windowTitle = "Dumbo Octopus", width = 1200, height = 800, vSync = true, gameLogic = logic, targetUPS = 2000)
-            Configuration.DEBUG.set(true)
+            imgui.DEBUG = false
+            Configuration.DEBUG.set(false)
             engine.run()
         }
     }
