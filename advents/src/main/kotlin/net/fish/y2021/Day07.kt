@@ -29,9 +29,9 @@ object Day07 : Day {
         }
     }
 
-    private fun fuelCost(pos: Int, positions: List<Int>): Int = positions.sumBy { abs(it - pos) }
+    private fun fuelCost(pos: Int, positions: List<Int>): Int = positions.sumOf { abs(it - pos) }
 
-    private fun fuelCost2(pos: Int, positions: List<Int>): Int = positions.sumBy {
+    private fun fuelCost2(pos: Int, positions: List<Int>): Int = positions.sumOf {
         val diff = abs(it - pos)
         diff * (diff + 1) / 2
     }

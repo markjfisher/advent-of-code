@@ -16,7 +16,7 @@ object Day07 : Day {
             // EDIT: this rule would work, but using 2 is easier to process.
             // val fullExtractor = Regex("""([\p{Alpha} ]+) bags contain|(\d+) ([\p{Alpha} ]+) bag""")
             val bagExtractor = Regex("""^([\p{Alpha} ]+) bags contain""")
-            val rulesExtractor = Regex("""([\d]+) ([\p{Alpha} ]+) bag""")
+            val rulesExtractor = Regex("""(\d+) ([\p{Alpha} ]+) bag""")
 
             val bag = bagExtractor.find(bagRule)?.destructured!!.let { (n) -> Bag(name = n) }
             val contains = rulesExtractor.findAll(bagRule).map { it.destructured.let { (num, bagName) -> Contain(num = num.toInt(), bag = Bag(bagName)) } }.toList()
@@ -41,7 +41,7 @@ object Day07 : Day {
     private fun containedInBag(bag: Bag, rules: List<Rule>): Int {
         val rule = findRuleForBag(bag, rules)
         if (rule.contains.isEmpty()) return 0
-        return rule.contains.sumBy {
+        return rule.contains.sumOf {
             it.num * (1 + containedInBag(it.bag, rules))
         }
     }

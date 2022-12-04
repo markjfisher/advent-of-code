@@ -29,7 +29,6 @@ object Day04 : Day {
         println(part1())
         println(part2())
     }
-
 }
 
 fun IntRange.fullyContains(t: IntRange): Boolean = this.first <= t.first && this.last >= t.last

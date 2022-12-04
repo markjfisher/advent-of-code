@@ -9,10 +9,10 @@ object Day24 : Day {
     private val data = resourceLines(2021, 24)
 
     override fun part1() = doPart1(data)
-    override fun part2() = doPart2(data)
+    override fun part2() = doPart2()
 
     fun doPart1(data: List<String>): Pair<Long, Long> = solve(data)
-    fun doPart2(data: List<String>) = 0L
+    fun doPart2() = 0L
 
     // Pencil and paper originally - until did the solution version.
     //    fun doPart1(data: List<String>): Long = 53999995829399L

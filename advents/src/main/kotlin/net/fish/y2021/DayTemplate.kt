@@ -9,8 +9,8 @@ object DayTemplate : Day {
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)
 
-    fun doPart1(data: List<String>): Int = 0
-    fun doPart2(data: List<String>): Int = 0
+    fun doPart1(data: List<String>): Int = data.size
+    fun doPart2(data: List<String>): Int = data.size
 
     @JvmStatic
     fun main(args: Array<String>) {

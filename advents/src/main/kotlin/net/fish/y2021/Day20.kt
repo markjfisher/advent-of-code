@@ -31,7 +31,7 @@ object Day20 : Day {
         fun evolve(iterations: Int): TrenchMap {
             var isInfinite = shouldConsiderInfinite
             val bit0 = if(algorithm[0] == '#') "1" else "0"
-            val data = (0 until iterations).foldIndexed(this.imageMap) { i, map, _ ->
+            val data = (0 until iterations).foldIndexed(this.imageMap) { _, map, _ ->
                 val newImageMap = mutableSetOf<Point>()
                 val bounds = map.bounds()
                 for (y in bounds.first.y - 1..bounds.second.y + 1) {

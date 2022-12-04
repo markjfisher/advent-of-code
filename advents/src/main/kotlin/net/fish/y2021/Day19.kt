@@ -53,7 +53,7 @@ object Day19 : Day {
     }
 
     override fun part1() = doPart1(scanners)
-    override fun part2() = doPart2(scanners)
+    override fun part2() = doPart2()
 
     fun doPart1(scanners: List<Scanner>): Pair<Int, Int> {
         val solution = solve(scanners)
@@ -69,7 +69,7 @@ object Day19 : Day {
         return Pair(count, maxDist)
     }
 
-    fun doPart2(scanners: List<Scanner>): Int {
+    fun doPart2(): Int {
         // doing it in part1 as there solution is complete there
         return 0
     }

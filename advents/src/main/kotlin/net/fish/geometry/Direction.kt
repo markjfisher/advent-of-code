@@ -34,7 +34,7 @@ enum class Direction {
 
     companion object {
         fun from(s: String) : Direction = from(s.first())
-        fun from(char: Char) : Direction = when(char.toUpperCase()) {
+        fun from(char: Char) : Direction = when(char.uppercaseChar()) {
             'N' -> NORTH
             'S' -> SOUTH
             'E' -> EAST
@@ -48,7 +48,7 @@ enum class Direction {
         }
 
         fun from(c: Char, heading: Direction): Direction {
-            val dir = c.toUpperCase()
+            val dir = c.uppercaseChar()
             return if (dir == 'F') return heading else from(dir)
         }
     }

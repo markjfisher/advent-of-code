@@ -4,14 +4,14 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day23 : Day {
-    private val data = resourceLines(2021, 23)
+    // private val data = resourceLines(2021, 23)
 
-    override fun part1() = doPart1(data)
-    override fun part2() = doPart2(data)
+    override fun part1() = doPart1()
+    override fun part2() = doPart2()
 
     // Solved with paper and pen today
-    fun doPart1(data: List<String>): Int = 14148
-    fun doPart2(data: List<String>): Int = 43814
+    fun doPart1(): Int = 14148
+    fun doPart2(): Int = 43814
 
     @JvmStatic
     fun main(args: Array<String>) {

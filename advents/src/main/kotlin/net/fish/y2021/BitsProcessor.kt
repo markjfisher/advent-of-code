@@ -9,7 +9,7 @@ data class BitsProcessor(
     var currentBit = 0
 
     private fun convertToBinary(): List<Int> {
-        return BigInteger(hexPacket, 16).toString(2).toList().map { it.toInt() - 48 }.toMutableList().also { l ->
+        return BigInteger(hexPacket, 16).toString(2).toList().map { it.code - 48 }.toMutableList().also { l ->
             val zerosToPad = nextBoundary(l.size, 8) - l.size
             (0 until zerosToPad).forEach { _ -> l.add(0, 0) }
         }

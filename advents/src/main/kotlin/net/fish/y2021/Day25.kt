@@ -8,10 +8,10 @@ object Day25 : Day {
     private val simulator by lazy { SeaCucumberSimulator(resourceLines(2021, 25)) }
 
     override fun part1() = doPart1(simulator)
-    override fun part2() = doPart2(simulator)
+    override fun part2() = doPart2()
 
     fun doPart1(simulator: SeaCucumberSimulator): Int = simulator.findBlockStep()
-    fun doPart2(simulator: SeaCucumberSimulator): Int = 0
+    fun doPart2(): Int = 0
 
     @JvmStatic
     fun main(args: Array<String>) {
