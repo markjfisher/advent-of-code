@@ -27,7 +27,7 @@ internal class Day05Test {
     @Test
     fun `can do part 1`() {
         val stacks = Day05.toStacks(resourceStrings(path = "/2022/day05-test.txt", trim = false))
-        stacks.processStacks(M9000)
+        stacks.processAllInstructions(M9000)
         assertThat(stacks.columns).containsExactlyEntriesOf(mapOf(
             0 to ArrayDeque(listOf('C')),
             1 to ArrayDeque(listOf('M')),
@@ -39,7 +39,7 @@ internal class Day05Test {
     @Test
     fun `can do part 2`() {
         val stacks = Day05.toStacks(resourceStrings(path = "/2022/day05-test.txt", trim = false))
-        stacks.processStacks(M9001)
+        stacks.processAllInstructions(M9001)
         assertThat(stacks.columns).containsExactlyEntriesOf(mapOf(
             0 to ArrayDeque(listOf('M')),
             1 to ArrayDeque(listOf('C')),

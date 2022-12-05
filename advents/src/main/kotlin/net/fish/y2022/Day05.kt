@@ -36,17 +36,31 @@ object Day05 : Day {
     }
 
     enum class MoverModel { M9000, M9001 }
-    data class Instruction(val count: Int, val from: Int, val to: Int)
+
+    sealed class MoverInstruction
+
+    data class Instruction(val count: Int, val from: Int, val to: Int): MoverInstruction()
+    object NoMoreInstructions: MoverInstruction()
+
     data class Stacks(val columns: Map<Int, ArrayDeque<Char>>, val instructions: List<Instruction>) {
-        fun processStacks(model: MoverModel) {
-            instructions.forEach { instruction ->
-                val taken = (0 until instruction.count).map { _ -> columns[instruction.from - 1]!!.removeLast() }
-                (if (model == M9000) taken else taken.reversed()).forEach { c -> columns[instruction.to - 1]!!.addLast(c) }
-            }
+        private var currentInstruction = 0
+        fun processAllInstructions(model: MoverModel) {
+            do {
+                val instruction = move(model)
+            } while (instruction != NoMoreInstructions)
         }
 
         fun tops(): String {
-            return columns.values.map { it.last() }.joinToString("")
+            return columns.entries.sortedBy { it.key }.map { (_, v) -> v.last() }.joinToString("")
+        }
+
+        fun move(model: MoverModel): MoverInstruction {
+            return if (currentInstruction < instructions.size) {
+                val instruction = instructions[currentInstruction++]
+                val taken = (0 until instruction.count).map { _ -> columns[instruction.from - 1]!!.removeLast() }
+                (if (model == M9000) taken else taken.reversed()).forEach { c -> columns[instruction.to - 1]!!.addLast(c) }
+                instruction
+            } else NoMoreInstructions
         }
     }
 
@@ -54,11 +68,11 @@ object Day05 : Day {
     override fun part2() = doPart2(toStacks(resourceStrings(year = 2022, day = 5, trim = false)))
 
     fun doPart1(stacks: Stacks): String {
-        stacks.processStacks(M9000)
+        stacks.processAllInstructions(M9000)
         return stacks.tops()
     }
     fun doPart2(stacks: Stacks): String {
-        stacks.processStacks(M9001)
+        stacks.processAllInstructions(M9001)
         return stacks.tops()
     }
 

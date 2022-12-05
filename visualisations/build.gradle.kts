@@ -92,6 +92,8 @@ dependencies {
     implementation("com.github.kotlin-graphics:gln:$glnVersion")
     implementation("org.joml:joml:$jomlVersion")
 
+    implementation("com.github.ajalt.mordant:mordant:2.0.0-beta9")
+
     implementation(project(":advents"))
 }
 
