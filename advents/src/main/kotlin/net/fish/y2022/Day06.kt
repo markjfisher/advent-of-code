@@ -13,14 +13,8 @@ object Day06 : Day {
     fun doPart2(data: List<Char>): Int = findMarker(data, 14)
 
     fun findMarker(data: List<Char>, sequenceLength: Int): Int {
-        var uniqueLetters = mutableListOf<Char>()
-        data.forEachIndexed { i, c ->
-            if (!uniqueLetters.contains(c)) {
-                uniqueLetters += c
-                if (uniqueLetters.size == sequenceLength) return i + 1
-            } else {
-                uniqueLetters = uniqueLetters.dropWhile { it != c }.drop(1).plus(c).toMutableList()
-            }
+        data.indices.forEach { i ->
+            if (data.subList(i, i + sequenceLength).toSet().size == sequenceLength) return i + sequenceLength
         }
         throw Exception("No solution found")
     }
