@@ -73,7 +73,9 @@ proc unique_count s
         exit
       endif
     next j
-    if not has_c
+    if has_c
+      exit
+    else
       unique$ =+ c$
     endif
   next i
