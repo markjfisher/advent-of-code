@@ -43,8 +43,17 @@ data          b. = "vvrrsprlhqspfmqrsdtdlftsfzrqwdfffbhccvpfdtlptqzllfsbbrfnhjgw
 data          b. = "mqnlnqnjnfpgfvrhsbzhjftmvzrzpqpmlcbnwmbssmvssmmqpvwnsjppdhmnhpntlvqmjnbmtvjnmtbpbzrcfhjfhvztnwrmthbs",
 data          b. = "wwthjddjmsdnjmzhhpjdllgscdrgmhfpljfzsmszqsqqgrznddhfmstzdcqpgztgwwqpvrghtmqlgdddlqqwwwtnpldbqtf"
 
+dim d(15) b.
+
+stime = time
 exec find_marker 4
+etime = time - stime
+? "part1: "; etime/60; "s"
+
+stime = time
 exec find_marker 14
+etime = time - stime
+? "part2: "; etime/60; "s"
 
 proc find_marker seq_len
   p_start = 1
@@ -56,31 +65,28 @@ proc find_marker seq_len
 endproc
 
 proc unique_count s
-  sub$ = ""
+  has_c = 0
   for i = 1 to seq_len
     ' the data is stored as <len>, len * real bytes
     ' so have to skip the length values to get a real index
     idx = i + s + (i+s-1)/100
-    sub$ =+ chr$(inp_dt(idx))
-  next i
-  unique$ = ""
-  for i = 1 to len(sub$)
-    c$ = sub$[i, 1]
-    has_c = 0
-    for j = 1 to len(unique$)
-      if unique$[j, 1] = c$
+    ' copy into our buffer
+    d(i) = inp_dt(idx)
+    ' and test if we have just insert same as a previous entry
+    for j = 1 to i - 1
+      if d(i) = d(j)
         has_c = 1
+      endif
+      if has_c
         exit
       endif
     next j
     if has_c
       exit
-    else
-      unique$ =+ c$
     endif
   next i
-  if len(unique$) = seq_len
-    ? "marker: "; unique$; " at "; s + seq_len
+  if not has_c
+    ? "marker at: "; s + seq_len
     found_seq = 1
   else
     found_seq = 0
