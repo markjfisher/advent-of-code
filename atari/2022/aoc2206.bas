@@ -44,6 +44,7 @@ data          b. = "mqnlnqnjnfpgfvrhsbzhjftmvzrzpqpmlcbnwmbssmvssmmqpvwnsjppdhmn
 data          b. = "wwthjddjmsdnjmzhhpjdllgscdrgmhfpljfzsmszqsqqgrznddhfmstzdcqpgztgwwqpvrghtmqlgdddlqqwwwtnpldbqtf"
 
 dim d(15) b.
+p_start = 1
 
 stime = time
 exec find_marker 4
@@ -90,5 +91,7 @@ proc unique_count s
     found_seq = 1
   else
     found_seq = 0
+    ' we can jump ahead a few more chars if we found a match later on
+    p_start = p_start + j - 1
   endif
 endproc
