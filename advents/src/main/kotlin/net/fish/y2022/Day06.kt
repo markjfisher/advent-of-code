@@ -12,25 +12,21 @@ object Day06 : Day {
     fun doPart1(data: List<Char>): Int = findMarker(data, 4)
     fun doPart2(data: List<Char>): Int = findMarker(data, 14)
 
-    private fun findMarker(data: List<Char>, sequenceLength: Int): Int {
-        val uniqueLetters = mutableListOf<Char>()
+    fun findMarker(data: List<Char>, sequenceLength: Int): Int {
+        var uniqueLetters = mutableListOf<Char>()
         data.forEachIndexed { i, c ->
             if (!uniqueLetters.contains(c)) {
                 uniqueLetters += c
                 if (uniqueLetters.size == sequenceLength) return i + 1
             } else {
-                val x = uniqueLetters.dropWhile { it != c }.drop(1)
-                uniqueLetters.clear()
-                uniqueLetters.addAll(x)
-                uniqueLetters += c
+                uniqueLetters = uniqueLetters.dropWhile { it != c }.drop(1).plus(c).toMutableList()
             }
         }
-        return 0
+        throw Exception("No solution found")
     }
 
     @JvmStatic
     fun main(args: Array<String>) {
-
         println(part1())
         println(part2())
     }
