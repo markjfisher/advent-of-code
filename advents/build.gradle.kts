@@ -43,6 +43,8 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackClassicVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logbackEncoderVersion")
 
+    implementation("com.github.ajalt.mordant:mordant:2.0.0-beta9")
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterEngineVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterEngineVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitJupiterEngineVersion")
@@ -51,6 +53,10 @@ dependencies {
 }
 
 tasks {
+    "build" {
+        dependsOn(shadowJar)
+    }
+
     register("advent2019", JavaExec::class) {
         mainClass.set("net.fish.y2019.AdventOfCode2019")
         classpath = sourceSets["main"].runtimeClasspath
@@ -97,4 +103,13 @@ tasks {
     named<Test>("test") {
         useJUnitPlatform()
     }
+
+//    withType<ShadowJar> {
+//        // <WORKAROUND for="https://github.com/johnrengelman/shadow/issues/448">
+//        configurations = listOf(
+//            project.configurations.implementation.get(),
+//            project.configurations.runtimeOnly.get()
+//        ).onEach { it.isCanBeResolved = true }
+//        // </WORKAROUND>
+//    }
 }

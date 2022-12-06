@@ -1,39 +1,85 @@
 package net.fish
 
+import com.github.ajalt.mordant.rendering.BorderType.Companion.SQUARE
+import com.github.ajalt.mordant.rendering.BorderType.Companion.SQUARE_DOUBLE_SECTION_SEPARATOR
+import com.github.ajalt.mordant.rendering.TextAlign
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.table.Borders
+import com.github.ajalt.mordant.table.ColumnWidth
+import com.github.ajalt.mordant.table.table
+import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.mordant.widgets.EmptyWidget.measure
 import java.time.Duration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlin.system.exitProcess
 
 // Shamelessly lifted from https://github.com/nielsutrecht/adventofcode/blob/master/src/main/kotlin/com/nibado/projects/advent/Runner.kt
 
 object Runner {
-    private const val RESULT_WIDTH = 33
-    private const val TIME_WIDTH = 9
-    private const val SINGLE_ITER = 1
-
     private val dayOfWeek = DateTimeFormatter.ofPattern("EE")
-    private val format = "%6s: %${RESULT_WIDTH}s %${RESULT_WIDTH}s %${TIME_WIDTH}s %${TIME_WIDTH}s %${TIME_WIDTH}s"
 
     fun run(year: Int, days: List<Day>, day: Int = 0) {
-        println(format.format("Day", "Part 1", "Part 2", "Time", "P1", "P2"))
-        if (day == 0) {
-            days.forEach { run(year, it) }
+        val results = if (day == 0) {
+            days.map {
+                run(it)
+            }
         } else {
             if (day < 1 || day > days.size) {
                 println("Day can't be less than 1 or larger than ${days.size}")
-                return
+                exitProcess(1)
             }
-            (0 until SINGLE_ITER).forEach {
-                run(year, days[day - 1])
+            listOf(run(days[day - 1]))
+        }
+
+        val termWidth = System.getenv("AOC_WIDTH")?.toInt() ?: 150
+        val t = Terminal(width = termWidth)
+
+        val tb = table {
+            borderType = SQUARE
+            align = TextAlign.RIGHT
+
+            column(0) {
+                align = TextAlign.RIGHT
+                cellBorders = Borders.NONE
+                style(TextColors.magenta)
+                width = ColumnWidth.Expand(1)
+            }
+            column(1) {
+                width = ColumnWidth.Expand(2)
+            }
+            column(2) {
+                width = ColumnWidth.Expand(2)
+            }
+            column(3) {
+                width = ColumnWidth.Expand(2)
+            }
+            column(4) {
+                width = ColumnWidth.Expand(5)
+            }
+            column(5) {
+                width = ColumnWidth.Expand(5)
+            }
+            header {
+                style(TextColors.magenta)
+                row("", "p1", "p2", "total", "result 1", "result 2")
+            }
+            body {
+                rowStyles(TextColors.white, TextColors.brightWhite)
+                results.forEach { result ->
+                    val date = LocalDate.of(year, 12, result.dayNumber)
+                    val d = "" + result.dayNumber + " " + date.format(dayOfWeek)
+                    row(d, formatDuration(result.d1), formatDuration(result.d2), formatDuration(result.d1 + result.d2), result.p1, result.p2)
+                }
             }
         }
+        t.println(tb)
     }
 
-    private fun run(year: Int, day: Day) {
-        val dayName = day.javaClass.simpleName.replace("Day", "").toInt()
+    private fun run(day: Day): Result {
+        val dayNumber = day.javaClass.simpleName.replace("Day", "").toInt()
 
-        val date = LocalDate.of(year, 12, dayName)
-        // warm up the tests and the JIT compiler. This speeds the final run up massively
+        // warm up the tests and the JIT compiler. This usually speeds the final run up considerably
         repeat((0 until day.warmUps).count()) {
             day.part1()
             day.part2()
@@ -46,8 +92,10 @@ object Runner {
         val p2 = day.part2()
         val dur2 = System.nanoTime() - start2
 
-        println(format.format("" + dayName + " " + date.format(dayOfWeek), p1, p2, formatDuration(System.nanoTime() - start1), formatDuration(dur1), (formatDuration(dur2))))
+        return Result(dayNumber, p1, p2, dur1, dur2)
     }
+
+    data class Result(val dayNumber: Int, val p1: Any, val p2: Any, val d1: Long, val d2: Long)
 }
 
 fun formatDuration(nanos: Long): String {

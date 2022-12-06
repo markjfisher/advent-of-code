@@ -9,6 +9,7 @@ import net.fish.geometry.stepsTo
 import net.fish.geometry.wireManhattanDistance
 
 object Day03 : Day {
+    override val warmUps: Int = 0
     private val wireData = resourceLines(2019, 3)
         .map { wire -> wire.split(",") }
         .map { convertWirePathsToCoordinates(it) }
