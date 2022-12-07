@@ -15,7 +15,7 @@ object Day07 : Day {
 
     fun doPart2(root: AOCDir): Long {
         val requiredToFree = root.size() - 40_000_000L // 30_000_000L - (70_000_000L - root.size())
-        return dfsDirs(root).sortedBy { it.size() }.map { it.size() }.first { it > requiredToFree }
+        return dfsDirs(root).sortedBy { it.size() }.first { it.size() > requiredToFree }.size()
     }
 
     data class AOCFile(val name: String, val size: Long, val parent: AOCDir) {
