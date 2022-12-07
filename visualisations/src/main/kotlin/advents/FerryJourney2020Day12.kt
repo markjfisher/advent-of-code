@@ -23,7 +23,6 @@ import uno.glfw.glfw
 import java.lang.Integer.max
 
 class FerryJourney2020Day12(private val ferryPositions: List<Pair<Int, Int>>) {
-
     var dataPosition = 0.5f
     var animate = false
     var colTrail = Vec4(1.0f, 1.0f, 0.4f, 1.0f)

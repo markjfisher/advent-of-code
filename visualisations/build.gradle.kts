@@ -27,8 +27,10 @@ val mockkVersion: String by project
 val junitJupiterEngineVersion: String by project
 
 val lwjglVersion: String by project
+val glmVersion: String by project
 val glnVersion: String by project
 val jomlVersion: String by project
+val unoVersion: String by project
 
 val lwjglNatives = "natives-" + if (Os.isFamily(Os.FAMILY_WINDOWS)) "windows" else "linux"
 
@@ -81,15 +83,15 @@ dependencies {
     runtimeOnly("org.lwjgl", "lwjgl-stb", classifier = lwjglNatives)
     runtimeOnly("org.lwjgl", "lwjgl-jemalloc", classifier = lwjglNatives)
 
-    // Check https://jitpack.io/#kotlin-graphics/imgui/jitpack-SNAPSHOT for latest version, click "Releases"
-//    val imguiVersion = "-SNAPSHOT"
-    val imguiVersion = "v1.79" // '-SNAPSHOT' not working anymore...
-    implementation("com.github.kotlin-graphics.imgui:core:$imguiVersion")
-    implementation("com.github.kotlin-graphics.imgui:gl:$imguiVersion")
-    implementation("com.github.kotlin-graphics.imgui:glfw:$imguiVersion")
+    // https://github.com/kotlin-graphics/imgui/issues/183
+    implementation("kotlin.graphics:imgui-core:1.79+05")
+    implementation("kotlin.graphics:imgui-gl:1.79+05")
+    implementation("kotlin.graphics:imgui-glfw:1.79+05")
 
     // additional libs
-    implementation("com.github.kotlin-graphics:gln:$glnVersion")
+    implementation("kotlin.graphics:gln:$glnVersion")
+    implementation("kotlin.graphics:glm:$glmVersion")
+    implementation("kotlin.graphics:uno-core:$unoVersion")
     implementation("org.joml:joml:$jomlVersion")
 
     implementation("com.github.ajalt.mordant:mordant:2.0.0-beta9")

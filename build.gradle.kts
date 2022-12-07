@@ -20,7 +20,7 @@ allprojects {
         maven(url = "https://plugins.gradle.org/m2/")
         maven(url = "https://kotlin.bintray.com/kotlinx")
         maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
-        maven(url = "https://jitpack.io")
+        maven(url = "https://raw.githubusercontent.com/kotlin-graphics/mary/master")
     }
 
 }

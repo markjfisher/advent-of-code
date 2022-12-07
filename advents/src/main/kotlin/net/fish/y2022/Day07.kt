@@ -10,29 +10,22 @@ object Day07 : Day {
     override fun part2() = doPart2(root)
 
     fun doPart1(root: AOCDir): Long {
-        val dirList = dfsDirs(root)
-        return dirList.filter { it.size() <= 100000L }.sumOf { it.size() }
+        return dfsDirs(root).filter { it.size() <= 100000L }.sumOf { it.size() }
     }
 
     fun doPart2(root: AOCDir): Long {
-        val unusedSpace = 70_000_000L - root.size()
-        val requiredToFree = 30_000_000L - unusedSpace
+        val requiredToFree = root.size() - 40_000_000L // 30_000_000L - (70_000_000L - root.size())
         return dfsDirs(root).sortedBy { it.size() }.map { it.size() }.first { it > requiredToFree }
     }
 
     data class AOCFile(val name: String, val size: Long, val parent: AOCDir) {
-        override fun toString(): String {
-            return "File[$name]"
-        }
+        override fun toString(): String = "File[$name]"  // To stop recursive problems in debugger
     }
-    data class AOCDir(val name: String, val dirs: MutableList<AOCDir>, val files: MutableList<AOCFile>, val parent: AOCDir? = null) {
-        fun size(): Long {
-            return files.sumOf { it.size } + dirs.sumOf { it.size() }
-        }
 
-        override fun toString(): String {
-            return "Dir[$name]"
-        }
+    data class AOCDir(val name: String, val dirs: MutableList<AOCDir>, val files: MutableList<AOCFile>, val parent: AOCDir? = null) {
+        fun size(): Long = files.sumOf { it.size } + dirs.sumOf { it.size() }
+
+        override fun toString(): String = "Dir[$name]" // To stop recursive problems in debugger
     }
 
     private fun dfsDirs(root: AOCDir): List<AOCDir> {
