@@ -64,14 +64,4 @@ object Day08 : Day {
         println(part1())
         println(part2())
     }
-
-}
-
-fun <T> Sequence<T>.takeWhileInclusive(pred: (T) -> Boolean): Sequence<T> {
-    var shouldContinue = true
-    return takeWhile {
-        val result = shouldContinue
-        shouldContinue = pred(it)
-        result
-    }
 }
