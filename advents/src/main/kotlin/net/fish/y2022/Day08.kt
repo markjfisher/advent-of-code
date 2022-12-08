@@ -38,7 +38,7 @@ object Day08 : Day {
 
         fun viewingDistance(p: Point, d: Direction): Int {
             if (onBoundary(p)) return 0
-            return pointsToBoundaryInDir(p, d).takeWhileInclusive { at(it) < at(p) }.size
+            return pointsToBoundaryInDir(p, d).takeWhileInclusive { at(it) < at(p) }.count()
         }
 
         fun seen(): List<Point> = allPoints().fold(mutableListOf()) { acc, point ->
@@ -53,9 +53,9 @@ object Day08 : Day {
             }
         }
 
-        private fun pointsToBoundaryInDir(p: Point, dir: Direction): List<Point> {
-            if (onBoundary(p)) return emptyList()
-            return generateSequence(p + dir) { it + dir }.takeWhileInclusive { !onBoundary(it) }.toList()
+        private fun pointsToBoundaryInDir(p: Point, dir: Direction): Sequence<Point> {
+            if (onBoundary(p)) return emptySequence()
+            return generateSequence(p + dir) { it + dir }.takeWhileInclusive { !onBoundary(it) }
         }
     }
 
