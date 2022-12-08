@@ -37,7 +37,7 @@ internal class Day08Test {
     fun `scenic points`() {
         val grid = Day08.toTreeGrid(resourcePath("/2022/day08-test.txt"))
         assertThat(grid.bestScenicPoint()).isEqualTo(Point(2, 3))
-        assertThat(grid.heighestScenicScore()).isEqualTo(8L)
+        assertThat(grid.maxScenicScore()).isEqualTo(8L)
     }
 
 }

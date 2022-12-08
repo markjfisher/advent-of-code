@@ -14,7 +14,7 @@ object Day08 : Day {
     override fun part2() = doPart2(grid)
 
     fun doPart1(grid: TreeGrid): Int = grid.seen().size
-    fun doPart2(grid: TreeGrid): Long = grid.heighestScenicScore()
+    fun doPart2(grid: TreeGrid): Long = grid.maxScenicScore()
 
     fun toTreeGrid(data: List<String>): TreeGrid {
         return TreeGrid(GridDataUtils.mapIntPointsFromLines(data))
@@ -32,13 +32,12 @@ object Day08 : Day {
             }
         }
 
-        fun heighestScenicScore() = scenicScore(bestScenicPoint())
-
+        fun maxScenicScore() = scenicScore(bestScenicPoint())
         fun scenicScore(p: Point): Long = viewingDistance(p, Direction.NORTH) * viewingDistance(p, Direction.EAST) * viewingDistance(p, Direction.SOUTH) * viewingDistance(p, Direction.WEST)
 
         fun viewingDistance(p: Point, d: Direction): Long {
             if (onBoundary(p)) return 0L
-            val pointsToEdge = pointsInDir(p, d)
+            val pointsToEdge = pointsToBoundaryInDir(p, d)
             var c = 0L
             var keepGoing = true
             pointsToEdge.forEach {
@@ -55,23 +54,12 @@ object Day08 : Day {
 
         private fun canSee(p: Point): Boolean {
             if (onBoundary(p)) return true
-
-            val pointsToN = pointsInDir(p, Direction.NORTH)
-            if (pointsToN.all { at(it) < at(p) }) return true
-
-            val pointsToE = pointsInDir(p, Direction.EAST)
-            if (pointsToE.all { at(it) < at(p) }) return true
-
-            val pointsToS = pointsInDir(p, Direction.SOUTH)
-            if (pointsToS.all { at(it) < at(p) }) return true
-
-            val pointsToW = pointsInDir(p, Direction.WEST)
-            if (pointsToW.all { at(it) < at(p) }) return true
-
-            return false
+            return listOf(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST).any { d ->
+                pointsToBoundaryInDir(p, d).all { at(it) < at(p) }
+            }
         }
 
-        private fun pointsInDir(p: Point, dir: Direction): List<Point> {
+        private fun pointsToBoundaryInDir(p: Point, dir: Direction): List<Point> {
             if (onBoundary(p)) return emptyList()
 
             val accumulated = mutableListOf<Point>()
