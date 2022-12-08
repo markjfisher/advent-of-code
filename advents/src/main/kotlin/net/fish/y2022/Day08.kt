@@ -1,6 +1,7 @@
 package net.fish.y2022
 
 import net.fish.Day
+import net.fish.collections.takeWhileInclusive
 import net.fish.geometry.Direction
 import net.fish.geometry.Point
 import net.fish.geometry.bounds
@@ -14,37 +15,30 @@ object Day08 : Day {
     override fun part2() = doPart2(grid)
 
     fun doPart1(grid: TreeGrid): Int = grid.seen().size
-    fun doPart2(grid: TreeGrid): Long = grid.maxScenicScore()
+    fun doPart2(grid: TreeGrid): Int = grid.maxScenicScore()
 
     fun toTreeGrid(data: List<String>): TreeGrid {
         return TreeGrid(GridDataUtils.mapIntPointsFromLines(data))
     }
 
     data class TreeGrid(private val gridData: Map<Point, Int>) {
+        private val compassDirs = listOf(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)
         private val boundary: Pair<Point, Point> = gridData.keys.bounds()
-        private fun onBoundary(p: Point): Boolean = p.x == boundary.first.x || p.x == boundary.second.x || p.y == boundary.first.y || p.y == boundary.second.y
-        fun at(p: Point): Int = gridData[p] ?: throw Exception("Unknown point $p")
-        private fun allPoints(): Set<Point> = gridData.keys
+        private fun onBoundary(p: Point): Boolean =
+            p.x == boundary.first.x || p.x == boundary.second.x || p.y == boundary.first.y || p.y == boundary.second.y
 
-        fun bestScenicPoint(): Point = allPoints().maxBy {
-            if (onBoundary(it)) 0L else {
-                scenicScore(it)
-            }
+        private fun allPoints(): Set<Point> = gridData.keys
+        fun at(p: Point): Int = gridData[p] ?: throw Exception("Unknown point $p")
+
+        fun bestScenicPoint(): Point = allPoints().maxBy { scenicScore(it) }
+        fun maxScenicScore() = scenicScore(bestScenicPoint())
+        fun scenicScore(p: Point): Int = compassDirs.fold(1) { ac, d ->
+            ac * viewingDistance(p, d)
         }
 
-        fun maxScenicScore() = scenicScore(bestScenicPoint())
-        fun scenicScore(p: Point): Long = viewingDistance(p, Direction.NORTH) * viewingDistance(p, Direction.EAST) * viewingDistance(p, Direction.SOUTH) * viewingDistance(p, Direction.WEST)
-
-        fun viewingDistance(p: Point, d: Direction): Long {
-            if (onBoundary(p)) return 0L
-            val pointsToEdge = pointsToBoundaryInDir(p, d)
-            var c = 0L
-            var keepGoing = true
-            pointsToEdge.forEach {
-                if (keepGoing) c++
-                if (at(it) >= at(p)) keepGoing = false
-            }
-            return c
+        fun viewingDistance(p: Point, d: Direction): Int {
+            if (onBoundary(p)) return 0
+            return pointsToBoundaryInDir(p, d).takeWhileInclusive { at(it) < at(p) }.size
         }
 
         fun seen(): List<Point> = allPoints().fold(mutableListOf()) { acc, point ->
@@ -54,23 +48,14 @@ object Day08 : Day {
 
         private fun canSee(p: Point): Boolean {
             if (onBoundary(p)) return true
-            return listOf(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST).any { d ->
+            return compassDirs.any { d ->
                 pointsToBoundaryInDir(p, d).all { at(it) < at(p) }
             }
         }
 
         private fun pointsToBoundaryInDir(p: Point, dir: Direction): List<Point> {
             if (onBoundary(p)) return emptyList()
-
-            val accumulated = mutableListOf<Point>()
-            var foundEdge = false
-            var newP = p + dir
-            while(!foundEdge) {
-                accumulated += newP
-                if (onBoundary(newP)) foundEdge = true
-                newP += dir
-            }
-            return accumulated.toList()
+            return generateSequence(p + dir) { it + dir }.takeWhileInclusive { !onBoundary(it) }.toList()
         }
     }
 
@@ -80,4 +65,13 @@ object Day08 : Day {
         println(part2())
     }
 
+}
+
+fun <T> Sequence<T>.takeWhileInclusive(pred: (T) -> Boolean): Sequence<T> {
+    var shouldContinue = true
+    return takeWhile {
+        val result = shouldContinue
+        shouldContinue = pred(it)
+        result
+    }
 }
