@@ -40,10 +40,10 @@ enum class Direction {
             'E' -> EAST
             'W' -> WEST
 
-//            'R' -> EAST
-//            'L' -> WEST
-//            'U' -> NORTH
-//            'D' -> SOUTH
+            'R' -> EAST
+            'L' -> WEST
+            'U' -> NORTH
+            'D' -> SOUTH
             else -> throw IllegalArgumentException("Can't map $char to Direction")
         }
 

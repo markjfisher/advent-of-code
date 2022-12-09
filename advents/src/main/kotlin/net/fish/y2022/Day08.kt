@@ -31,8 +31,13 @@ object Day08 : Day {
     data class TreeGrid(private val gridData: Map<Point, Int>) {
         private val compassDirs = listOf(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)
         private val boundary: Pair<Point, Point> = gridData.keys.bounds()
+        private val width = boundary.second.x
         private val treeColumns = PairCombinations(boundary.second.x + 1).groupBy { it[0] }.values.map { it.map { x -> Point(x[0], x[1]) } }
         private val treeRows = PairCombinations(boundary.second.y + 1).groupBy { it[1] }.values.map { it.map { y -> Point(y[0], y[1]) } }
+
+        // Map<Column/Row number, List<Points in order for that row/column>
+        private val treeColumnsMap = PairCombinations(boundary.second.x + 1).groupBy { it[0] }.map { it.key to it.value.map { x -> Point(x[0], x[1]) } }.toMap()
+        private val treeRowsMap = PairCombinations(boundary.second.x + 1).groupBy { it[1] }.map { it.key to it.value.map { x -> Point(x[0], x[1]) } }.toMap()
 
         private fun allPoints(): Set<Point> = gridData.keys
         private fun onBoundary(p: Point): Boolean = p.x == boundary.first.x || p.x == boundary.second.x || p.y == boundary.first.y || p.y == boundary.second.y
@@ -55,16 +60,21 @@ object Day08 : Day {
             }
         }
 
-        fun maxScenicScore(): Int = allPoints().maxOfOrNull { scenicScore(it) } ?: 0
+        fun maxScenicScore(): Int = allPoints().filter { !onBoundary(it) }.maxOfOrNull { scenicScore(it) } ?: 0
         fun scenicScore(p: Point): Int = compassDirs.map { viewingDistance(p, it) }.reduce(Int::times)
 
         fun viewingDistance(p: Point, d: Direction): Int {
-            if (onBoundary(p)) return 0
             return pointsToBoundaryInDir(p, d).takeWhileInclusive { at(it) < at(p) }.count()
         }
 
-        private fun pointsToBoundaryInDir(p: Point, dir: Direction): Sequence<Point> {
-            return generateSequence(p + dir) { it + dir }.takeWhileInclusive { !onBoundary(it) }
+        private fun pointsToBoundaryInDir(p: Point, dir: Direction): List<Point> {
+            // lookup from our columns or rows instead of calculating, should be quicker
+            return when (dir) {
+                Direction.SOUTH -> treeColumnsMap[p.x]!!.drop(p.y+1)
+                Direction.NORTH -> treeColumnsMap[p.x]!!.take (width - p.y + 1).reversed()
+                Direction.EAST -> treeRowsMap[p.y]!!.drop(p.x + 1)
+                Direction.WEST -> treeRowsMap[p.y]!!.take(width - p.x + 1).reversed()
+            }
         }
     }
 
