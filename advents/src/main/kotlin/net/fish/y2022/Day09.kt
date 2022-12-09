@@ -3,9 +3,11 @@ package net.fish.y2022
 import net.fish.Day
 import net.fish.geometry.Direction
 import net.fish.geometry.Point
+import net.fish.geometry.abs
 import net.fish.geometry.bounds
+import net.fish.geometry.max
+import net.fish.geometry.sign
 import net.fish.resourceLines
-import kotlin.math.abs
 
 object Day09 : Day {
     private val data by lazy { toMovement(resourceLines(2022, 9)) }
@@ -54,40 +56,13 @@ object Day09 : Day {
         }
     }
 
-    private fun processMove(
-        head: Point,
-        tail: Point,
-        tailPositions: MutableSet<Point>
-    ): Point {
-        var knot = tail
-
-        val dx = head.x - knot.x
-        val dy = head.y - knot.y
-        if (abs(dx) > 1 || abs(dy) > 1) {
-            // move for tail
-            knot += when {
-                dx == 2 && dy == 0 -> Point(1, 0)
-                dx == 2 && dy == 1 -> Point(1, 1)
-                dx == 2 && dy == -1 -> Point(1, -1)
-                dx == 0 && dy == 2 -> Point(0, 1)
-                dx == 1 && dy == 2 -> Point(1, 1)
-                dx == -1 && dy == 2 -> Point(-1, 1)
-                dx == -2 && dy == 0 -> Point(-1, 0)
-                dx == -2 && dy == 1 -> Point(-1, 1)
-                dx == -2 && dy == -1 -> Point(-1, -1)
-                dx == 0 && dy == -2 -> Point(0, -1)
-                dx == 1 && dy == -2 -> Point(1, -1)
-                dx == -1 && dy == -2 -> Point(-1, -1)
-                // now we can move more because part 2 can make parent jump diagonally, making distance larger
-                dx == 2 && dy == 2 -> Point(1,1)
-                dx == 2 && dy == -2 -> Point(1, -1)
-                dx == -2 && dy == 2 -> Point(-1, 1)
-                dx == -2 && dy == -2 -> Point(-1, -1)
-                else -> throw Exception("Couldn't process change for dx: $dx, dy: $dy")
-            }
+    fun processMove(head: Point, tail: Point, tailPositions: MutableSet<Point> = mutableSetOf()): Point {
+        fun snap(delta: Point): Point {
+            return if (delta.abs().max() > 1) delta - delta.sign() else delta
         }
-        tailPositions.add(knot)
-        return knot
+        val newTail = head - snap(head - tail)
+        tailPositions.add(newTail)
+        return newTail
     }
 
     private fun showGrid(ps: List<Point>, all: List<Set<Point>>) {

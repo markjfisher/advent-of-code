@@ -5,6 +5,7 @@ import net.fish.geometry.Direction.NORTH
 import net.fish.geometry.Direction.SOUTH
 import net.fish.geometry.Direction.WEST
 import kotlin.math.atan2
+import kotlin.math.sign
 import kotlin.math.sqrt
 
 data class Point(val x: Int, val y: Int): Comparable<Point> {
@@ -23,6 +24,10 @@ data class Point(val x: Int, val y: Int): Comparable<Point> {
         SOUTH -> Point(x, y + 1)
         WEST -> Point(x - 1, y)
     }
+    operator fun unaryMinus() = Point(-x, -y)
+
+    // Treat point as vector here, there's no real difference in maths
+    operator fun minus(other: Point) = Point(x - other.x, y - other.y)
 
     fun angle(target: Point): Double {
         return atan2((target.y - y).toDouble(), (target.x - x).toDouble())
@@ -48,10 +53,10 @@ data class Point(val x: Int, val y: Int): Comparable<Point> {
     }
 }
 
-fun Collection<Point>.minX() = this.map { it.x }.minOrNull()
-fun Collection<Point>.minY() = this.map { it.y }.minOrNull()
-fun Collection<Point>.maxX() = this.map { it.x }.maxOrNull()
-fun Collection<Point>.maxY() = this.map { it.y }.maxOrNull()
+fun Collection<Point>.minX() = this.minOfOrNull { it.x }
+fun Collection<Point>.minY() = this.minOfOrNull { it.y }
+fun Collection<Point>.maxX() = this.maxOfOrNull { it.x }
+fun Collection<Point>.maxY() = this.maxOfOrNull { it.y }
 fun Collection<Point>.bounds() =
     this.fold(listOf(Int.MAX_VALUE, Int.MAX_VALUE, Int.MIN_VALUE, Int.MIN_VALUE)) { list, point ->
         listOf(
@@ -63,3 +68,7 @@ fun Collection<Point>.bounds() =
     }.let { (minX, minY, maxX, maxY) ->
         Point(minX, minY) to Point(maxX, maxY)
     }
+
+fun Point.abs() = Point(kotlin.math.abs(x), kotlin.math.abs(y))
+fun Point.max(): Int = maxOf(x, y)
+fun Point.sign(): Point = Point(x.sign, y.sign)

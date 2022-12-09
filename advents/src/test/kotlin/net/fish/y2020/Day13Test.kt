@@ -42,14 +42,14 @@ class Day13Test {
     @Disabled("just for generating our own input sequences")
     @Test
     fun `generate sequences`() {
-        val largest = (0 until 1000).map {
+        val largest = (0 until 1000).maxOf {
             // val pattern = Day13.generateInput(8, 5)
             val pattern = Day13.generateInput(78, 9)
             print("$pattern -> ")
             val output = Day13.doPart2(pattern)
             println(output)
             output
-        }.maxOrNull()!!
+        }
         println("largest: $largest")
     }
 }
