@@ -13,12 +13,8 @@ object Day09 : Day {
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)
 
-    fun doPart1(data: List<RopeMove>): Int {
-        return processMoves(moves = data, knotCount = 2).last().count()
-    }
-    fun doPart2(data: List<RopeMove>): Int {
-        return processMoves(moves = data, knotCount = 10).last().count()
-    }
+    fun doPart1(data: List<RopeMove>): Int = processMoves(moves = data, knotCount = 2).last().count()
+    fun doPart2(data: List<RopeMove>): Int = processMoves(moves = data, knotCount = 10).last().count()
 
     data class RopeMove(val dir: Direction, val steps: Int)
 
@@ -100,8 +96,8 @@ object Day09 : Day {
         for (y in bounds.first.y ..  bounds.second.y) {
             for (x in bounds.first.x .. bounds.second.x) {
                 val p = Point(x, y)
-                val d = if (ps.contains(p)) {
-                    when (p) {
+                val d = when {
+                    ps.contains(p) -> when (p) {
                         ps[0] -> "H"
                         ps[1] -> "1"
                         ps[2] -> "2"
@@ -114,10 +110,8 @@ object Day09 : Day {
                         ps[9] -> "9"
                         else -> throw Exception("!")
                     }
-                } else if (all.last().contains(p)) {
-                    if (p == Point(0, 0)) "s" else "#"
-                } else {
-                    "."
+                    all.last().contains(p) -> if (p == Point(0, 0)) "s" else "#"
+                    else -> "."
                 }
                 print(d)
             }
