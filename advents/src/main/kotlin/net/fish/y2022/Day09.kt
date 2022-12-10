@@ -60,9 +60,7 @@ object Day09 : Day {
         fun snap(delta: Point): Point {
             return if (delta.abs().max() > 1) delta - delta.sign() else delta
         }
-        val newTail = head - snap(head - tail)
-        tailPositions.add(newTail)
-        return newTail
+        return (head - snap(head - tail)).let { tailPositions.add(it); it }
     }
 
     private fun showGrid(ps: List<Point>, all: List<Set<Point>>) {
