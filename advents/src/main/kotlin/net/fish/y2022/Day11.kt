@@ -24,21 +24,15 @@ object Day11 : Day {
     }
 
     data class MultSimbOp(val factor: Int) : SimbOp() {
-        override fun inspect(old: Long): Long {
-            return old * factor
-        }
+        override fun inspect(old: Long): Long = old * factor
     }
 
     data class AddSimbOp(val factor: Int) : SimbOp() {
-        override fun inspect(old: Long): Long {
-            return old + factor
-        }
+        override fun inspect(old: Long): Long = old + factor
     }
 
     object SqSimbOp : SimbOp() {
-        override fun inspect(old: Long): Long {
-            return old * old
-        }
+        override fun inspect(old: Long): Long = old * old
     }
 
     data class Simbiant(
