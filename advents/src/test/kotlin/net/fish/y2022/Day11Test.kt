@@ -18,7 +18,7 @@ internal class Day11Test {
     @Test
     fun `can run simulator 1 rounds`() {
         val simulator = Day11.SimbiantSimulator(Day11.toSimbiants(resourceStrings("/2022/day11-test.txt")))
-        simulator.round()
+        simulator.round(1) { level, _ -> level / 3L }
         assertThat(simulator.simbiants).containsExactlyEntriesOf(mapOf(
             0 to Day11.Simbiant(mutableListOf(20, 23, 27, 26), Day11.MultSimbOp(19), 23, 2, 3, 2),
             1 to Day11.Simbiant(mutableListOf(2080, 25, 167, 207, 401, 1046), Day11.AddSimbOp(6), 19, 2, 0, 4),
@@ -30,7 +30,7 @@ internal class Day11Test {
     @Test
     fun `can run simulator 20 rounds and do part 1`() {
         val simulator = Day11.SimbiantSimulator(Day11.toSimbiants(resourceStrings("/2022/day11-test.txt")))
-        simulator.round(20)
+        simulator.round(20) { level, _ -> level / 3L }
         assertThat(simulator.simbiants).containsExactlyEntriesOf(mapOf(
             0 to Day11.Simbiant(mutableListOf(10, 12, 14, 26, 34), Day11.MultSimbOp(19), 23, 2, 3, 101),
             1 to Day11.Simbiant(mutableListOf(245, 93, 53, 199, 115), Day11.AddSimbOp(6), 19, 2, 0, 95),
@@ -43,24 +43,16 @@ internal class Day11Test {
     @Test
     fun `can run simulator for part 2`() {
         val simulator = Day11.SimbiantSimulator(Day11.toSimbiants(resourceStrings("/2022/day11-test.txt")))
-        simulator.round(1, 1)
+        val p2Worry: (Long, Int) -> Long = { level, modulus -> level % modulus }
+
+        simulator.round(1, p2Worry)
         assertThat(simulator.simbiants.entries.sortedBy { it.key }.map { it.value.inspectedItems }).containsExactly(2, 4, 3, 6)
-        simulator.round(19, 1)
+        simulator.round(19, p2Worry)
         assertThat(simulator.simbiants.entries.sortedBy { it.key }.map { it.value.inspectedItems }).containsExactly(99, 97, 8, 103)
-        simulator.round(1000 - 20 - 10, 1)
-        (0 .. 50).forEach { _ ->
-            println(simulator.simbiants.entries.sortedBy { it.key }.map { it.value.inspectedItems })
-            simulator.round(1)
-        }
-
-
-
-//        assertThat(simulator.simbiants.entries.sortedBy { it.key }.map { it.value.inspectedItems }).containsExactly(5204, 4792, 199, 5192)
-
-
-
-
-//        assertThat(simulator.monkeyBusiness()).isEqualTo(2713310158L)
+        simulator.round(1000 - 20, p2Worry)
+        assertThat(simulator.simbiants.entries.sortedBy { it.key }.map { it.value.inspectedItems }).containsExactly(5204, 4792, 199, 5192)
+        simulator.round(10_000 - 1_000, p2Worry)
+        assertThat(simulator.monkeyBusiness()).isEqualTo(2713310158L)
     }
 
 }
