@@ -49,7 +49,7 @@ object Day10 : Day {
             currentCycle = 0
         }
 
-        fun generateCRT(on: Char = '█', off: Char = ' '): List<String> {
+        fun generateCRT(on: String = "█", off: String = " "): List<String> {
             reset()
             val lines = mutableListOf<String>()
             var currentLine = ""

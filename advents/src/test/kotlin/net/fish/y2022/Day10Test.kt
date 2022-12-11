@@ -45,7 +45,7 @@ internal class Day10Test {
     @Test
     fun `can generate crt`() {
         val computer = Day10.CRTComputer(Day10.toInstructions(resourcePath("/2022/day10b-test.txt")))
-        val lines = computer.generateCRT(on = '#', off = '.')
+        val lines = computer.generateCRT(on = "#", off = ".")
         assertThat(lines).containsExactly(
             "##..##..##..##..##..##..##..##..##..##..",
             "###...###...###...###...###...###...###.",
