@@ -25,7 +25,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.fish.geometry.grid.GridItem
 import net.fish.geometry.grid.GridType
-import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
+import net.fish.geometry.grid.SimpleDataStorage
 import net.fish.geometry.hex.Hex
 import net.fish.geometry.hex.HexConstrainer
 import net.fish.geometry.hex.Orientation.ORIENTATION.POINTY
@@ -41,7 +41,7 @@ import kotlin.random.Random
 
 class ConwayHex2020Day24 : GameLogic, GameWorld<ConwayItemData>(
     allSurfaces = defaultSurfaces,
-    storage = HashMapBackedGridItemDataStorage(),
+    storage = SimpleDataStorage(),
     hud = ConwayHud()
 ) {
     // Input from the original puzzle!

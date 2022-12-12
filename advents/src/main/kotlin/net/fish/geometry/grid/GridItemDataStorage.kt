@@ -13,7 +13,7 @@ interface GridItemDataStorage<T: GridItemData> {
     fun clearAll()
 }
 
-class HashMapBackedGridItemDataStorage<T: GridItemData> : GridItemDataStorage<T> {
+class SimpleDataStorage<T: GridItemData> : GridItemDataStorage<T> {
     private val storage = LinkedHashMap<GridItem, T?>()
 
     override val items: Iterable<GridItem>

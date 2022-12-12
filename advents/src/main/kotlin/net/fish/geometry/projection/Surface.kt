@@ -21,7 +21,7 @@ import net.fish.geometry.paths.SimpleTorusPathCreator
 import net.fish.geometry.paths.ThreeFactorParametricPathCreator
 import net.fish.geometry.paths.TorusKnotPathCreator
 import net.fish.geometry.paths.TrefoilPathCreator
-import net.fish.geometry.square.NonWrappingSquareGrid
+import net.fish.geometry.square.SquareGrid
 import net.fish.geometry.square.PathingSquareSurfaceMapper
 import net.fish.geometry.square.SimpleSquareSurfaceMapper
 import net.fish.geometry.square.WrappingSquareGrid
@@ -49,7 +49,7 @@ data class Surface(
             }
             GridType.NON_WRAPPING_SQUARE -> {
                 val (width, height) = getSquareGridConfig()
-                val grid = NonWrappingSquareGrid(width, height)
+                val grid = SquareGrid(width, height)
                 SimpleSquareSurfaceMapper(grid, scale) // TODO: allow scale to be configured
             }
         }

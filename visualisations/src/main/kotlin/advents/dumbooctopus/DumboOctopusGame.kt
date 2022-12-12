@@ -17,7 +17,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.fish.dumbooctopus.DumboOctopusEngine
 import net.fish.dumbooctopus.Flashing
-import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
+import net.fish.geometry.grid.SimpleDataStorage
 import net.fish.geometry.paths.CameraData
 import net.fish.geometry.paths.PathType
 import net.fish.geometry.projection.Surface
@@ -36,7 +36,7 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
 //        Surface("(Square) 3,7 Torus Knot", mutableMapOf("gridType" to "square", "width" to "800", "height" to "16", "p" to "3", "q" to "7", "a" to "1.0", "b" to "0.2"), PathType.TorusKnot, 0.2f, 5.0f),
 //        Surface("(Square) Simple Grid", mutableMapOf("gridType" to "square", "width" to "10", "height" to "10"), PathType.StaticPoint, 0f, 1f)
     ),
-    storage = HashMapBackedGridItemDataStorage(),
+    storage = SimpleDataStorage(),
     hud = OctopusHud()
 ) {
     // keep the state of the engine

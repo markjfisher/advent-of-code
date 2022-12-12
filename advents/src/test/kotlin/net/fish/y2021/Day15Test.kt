@@ -62,7 +62,7 @@ internal class Day15Test {
             Point(x=6, y=3),
             Point(x=7, y=3),
             Point(x=7, y=4),
-            Point(x=8, y=4),
+            Point(x=7, y=5), // corrected after fixing error in costBasedSquareComparator
             Point(x=8, y=5),
             Point(x=8, y=6),
             Point(x=8, y=7),

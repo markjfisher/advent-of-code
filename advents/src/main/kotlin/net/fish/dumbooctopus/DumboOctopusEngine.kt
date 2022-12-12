@@ -2,13 +2,13 @@ package net.fish.dumbooctopus
 
 import net.fish.geometry.grid.Grid
 import net.fish.geometry.grid.GridItem
-import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
+import net.fish.geometry.grid.SimpleDataStorage
 import net.fish.geometry.square.Square
-import net.fish.geometry.square.SquareGrid
+import net.fish.geometry.square.SquareGridInterface
 
 data class DumboOctopusEngine<T : DumboOctopus>(
     val grid: Grid,
-    val storage: HashMapBackedGridItemDataStorage<T>
+    val storage: SimpleDataStorage<T>
 ) {
     fun step(): Set<Flashing> {
         val flashersThisStep = mutableSetOf<Flashing>()
@@ -72,7 +72,7 @@ data class DumboOctopusEngine<T : DumboOctopus>(
         return (0 until grid.height).fold(emptyList()) { acc, y ->
             acc + (0 until grid.width).fold("") { acc2, x ->
                 val item = when (grid) {
-                    is SquareGrid -> grid.square(x, y) as Square
+                    is SquareGridInterface -> grid.square(x, y) as Square
                     else -> throw Exception("can't handle items not in square yet")
                 }
                 val level = storage.getData(item)!!.energyLevel

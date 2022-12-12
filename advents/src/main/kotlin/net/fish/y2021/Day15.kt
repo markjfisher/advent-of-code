@@ -3,15 +3,15 @@ package net.fish.y2021
 import net.fish.Day
 import net.fish.geometry.Point
 import net.fish.geometry.grid.GridItemData
-import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
-import net.fish.geometry.square.NonWrappingSquareGrid
+import net.fish.geometry.grid.SimpleDataStorage
+import net.fish.geometry.square.SquareGrid
 import net.fish.geometry.square.Square
 import net.fish.resourceLines
 import java.util.PriorityQueue
 import kotlin.math.abs
 
 object Day15 : Day {
-    private val data = resourceLines(2021, 15)
+    private val data by lazy { resourceLines(2021, 15) }
     override val warmUps: Int = 1
 
     override fun part1() = solve(data, 1)
@@ -30,10 +30,10 @@ object Day15 : Day {
         val dataHeight = data.size
         val width = data[0].length * expansions
         val height = data.size * expansions
-        val nonWrappingSquareGrid = NonWrappingSquareGrid(width, height)
+        val squareGrid = SquareGrid(width, height)
         val costMap = GridDataUtils.mapIntPointsFromLines(data)
-        val storage = HashMapBackedGridItemDataStorage<ChitonDataItem>()
-        nonWrappingSquareGrid.items().forEach { square ->
+        val storage = SimpleDataStorage<ChitonDataItem>()
+        squareGrid.items().forEach { square ->
             val x = square.x
             val y = square.y
             val cost = if (x == 0 && y == 0) 0 else {
@@ -45,7 +45,7 @@ object Day15 : Day {
             }
             storage.addItem(square, ChitonDataItem(cost))
         }
-        return ChitonGraph(storage, nonWrappingSquareGrid)
+        return ChitonGraph(storage, squareGrid)
     }
 
     @JvmStatic
@@ -61,12 +61,12 @@ data class ChitonDataItem(
 ): GridItemData
 
 data class ChitonGraph(
-    val storage: HashMapBackedGridItemDataStorage<ChitonDataItem>,
-    val grid: NonWrappingSquareGrid
+    val storage: SimpleDataStorage<ChitonDataItem>,
+    val grid: SquareGrid
 ) {
     private val costBasedSquareComparator = Comparator<RiskSquare> { riskSquare1, riskSquare2 ->
         when (riskSquare2.risk) {
-            riskSquare2.risk -> riskSquare1.square.manhattenDistance().compareTo(riskSquare2.square.manhattenDistance())
+            riskSquare1.risk -> riskSquare1.square.manhattenDistance().compareTo(riskSquare2.square.manhattenDistance())
             else -> riskSquare1.risk.compareTo(riskSquare2.risk)
         }
     }

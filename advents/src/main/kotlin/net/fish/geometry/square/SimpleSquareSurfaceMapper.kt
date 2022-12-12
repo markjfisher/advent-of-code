@@ -3,7 +3,7 @@ package net.fish.geometry.square
 import org.joml.Vector3f
 
 class SimpleSquareSurfaceMapper(
-    grid: NonWrappingSquareGrid,
+    grid: SquareGrid,
     private val scale: Float = 2.0f
 ) : SquareSurfaceMapper(grid) {
 

@@ -11,16 +11,13 @@ import engine.graph.OBJLoader
 import engine.item.GameItem
 import glm_.vec4.Vec4
 import imgui.ImGui
-import net.fish.geometry.Point
-import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
+import net.fish.geometry.grid.SimpleDataStorage
 import net.fish.geometry.paths.CameraData
 import net.fish.geometry.paths.PathType
 import net.fish.geometry.projection.Surface
 import net.fish.geometry.square.Square
 import net.fish.resourceLines
 import net.fish.seacucumber.SeaCucumberEngine
-import net.fish.seacucumber.SeaCucumberFloorSimple
-import net.fish.seacucumber.SeaCucumberFloorValue
 import net.fish.seacucumber.SeaCucumberFloorValue.E
 import net.fish.seacucumber.SeaCucumberFloorValue.EMPTY
 import net.fish.seacucumber.SeaCucumberFloorValue.S
@@ -40,7 +37,7 @@ class SeaCucumberGame : GameLogic, GameWorld<SeaCucumberFloorItemData>(
         Surface("(Square) 3,7 Torus Knot", mutableMapOf("gridType" to "square", "width" to "500", "height" to "86", "p" to "3", "q" to "7", "a" to "1.0", "b" to "0.2"), PathType.TorusKnot, 0.2f, 5.0f),
 
         ),
-    storage = HashMapBackedGridItemDataStorage(),
+    storage = SimpleDataStorage(),
     hud = SeaCucumberHud()
 ) {
     // keep the state of the engine

@@ -41,7 +41,7 @@ import imgui.font.Font
 import mu.KotlinLogging
 import net.fish.geometry.grid.GridItem
 import net.fish.geometry.grid.GridItemData
-import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
+import net.fish.geometry.grid.SimpleDataStorage
 import net.fish.geometry.paths.CameraData
 import net.fish.geometry.paths.CameraPath
 import net.fish.geometry.projection.PathingSurfaceMapper
@@ -63,7 +63,7 @@ abstract class GameWorld<T : GridItemData>(
     val allSurfaces: List<Surface>,
     var surface: Surface = allSurfaces.first().copy(),
     var surfaceMapper: SurfaceMapper = surface.createSurfaceMapper(),
-    val storage: HashMapBackedGridItemDataStorage<T>,
+    val storage: SimpleDataStorage<T>,
     val hud: Hud
 ) {
     abstract fun performStep()

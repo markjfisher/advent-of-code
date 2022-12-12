@@ -9,7 +9,7 @@ import org.joml.Matrix3f
 import org.joml.Vector3f
 
 abstract class SquareSurfaceMapper(
-    var grid: SquareGrid
+    var grid: SquareGridInterface
 ): SurfaceMapper {
     // abstract fun calculateSquareCentres(): Map<Square, Vector3f>
     abstract fun coordinates(item: Square): List<Vector3f>

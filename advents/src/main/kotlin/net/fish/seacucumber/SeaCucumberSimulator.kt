@@ -1,7 +1,7 @@
 package net.fish.seacucumber
 
 import net.fish.geometry.Point
-import net.fish.geometry.grid.HashMapBackedGridItemDataStorage
+import net.fish.geometry.grid.SimpleDataStorage
 import net.fish.geometry.square.WrappingSquareGrid
 import net.fish.seacucumber.SeaCucumberFloorValue.E
 import net.fish.seacucumber.SeaCucumberFloorValue.EMPTY
@@ -10,7 +10,7 @@ import net.fish.y2021.GridDataUtils
 
 class SeaCucumberSimulator(input: List<String>) {
     private var grid: WrappingSquareGrid
-    private var storage: HashMapBackedGridItemDataStorage<SeaCucumberFloorSimple>
+    private var storage: SimpleDataStorage<SeaCucumberFloorSimple>
     var engine: SeaCucumberEngine<SeaCucumberFloorSimple>
 
     init {
@@ -20,11 +20,11 @@ class SeaCucumberSimulator(input: List<String>) {
         engine = SeaCucumberEngine(grid, storage)
     }
 
-    private fun loadInput(input: List<String>): Pair<WrappingSquareGrid, HashMapBackedGridItemDataStorage<SeaCucumberFloorSimple>> {
+    private fun loadInput(input: List<String>): Pair<WrappingSquareGrid, SimpleDataStorage<SeaCucumberFloorSimple>> {
         val width = input[0].length
         val height = input.size
         val wrappingSquareGrid = WrappingSquareGrid(width, height)
-        val storage = HashMapBackedGridItemDataStorage<SeaCucumberFloorSimple>()
+        val storage = SimpleDataStorage<SeaCucumberFloorSimple>()
         val mapOfPoints = GridDataUtils.mapCharPointsFromLines(input)
         wrappingSquareGrid.items().forEach { square ->
             val char = mapOfPoints[Point(square.x, square.y)] ?: throw Exception("Could not find data at point $square")

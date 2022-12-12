@@ -1,11 +1,9 @@
 package net.fish.geometry.square
 
-import net.fish.geometry.grid.Grid
-
 class WrappingSquareGrid(
     override var width: Int,
     override var height: Int
-): SquareConstrainer, SquareGrid {
+): SquareConstrainer, SquareGridInterface {
     init {
         require(width > 2 && height > 2) {
             "Invalid dimensions for square grid. Width and height should be > 2. Given width: $width, height: $height"
