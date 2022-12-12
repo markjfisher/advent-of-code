@@ -49,7 +49,7 @@ data class Point(val x: Int, val y: Int): Comparable<Point> {
     }
 
     fun within(bounds: Pair<Point, Point>): Boolean {
-        return x >= bounds.first.x && x <= bounds.second.x && y >= bounds.first.y && y <= bounds.second.y
+        return x in (bounds.first.x .. bounds.second.x) && y in (bounds.first.y .. bounds.second.y)
     }
 }
 

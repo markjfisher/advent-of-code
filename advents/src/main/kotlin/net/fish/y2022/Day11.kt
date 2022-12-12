@@ -47,9 +47,11 @@ object Day11 : Day {
     fun toSimbiants(data: List<String>): Map<Int, Simbiant> {
         return data.foldIndexed(mutableMapOf()) { index, acc, s ->
             val simbiantData = s.split("\n")
-            val levels =
-                Regex("Starting items: (.*)").find(simbiantData[1])!!.destructured.let { (ds) -> ds }.split(",")
-                    .map { it.trim().toLong() }.toMutableList()
+            val levels = Regex("Starting items: (.*)")
+                .find(simbiantData[1])!!.destructured
+                .let { (ds) -> ds }.split(",")
+                .map { it.trim().toLong() }
+                .toMutableList()
             val op = Regex("Operation: new = old (.*) (.*)").find(simbiantData[2])!!.destructured.let { (f, v) ->
                 when (v) {
                     "old" -> SqSimbOp
