@@ -1,5 +1,7 @@
 package net.fish.y2022
 
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.terminal.Terminal
 import net.fish.Day
 import net.fish.geometry.Direction
 import net.fish.geometry.Point
@@ -9,6 +11,8 @@ import net.fish.y2021.GridDataUtils
 
 object Day12 : Day {
     private val data by lazy { toGrid(resourceLines(2022, 12)) }
+    val t = Terminal()
+    var visualize = false
 
     fun toGrid(input: List<String>, endValue: Int = 26): HillGrid {
         var start = Point(-1, -1)
@@ -68,10 +72,12 @@ object Day12 : Day {
             batch += begin
             val nextBatch = mutableSetOf<Point>()
             while (batch.isNotEmpty()) {
+                if (visualize) display(batch.toSet(), seen.toSet(), distance)
                 batch.forEach { from ->
                     val connected = compassPoints(from) { p -> !seen.contains(p) && canMoveTo(from, p) }
                     connected.forEach { p ->
                         if (isTarget(p)) {
+                            if (visualize) display(setOf(p), seen.toSet(), distance + 1)
                             return distance + 1
                         }
                         seen += p
@@ -84,6 +90,36 @@ object Day12 : Day {
                 distance++
             }
             throw Exception("No solution found")
+        }
+
+        private fun display(highlight: Set<Point>, seen: Set<Point>, distance: Int) {
+            // Could be more efficient by only printing changes, but would need to track them
+            t.println()
+            t.println("Distance: ${TextColors.magenta("" + distance)}")
+            t.cursor.hide(showOnExit = true)
+            (0..boundary.second.y).forEach { y ->
+                (0..boundary.second.x).forEach { x ->
+                    val p = Point(x, y)
+                    val v = when (p) {
+                        start -> "S"
+                        end -> "E"
+                        else -> Char(at(p) + 'a'.code - 1).toString()
+                    }
+                    if (highlight.contains(p)) {
+                        t.print(TextColors.blue(v))
+                    } else if (seen.contains(p)) {
+                        t.print(TextColors.yellow(v))
+                    } else {
+                        t.print(TextColors.brightWhite(v))
+                    }
+                }
+                t.println()
+            }
+            t.cursor.move {
+                up(boundary.second.y + 3)
+                startOfLine()
+            }
+            Thread.sleep(5)
         }
     }
 }

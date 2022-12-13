@@ -1,14 +1,12 @@
 package net.fish
 
 import com.github.ajalt.mordant.rendering.BorderType.Companion.SQUARE
-import com.github.ajalt.mordant.rendering.BorderType.Companion.SQUARE_DOUBLE_SECTION_SEPARATOR
 import com.github.ajalt.mordant.rendering.TextAlign
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.table.Borders
 import com.github.ajalt.mordant.table.ColumnWidth
 import com.github.ajalt.mordant.table.table
 import com.github.ajalt.mordant.terminal.Terminal
-import com.github.ajalt.mordant.widgets.EmptyWidget.measure
 import java.time.Duration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
