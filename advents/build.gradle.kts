@@ -82,6 +82,11 @@ tasks {
         classpath = sourceSets["main"].runtimeClasspath
     }
 
+    register("advent2022day14", JavaExec::class) {
+        mainClass.set("net.fish.y2022.Advent2022Day14")
+        classpath = sourceSets["main"].runtimeClasspath
+    }
+
     named<ShadowJar>("shadowJar") {
         mergeServiceFiles()
     }
