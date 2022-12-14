@@ -15,7 +15,7 @@ object Day14 : Day {
 
     fun doPart1(wallPoints: Set<Point>): Int {
         val simulator = runSimulator(wallPoints, false)
-        return simulator.sand.size
+        return simulator.allPoints.size - simulator.wall.size
     }
 
     fun doPart2(wallPoints: Set<Point>): Int {
@@ -26,7 +26,7 @@ object Day14 : Day {
         val maxLowerFloorX = entryPoint.x + lowerFloorY
         val newWall = wallPoints + (minLowerFloorX .. maxLowerFloorX).map { Point(it, lowerFloorY) }.toSet()
         val simulator = runSimulator(newWall, false)
-        return simulator.sand.size
+        return simulator.allPoints.size - simulator.wall.size
     }
 
     private fun runSimulator(wallPoints: Set<Point>, showGrid: Boolean = false): SandSimulator {
@@ -67,37 +67,33 @@ object Day14 : Day {
         }
     }
 
-    data class SandSimulator(val wall: Set<Point>, val sand: MutableSet<Point> = mutableSetOf()) {
-        // anything that hits outside of this will exit to infinity
+    data class SandSimulator(val wall: Set<Point>, val allPoints: MutableSet<Point> = wall.toMutableSet()) {
         private val boundary = wall.bounds().let { b ->
-            // let lower y boundary if it's outside the walls
-            val y = min(0, b.first.y)
-            Pair(Point(b.first.x, y), b.second)
+            // bring the y boundary up to 0 if not already there
+            Pair(Point(b.first.x, min(0, b.first.y)), b.second)
         }
 
         // returns if a new state changed or not
         fun step(steps: Int = 1): Boolean {
-            // weird if the starting point already has a piece
-            if (sand.contains(entryPoint)) return false
+            if (allPoints.contains(entryPoint)) return false
 
-            var s = 0
-            var keepStepping = true
-            while (s < steps && keepStepping) {
-                keepStepping = moveSand(entryPoint, wall + sand)
-                s++
+            var canContinue = true
+            for (s in 0 until steps) {
+                canContinue = moveSand(entryPoint)
+                if (!canContinue) break
             }
-            return keepStepping
+            return canContinue
         }
 
         // returns if a new sand item settled in grid (true) else it ran off edge (false), and adds to the sand if it did settle (mutates Simulation state)
-        private fun moveSand(p: Point, allPoints: Set<Point>): Boolean {
+        private fun moveSand(p: Point): Boolean {
             // TEST SOUTH
             val sPoint = p + Direction.SOUTH
             if (!sPoint.within(boundary)) {
                 return false
             }
             if (!allPoints.contains(sPoint)) {
-                return moveSand(sPoint, allPoints)
+                return moveSand(sPoint)
             }
 
             // TEST SW
@@ -106,7 +102,7 @@ object Day14 : Day {
                 return false
             }
             if (!allPoints.contains(swPoint)) {
-                return moveSand(swPoint, allPoints)
+                return moveSand(swPoint)
             }
 
             // TEST SE
@@ -115,11 +111,11 @@ object Day14 : Day {
                 return false
             }
             if (!allPoints.contains(sePoint)) {
-                return moveSand(sePoint, allPoints)
+                return moveSand(sePoint)
             }
 
             // we can't move S, SW, or SE, and our point is within our bounds, so it must be at rest
-            sand += p
+            this.allPoints += p
             return true
         }
 
@@ -131,7 +127,7 @@ object Day14 : Day {
                     val p = Point(x, y)
                     currentLine += when {
                         wall.contains(p) -> wallChar
-                        sand.contains(p) -> sandChar
+                        allPoints.contains(p) -> sandChar
                         else -> empty
                     }
                 }

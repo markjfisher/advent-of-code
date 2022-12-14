@@ -8,21 +8,21 @@ import org.junit.jupiter.api.Test
 internal class Day14Test {
     @Test
     fun `can simulate sand movement`() {
-        val simulator = Day14.SandSimulator(Day14.toWallPoints(resourcePath("/2022/day14-test.txt")), mutableSetOf())
+        val simulator = Day14.SandSimulator(Day14.toWallPoints(resourcePath("/2022/day14-test.txt")))
         simulator.step()
-        assertThat(simulator.sand).containsExactly(Point(500, 8))
+        assertThat(simulator.allPoints - simulator.wall).containsExactly(Point(500, 8))
         simulator.step()
-        assertThat(simulator.sand).containsExactly(Point(500, 8), Point(499, 8))
+        assertThat(simulator.allPoints - simulator.wall).containsExactly(Point(500, 8), Point(499, 8))
         simulator.step()
-        assertThat(simulator.sand).containsExactly(Point(500, 8), Point(499, 8), Point(501,8))
+        assertThat(simulator.allPoints - simulator.wall).containsExactly(Point(500, 8), Point(499, 8), Point(501,8))
         simulator.step()
-        assertThat(simulator.sand).containsExactly(Point(500, 8), Point(499, 8), Point(501,8), Point(500, 7))
+        assertThat(simulator.allPoints - simulator.wall).containsExactly(Point(500, 8), Point(499, 8), Point(501,8), Point(500, 7))
         simulator.step()
-        assertThat(simulator.sand).containsExactly(Point(500, 8), Point(499, 8), Point(501,8), Point(500, 7), Point(498, 8))
+        assertThat(simulator.allPoints - simulator.wall).containsExactly(Point(500, 8), Point(499, 8), Point(501,8), Point(500, 7), Point(498, 8))
     }
 
     @Test
-    fun `can simulate mutliple steps and draw output`() {
+    fun `can simulate multiple steps and draw output`() {
         val simulator = Day14.SandSimulator(Day14.toWallPoints(resourcePath("/2022/day14-test.txt")))
         simulator.step(22)
         assertThat(simulator.grid()).containsExactly(
