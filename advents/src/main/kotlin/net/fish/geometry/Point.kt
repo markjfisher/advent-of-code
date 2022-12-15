@@ -51,6 +51,8 @@ data class Point(val x: Int, val y: Int): Comparable<Point> {
     fun within(bounds: Pair<Point, Point>): Boolean {
         return x in (bounds.first.x .. bounds.second.x) && y in (bounds.first.y .. bounds.second.y)
     }
+
+    fun manhattenDistance(other: Point): Int = kotlin.math.abs(x - other.x) + kotlin.math.abs(y - other.y)
 }
 
 fun Collection<Point>.minX() = this.minOfOrNull { it.x }

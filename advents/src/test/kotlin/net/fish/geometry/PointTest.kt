@@ -1,6 +1,5 @@
 package net.fish.geometry
 
-import net.fish.geometry.Point
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.math.sqrt
@@ -65,5 +64,18 @@ internal class PointTest {
 
         assertThat(Point(-1, -1).distance(Point(1, 1))).isEqualTo(2.0 * sqrt(2.0))
         assertThat(Point(1, 1).distance(Point(-1, -1))).isEqualTo(2.0 * sqrt(2.0))
+    }
+
+    @Test
+    fun `manhatten distance between points`() {
+        assertThat(Point(0, 0).manhattenDistance(Point(0, 0))).isEqualTo(0)
+        assertThat(Point(1, 1).manhattenDistance(Point(1, 1))).isEqualTo(0)
+
+        assertThat(Point(0, 0).manhattenDistance(Point(5, 3))).isEqualTo(8)
+        assertThat(Point(0, 0).manhattenDistance(Point(3, 5))).isEqualTo(8)
+        assertThat(Point(5, 3).manhattenDistance(Point(0, 0))).isEqualTo(8)
+        assertThat(Point(3, 5).manhattenDistance(Point(0, 0))).isEqualTo(8)
+
+        assertThat(Point(1, 1).manhattenDistance(Point(-1, -1))).isEqualTo(4)
     }
 }
