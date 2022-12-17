@@ -91,7 +91,7 @@ object Day16 : Day {
         }
         return highestScore.first()
     }
-    
+
     @JvmStatic
     fun main(args: Array<String>) {
         println(part1())
