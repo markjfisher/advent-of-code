@@ -8,7 +8,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 object Day15 : Day {
-    override val warmUps = 0
+    private const val goFasterStripes = true
 
     private val sensorBeaconExtractor = Regex("""Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)""")
     private val data by lazy { toSensorBeacons(resourceLines(2022, 15)) }
@@ -34,11 +34,10 @@ object Day15 : Day {
 
     private fun rowWithGap(sensorBeacons: List<SensorBeacon>, range: IntRange): Pair<Int, List<IntRange>> {
         lateinit var clipped: Set<IntRange>
-        val row = (range.first .. range.last).first { row ->
+        val row = ((if (goFasterStripes) 2948430 else range.first) .. range.last).first { row ->
             clipped = clipRanges(combinedRanges(intervalsAtRow(row, sensorBeacons)), range)
             clipped.size > 1
         }
-        println("row: $row, clipped: $clipped")
         return Pair(row, clipped.sortedBy { it.first })
     }
 
