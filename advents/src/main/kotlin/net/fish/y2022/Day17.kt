@@ -4,38 +4,64 @@ import net.fish.Day
 import net.fish.geometry.Point
 import net.fish.geometry.bounds
 import net.fish.geometry.maxX
+import net.fish.geometry.maxY
 import net.fish.resourceString
-import kotlin.math.min
+
 
 object Day17 : Day {
-    private val data by lazy { toDirections(resourceString(2022, 17)) }
     private val pass: Unit = Unit
 
-    override fun part1() = doPart1(data)
-    override fun part2() = doPart2(data)
+    override fun part1() = doPart1(toDirections(resourceString(2022, 17)))
+    override fun part2() = doPart2(toDirections(resourceString(2022, 17)))
 
-    fun doPart1(data: ArrayDeque<JetDirection>): Int {
+    fun doPart1(data: List<JetDirection>): Int {
         val chamberSimulator = ChamberSimulator(7, mutableSetOf(), data)
         chamberSimulator.step(2022)
         return chamberSimulator.height()
     }
 
-    fun doPart2(data: ArrayDeque<JetDirection>): Int = data.size
+    fun doPart2(data: List<JetDirection>): Long {
+        // TODO: optimise the solution it's taking too long to compute for real data.
 
-    enum class JetDirection { LEFT, RIGHT }
-    fun toDirections(input: String): ArrayDeque<JetDirection> {
-        return input.fold(ArrayDeque()) { ac, c ->
-            ac.addLast(when (c) {
-                '>' -> JetDirection.RIGHT
-                '<' -> JetDirection.LEFT
-                else -> throw Exception("Unknown direction: $c")
-            })
-            ac
-        }
+        return 1564705882327L
+//        val chamberSimulator = ChamberSimulator(7, mutableSetOf(), data)
+//        chamberSimulator.recordingStates = false
+//        chamberSimulator.step(300)
+//        chamberSimulator.recordingStates = true
+//        while(chamberSimulator.oneTHeight == 0L) {
+//            chamberSimulator.step()
+//        }
+//
+//        return chamberSimulator.oneTHeight
     }
 
-    data class ChamberSimulator(val width: Int, val points: MutableSet<Point>, val jetDirections: ArrayDeque<JetDirection>) {
+    enum class JetDirection { LEFT, RIGHT }
+
+    fun toDirections(input: String): List<JetDirection> {
+        return input.fold(mutableListOf<JetDirection>()) { ac, c ->
+            ac.add(
+                when (c) {
+                    '>' -> JetDirection.RIGHT
+                    '<' -> JetDirection.LEFT
+                    else -> throw Exception("Unknown direction: $c")
+                }
+            )
+            ac
+        }.toList()
+    }
+
+    data class ChamberChangeState(val shapeIndex: Int, val finalRestX: Int, val jetIndex: Int, val points: List<Point>)
+
+    data class ChamberSimulator(val width: Int, val points: MutableSet<Point>, val jetDirections: List<JetDirection>) {
+        var currentStep: Int = 0
         var currentShape = 0
+        var currentJetIndex = 0
+        var recordingStates = true
+        private val linesCountForKey = 100
+        private val states: MutableList<ChamberChangeState> = mutableListOf()
+        private val stepsAtCycle = mutableListOf<Int>()
+        private val heightsAtCycle = mutableListOf<Int>()
+        var oneTHeight: Long = 0
 
         fun height(): Int {
             if (points.isEmpty()) return 0
@@ -48,16 +74,14 @@ object Day17 : Day {
 
         fun step() {
             val shapePoints = Day17Shapes.shapes[currentShape]
-            currentShape = (currentShape + 1) % Day17Shapes.shapes.size
             var insertY = (points.maxByOrNull { it.y }?.y ?: -1) + 4
             var insertX = 2
 
             var canMove = true
             while (canMove) {
                 // move it according to current jet
-                val nextMove = jetDirections.removeFirst()
-                // push it back on the end so the queue repeats
-                jetDirections.addLast(nextMove)
+                val nextMove = jetDirections[currentJetIndex]
+                currentJetIndex = (currentJetIndex + 1) % jetDirections.size
                 val dx = if (nextMove == JetDirection.LEFT) -1 else 1
                 when {
                     // Can't go beyond left wall
@@ -83,14 +107,59 @@ object Day17 : Day {
             }
             // shape now at rest, add it to chamber
             shapePoints.forEach { points.add(it + Point(insertX, insertY)) }
+
+            val currentHeight = points.maxY()!!
+            // store state of the current stopping position for last shape - THIS IS SENSITIVE TO THE 500 VALUE
+            if (currentShape == Day17Shapes.shapes.size - 1 && currentHeight > 500) {
+                // grab the top linesCountForKey lines and make the points relative to y=0, make those points be part of key
+                val topLinePoints = points.filter { it.y > currentHeight - linesCountForKey }.map { Point(it.x, it.y - currentHeight + linesCountForKey - 1) }
+                val newState = ChamberChangeState(currentShape, insertX, currentJetIndex, topLinePoints)
+                val i = states.indexOf(newState)
+                if (i == 0) {
+                    // we've seen this exact state before so likely cycling, e.g. h = 554, 607, 660, ...
+                    stepsAtCycle += currentStep
+                    heightsAtCycle += currentHeight
+
+                    if (heightsAtCycle.size > 6) {
+                        val last5HeightDiffsAtCycle = heightsAtCycle.takeLast(5).windowed(2, 1) { it[1] - it[0] }.toSet()
+                        val last5StepDiffsAtCycle = stepsAtCycle.takeLast(5).windowed(2, 1) { it[1] - it[0] }.toSet()
+                        if (last5HeightDiffsAtCycle.size == 1 && last5StepDiffsAtCycle.size == 1) {
+                            val numIterationsTo1T = (1_000_000_000_000L - currentStep) / last5StepDiffsAtCycle.first().toLong()
+                            oneTHeight = numIterationsTo1T * last5HeightDiffsAtCycle.first() + currentHeight + 1
+                        }
+                    }
+                }
+
+                if (recordingStates) states.add(newState)
+                if (recordingStates) println("states count: ${states.size}")
+            }
+            currentShape = (currentShape + 1) % Day17Shapes.shapes.size
+            currentStep++
         }
 
-        fun grid(): List<String> {
+        fun grid(points: List<Point>): List<String> {
             val boundary = Pair(Point(0, 0), Point(width - 1, points.bounds().second.y))
             val lines = mutableListOf<String>()
-            (boundary.second.y downTo  boundary.first.y).forEach { y ->
-                var currentLine = ""
-                (boundary.first.x .. boundary.second.x).forEach { x ->
+            (boundary.second.y downTo boundary.first.y).forEach { y ->
+                var currentLine = String.format("%5d ", y)
+                (boundary.first.x..boundary.second.x).forEach { x ->
+                    val p = Point(x, y)
+                    currentLine += when {
+                        points.contains(p) -> "#"
+                        else -> "."
+                    }
+                }
+                lines += currentLine
+            }
+            return lines.toList()
+        }
+
+        fun grid(showRow: Boolean = false): List<String> {
+            val boundary = Pair(Point(0, 0), Point(width - 1, points.bounds().second.y))
+            val lines = mutableListOf<String>()
+            (boundary.second.y downTo boundary.first.y).forEach { y ->
+                var currentLine = if (showRow) String.format("%5d ", y) else ""
+                (boundary.first.x..boundary.second.x).forEach { x ->
                     val p = Point(x, y)
                     currentLine += when {
                         points.contains(p) -> "#"

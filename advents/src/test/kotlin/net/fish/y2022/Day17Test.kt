@@ -15,9 +15,8 @@ internal class Day17Test {
 
     @Test
     fun `can do part 2`() {
-        val chamberSimulator = Day17.ChamberSimulator(7, mutableSetOf(), Day17.toDirections(resourcePath("/2022/day17-test.txt").first()))
-        chamberSimulator.step(1000000000000L)
-        assertThat(chamberSimulator.height()).isEqualTo(3068)
+        val directions = Day17.toDirections(resourcePath("/2022/day17-test.txt").first())
+        assertThat(Day17.doPart2(directions)).isEqualTo(1514285714288L)
     }
 
     @Test
@@ -44,11 +43,11 @@ internal class Day17Test {
         chamberSimulator.step()
         assertThat(chamberSimulator.points).containsExactlyInAnyOrder(Point(2, 0), Point(3, 0), Point(4, 0), Point(5, 0))
         chamberSimulator.step()
-        assertThat(chamberSimulator.grid()).containsExactly(
-            "...#...",
-            "..###..",
-            "...#...",
-            "..####."
+        assertThat(chamberSimulator.grid(true)).containsExactly(
+            "    3 ...#...",
+            "    2 ..###..",
+            "    1 ...#...",
+            "    0 ..####."
         )
         chamberSimulator.step(8)
         assertThat(chamberSimulator.grid()).containsExactly(
