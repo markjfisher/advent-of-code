@@ -112,6 +112,8 @@ tasks {
 
     named<Test>("test") {
         useJUnitPlatform()
+        minHeapSize = "12G"
+        maxHeapSize = "12G"
     }
 
 //    withType<ShadowJar> {
