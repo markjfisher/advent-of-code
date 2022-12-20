@@ -27,6 +27,9 @@ val junitJupiterEngineVersion: String by project
 
 val jomlVersion: String by project
 
+val orToolsVersion: String by project
+val mordantVersion: String by project
+
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
 
@@ -43,7 +46,8 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackClassicVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logbackEncoderVersion")
 
-    implementation("com.github.ajalt.mordant:mordant:2.0.0-beta9")
+    implementation("com.github.ajalt.mordant:mordant:$mordantVersion")
+    implementation("com.google.ortools:ortools-java:$orToolsVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterEngineVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterEngineVersion")
