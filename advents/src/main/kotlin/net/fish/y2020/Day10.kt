@@ -4,7 +4,7 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day10 : Day {
-    private val joltages = resourceLines(2020, 10).map { it.toInt() }
+    private val joltages by lazy { resourceLines(2020, 10).map { it.toInt() } }
 
     override fun part1() = doPart1(joltages)
     override fun part2() = doPart2(joltages)

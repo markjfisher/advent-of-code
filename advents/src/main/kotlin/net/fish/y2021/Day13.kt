@@ -6,7 +6,7 @@ import net.fish.geometry.bounds
 import net.fish.resourceLines
 
 object Day13 : Day {
-    private val data = resourceLines(2021, 13)
+    private val data by lazy { resourceLines(2021, 13) }
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)

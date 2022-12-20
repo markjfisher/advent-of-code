@@ -8,7 +8,7 @@ import kotlin.math.sign
 
 object Day05 : Day {
     private val vectorExtractor by lazy { Regex("""(\d+),(\d+) -> (\d+),(\d+)""") }
-    private val data = toThermalVectors(resourceLines(2021, 5))
+    private val data by lazy { toThermalVectors(resourceLines(2021, 5)) }
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)

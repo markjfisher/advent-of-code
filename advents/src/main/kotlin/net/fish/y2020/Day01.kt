@@ -6,7 +6,7 @@ import net.fish.maths.combinations
 import net.fish.resourceLines
 
 object Day01 : Day {
-    private val expenses = resourceLines(2020, 1).map { it.toInt() }
+    private val expenses by lazy { resourceLines(2020, 1).map { it.toInt() } }
 
     override fun part1() = doPart1(expenses)
     override fun part2() = doPart2(expenses)

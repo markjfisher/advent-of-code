@@ -4,7 +4,7 @@ import net.fish.Day
 import net.fish.resourceString
 
 object Day04 : Day {
-    private val passports: List<Passport> = toPassports(resourceString(2020, 4))
+    private val passports: List<Passport> by lazy { toPassports(resourceString(2020, 4)) }
 
     override fun part1() = passports.count(Passport::isValidPart1)
     override fun part2() = passports.count(Passport::isValidPart2)
@@ -16,7 +16,7 @@ object Day04 : Day {
     }
 
     fun toPassports(data: String): List<Passport> {
-        val kvExtractor = Regex("""([\p{Alnum}]+):([\p{Alnum}#]+)""")
+        val kvExtractor = Regex("""(\p{Alnum}+):([\p{Alnum}#]+)""")
         return data
             .split("\n\n")
             .map { passportData ->

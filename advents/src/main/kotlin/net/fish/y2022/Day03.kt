@@ -4,7 +4,7 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day03 : Day {
-    private val data = toRucksack(resourceLines(2022, 3))
+    private val data by lazy { toRucksack(resourceLines(2022, 3)) }
 
     fun doPart1(data: List<Rucksack>): Int = data.sumOf { itemScore(it.priorityItem()) }
     fun doPart2(data: List<Rucksack>): Int = createGroups(data).sumOf { itemScore(it.findCommonItem()) }

@@ -4,10 +4,16 @@ import net.fish.Day
 import net.fish.resourceString
 
 object Day05: Day {
-    private val program = resourceString(2019, 5).split(",").map { it.toLong() }
+    private val program by lazy {  resourceString(2019, 5).split(",").map { it.toLong() } }
 
     override fun part1() = AdventComputer(program, listOf(1)).run().outputs.last()
     override fun part2() = AdventComputer(program, listOf(5)).run().out()
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        println(part1())
+        println(part2())
+    }
 
 }
 

@@ -15,7 +15,7 @@ import net.fish.y2020.HEX_DIRECTION.SW
 import net.fish.y2020.HEX_DIRECTION.W
 
 object Day24 : Day {
-    private val data = resourceLines(2020, 24)
+    private val data by lazy { resourceLines(2020, 24) }
 
     private var blackTiles: MutableSet<Pair<Int, Int>> = mutableSetOf()
 

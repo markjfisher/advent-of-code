@@ -4,8 +4,6 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day12 : Day {
-    // private val startCave = parseCaves(resourceLines(2021, 12))
-
     override fun part1() = doPart1()
     override fun part2() = doPart2()
 

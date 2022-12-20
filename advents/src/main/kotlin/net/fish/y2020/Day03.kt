@@ -5,7 +5,7 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day03 : Day {
-    private val forestData = resourceLines(2020, 3)
+    private val forestData by lazy { resourceLines(2020, 3) }
 
     val part1Runs = listOf(Delta(3, 1))
     val part2Runs = listOf(Delta(1, 1), Delta(3, 1), Delta(5, 1), Delta(7, 1), Delta(1, 2))

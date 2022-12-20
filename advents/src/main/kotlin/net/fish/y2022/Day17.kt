@@ -131,7 +131,7 @@ object Day17 : Day {
                 }
 
                 if (recordingStates) states.add(newState)
-                if (recordingStates) println("states count: ${states.size}")
+                // if (recordingStates) println("states count: ${states.size}")
             }
             currentShape = (currentShape + 1) % Day17Shapes.shapes.size
             currentStep++

@@ -10,7 +10,7 @@ import kotlin.math.min
 object Day15 : Day {
     private const val goFasterStripes = true
 
-    private val sensorBeaconExtractor = Regex("""Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)""")
+    private val sensorBeaconExtractor by lazy { Regex("""Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)""") }
     private val data by lazy { toSensorBeacons(resourceLines(2022, 15)) }
 
     override fun part1() = doPart1(data)

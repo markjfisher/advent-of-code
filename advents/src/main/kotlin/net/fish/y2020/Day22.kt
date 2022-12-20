@@ -7,7 +7,7 @@ import net.fish.resourceStrings
 private val logger = KotlinLogging.logger {}
 
 object Day22 : Day {
-    private val game = toGame(resourceStrings(2020, 22))
+    private val game by lazy { toGame(resourceStrings(2020, 22)) }
 
     fun toGame(data: List<String>): Game {
         val playerCards = data.map { playerData ->

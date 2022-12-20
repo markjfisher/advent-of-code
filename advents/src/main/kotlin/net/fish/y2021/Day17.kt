@@ -10,7 +10,7 @@ import kotlin.math.floor
 
 object Day17 : Day {
     private val targetExtractor by lazy { Regex("""target area: x=(\d+)\.\.(\d+), y=(-\d+)\.\.(-\d+)""") }
-    private val target: Target = toTarget(resourceString(2021, 17))
+    private val target: Target by lazy { toTarget(resourceString(2021, 17)) }
 
     fun toTarget(data: String): Target {
         return targetExtractor.find(data)?.destructured!!.let { (x1, x2, y1, y2) -> Target(x1.toInt(), x2.toInt(), y1.toInt(), y2.toInt()) }

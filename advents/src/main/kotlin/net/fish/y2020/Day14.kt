@@ -6,7 +6,7 @@ import net.fish.resourceLines
 import kotlin.math.pow
 
 object Day14 : Day {
-    private val data = resourceLines(2020, 14)
+    private val data by lazy { resourceLines(2020, 14) }
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)

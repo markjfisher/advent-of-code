@@ -7,10 +7,10 @@ import net.fish.resourceLines
 private val logger = KotlinLogging.logger { }
 
 object Day21 : Day {
-    private val recipes = toRecipes(resourceLines(2020, 21))
+    private val recipes by lazy { toRecipes(resourceLines(2020, 21)) }
 
     fun toRecipes(data: List<String>): List<Recipe> {
-        val wordExtractor = Regex("""([\p{Alpha}]+)""")
+        val wordExtractor = Regex("""(\p{Alpha}+)""")
         return data.map { recipe ->
             val words = wordExtractor.findAll(recipe).map { it.destructured.let { (word) -> word } }.toList()
             val ingredients = words.takeWhile { it != "contains" }.toSet()
@@ -68,7 +68,7 @@ object Day21 : Day {
         }
     }
 
-    fun findCommonIngredients(recipe: Recipe, recipes: List<Recipe>): List<String> {
+    private fun findCommonIngredients(recipe: Recipe, recipes: List<Recipe>): List<String> {
         return recipe.ingredients.filter { ingredient ->
             recipes.all { r -> r.ingredients.contains(ingredient) }
         }

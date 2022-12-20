@@ -5,7 +5,7 @@ import net.fish.geometry.Point
 import net.fish.resourceLines
 
 object Day10: Day {
-    private val asteroidBelt = resourceLines(2019, 10).map { it.toCharArray().toList() }
+    private val asteroidBelt by lazy { resourceLines(2019, 10).map { it.toCharArray().toList() } }
 
     // a list of points where asteroids exist, represented by # in data
     fun points(map: List<List<Char>>): List<Point> {
@@ -64,8 +64,10 @@ object Day10: Day {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        println(blastAsteroidsOrder(asteroidBelt, lazer.first)[199])
+        println(part1())
+        println(part2())
     }
+
 }
 
 /*

@@ -5,7 +5,7 @@ import net.fish.resourceString
 import kotlin.math.abs
 
 object Day07 : Day {
-    private val data = resourceString(2021, 7).split(",").map { it.toInt() }
+    private val data by lazy { resourceString(2021, 7).split(",").map { it.toInt() } }
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)

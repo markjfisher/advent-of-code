@@ -5,7 +5,7 @@ import net.fish.resourceLines
 
 object Day02 : Day {
     private val policyExtractor by lazy { Regex("""([0-9]+)-([0-9]+) (.): (.+)""") }
-    private val rules = toRules(resourceLines(2020, 2))
+    private val rules by lazy { toRules(resourceLines(2020, 2)) }
 
     fun toRules(lines: List<String>): List<Rule> = lines.map { line ->
         policyExtractor.find(line)?.destructured!!.let { (a, b, l, p) ->

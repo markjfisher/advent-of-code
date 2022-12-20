@@ -5,7 +5,7 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day03 : Day {
-    private val data = resourceLines(2021, 3)
+    private val data by lazy { resourceLines(2021, 3) }
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)

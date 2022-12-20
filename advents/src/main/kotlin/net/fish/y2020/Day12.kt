@@ -12,7 +12,7 @@ import net.fish.geometry.move
 import net.fish.resourceLines
 
 object Day12 : Day {
-    private val instructions = resourceLines(2020, 12)
+    private val instructions by lazy { resourceLines(2020, 12) }
 
     override fun part1() = manhattenDistance(toPathP1(instructions).last())
     override fun part2() = manhattenDistance(toPathP2(instructions).last())

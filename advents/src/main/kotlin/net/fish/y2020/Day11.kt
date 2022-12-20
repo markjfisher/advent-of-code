@@ -14,7 +14,7 @@ import java.lang.Integer.max
 typealias SeatPlan<T> = Array<Array<T>>
 
 object Day11 : Day {
-    private val seatPlan = toSeatPlan(resourceLines(2020, 11))
+    private val seatPlan by lazy { toSeatPlan(resourceLines(2020, 11)) }
 
     override fun part1() = simulatePassengers(seatPlan, 4, ::around).countOccupied()
     override fun part2() = simulatePassengers(seatPlan, 5, ::canSee).countOccupied()

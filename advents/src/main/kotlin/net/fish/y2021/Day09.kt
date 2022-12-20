@@ -7,7 +7,7 @@ import net.fish.geometry.bounds
 import net.fish.resourceLines
 
 object Day09 : Day {
-    private val grid = toGrid(resourceLines(2021, 9))
+    private val grid by lazy { toGrid(resourceLines(2021, 9)) }
 
     fun toGrid(input: List<String>): Grid {
         return Grid(GridDataUtils.mapIntPointsFromLines(input))

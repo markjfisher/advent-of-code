@@ -5,7 +5,7 @@ import net.fish.resourceLines
 import java.math.BigInteger
 
 object Day13 : Day {
-    private val data = resourceLines(2020, 13)
+    private val data by lazy { resourceLines(2020, 13) }
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data[1])

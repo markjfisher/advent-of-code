@@ -7,12 +7,15 @@ import net.fish.geometry.move
 import net.fish.resourceLines
 import net.fish.geometry.stepsTo
 import net.fish.geometry.wireManhattanDistance
+import net.fish.y2022.Day20
 
 object Day03 : Day {
     override val warmUps: Int = 0
-    private val wireData = resourceLines(2019, 3)
-        .map { wire -> wire.split(",") }
-        .map { convertWirePathsToCoordinates(it) }
+    private val wireData by lazy {
+        resourceLines(2019, 3)
+            .map { wire -> wire.split(",") }
+            .map { convertWirePathsToCoordinates(it) }
+    }
 
     init {
         if (wireData.size != 2) throw Exception("Bad wire data")
@@ -43,6 +46,12 @@ object Day03 : Day {
         return findIntersections(path1, path2)
             .map { intersection -> stepsTo(intersection, path1) + stepsTo(intersection, path2) }
             .minOrNull() ?: 0
+    }
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        println(part1())
+        println(part2())
     }
 
 }

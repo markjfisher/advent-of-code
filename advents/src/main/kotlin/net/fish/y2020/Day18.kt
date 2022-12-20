@@ -7,7 +7,7 @@ import net.fish.y2020.ParserType.EQUAL_PRECEDENCE
 import net.fish.y2020.ParserType.STANDARD
 
 object Day18 : Day {
-    private val data = resourceLines(2020, 18)
+    private val data by lazy { resourceLines(2020, 18) }
 
     override fun part1() = calculateSum(data, EQUAL_PRECEDENCE)
     override fun part2() = calculateSum(data, ADDITION_BEFORE_MULTIPLICATION)

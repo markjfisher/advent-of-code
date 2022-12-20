@@ -7,7 +7,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 object Day16 : Day {
-    private val valveExtractor = Regex("""Valve ([A-Z]+) has flow rate=(\d+); tunnels? leads? to valves? (.*)""")
+    private val valveExtractor by lazy { Regex("""Valve ([A-Z]+) has flow rate=(\d+); tunnels? leads? to valves? (.*)""") }
 
     override fun part1() = doPart1(createNetwork(resourceLines(2022, 16)))
     // override fun part2() = doPart2(createNetwork(resourceLines(2022, 16)))

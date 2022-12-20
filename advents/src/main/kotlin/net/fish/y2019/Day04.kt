@@ -1,6 +1,7 @@
 package net.fish.y2019
 
 import net.fish.Day
+import net.fish.y2022.Day20
 
 object Day04: Day {
 
@@ -51,6 +52,12 @@ object Day04: Day {
         val count = list.takeWhile { it == list[0] }.count()
         counts.add(count)
         return runLengths(list.drop(count), counts)
+    }
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        println(part1())
+        println(part2())
     }
 
 }

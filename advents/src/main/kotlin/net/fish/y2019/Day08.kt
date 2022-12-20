@@ -4,8 +4,8 @@ import net.fish.Day
 import net.fish.resourceString
 
 object Day08: Day {
-    private val pixelData = resourceString(2019, 8).map { it - '0' }
-    private val image = Image.readPixelData(pixelData, 25, 6)
+    private val pixelData by lazy { resourceString(2019, 8).map { it - '0' } }
+    private val image by lazy { Image.readPixelData(pixelData, 25, 6) }
 
     // 2125
     override fun part1() = image.layers
@@ -14,6 +14,12 @@ object Day08: Day {
 
     // JYZHF
     override fun part2() = image.image()
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        println(part1())
+        println(part2())
+    }
 
 }
 

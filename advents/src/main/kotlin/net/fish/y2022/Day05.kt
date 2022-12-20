@@ -6,7 +6,7 @@ import net.fish.y2022.Day05.MoverModel.M9000
 import net.fish.y2022.Day05.MoverModel.M9001
 
 object Day05 : Day {
-    private val movementExtractor = Regex("""move (\d+) from (\d+) to (\d+)""")
+    private val movementExtractor by lazy { Regex("""move (\d+) from (\d+) to (\d+)""") }
 
     fun doPart1(stacks: Stacks): String {
         stacks.processAllInstructions(M9000)

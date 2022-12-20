@@ -4,8 +4,8 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day04 : Day {
-    private val assignmentExtractor = Regex("""(\d+)-(\d+),(\d+)-(\d+)""")
-    private val data = toAssignments(resourceLines(2022, 4))
+    private val assignmentExtractor by lazy { Regex("""(\d+)-(\d+),(\d+)-(\d+)""") }
+    private val data by lazy { toAssignments(resourceLines(2022, 4)) }
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)

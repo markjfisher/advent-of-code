@@ -7,7 +7,7 @@ import java.lang.Exception
 import java.lang.IllegalStateException
 
 object Day08 : Day {
-    private val data = resourceLines(2020, 8)
+    private val data by lazy { resourceLines(2020, 8) }
     val pcLocations = mutableListOf<Int>()
 
     override fun part1() = runPC1(data)

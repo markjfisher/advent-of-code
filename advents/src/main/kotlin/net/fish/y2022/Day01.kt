@@ -4,7 +4,7 @@ import net.fish.Day
 import net.fish.resourceStrings
 
 object Day01 : Day {
-    private val data = totals(resourceStrings(2022, 1))
+    private val data by lazy { totals(resourceStrings(2022, 1)) }
 
     private fun totals(data: List<String>): List<Int> {
         return data.map { elfFoodList ->

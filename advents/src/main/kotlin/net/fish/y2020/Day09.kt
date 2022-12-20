@@ -4,7 +4,7 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day09 : Day {
-    private val data = resourceLines(2020, 9).map { it.toLong() }
+    private val data by lazy { resourceLines(2020, 9).map { it.toLong() } }
     private var part1Result: Long = 0L
 
     override fun part1() = doPart1(data, 25)

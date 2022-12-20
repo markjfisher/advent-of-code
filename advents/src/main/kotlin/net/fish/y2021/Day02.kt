@@ -5,7 +5,7 @@ import net.fish.resourceLines
 
 object Day02 : Day {
     private val instructionExtractor by lazy { Regex("""(forward|up|down) (\d+)""") }
-    private val data = resourceLines(2021, 2)
+    private val data by lazy { resourceLines(2021, 2) }
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)

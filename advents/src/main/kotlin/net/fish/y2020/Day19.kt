@@ -7,14 +7,12 @@ import net.fish.resourceStrings
 private val logger = KotlinLogging.logger { }
 
 object Day19 : Day {
-    private val data = resourceStrings(2020, 19)
-    private val rulesP1 = toRulesMap(data[0])
-    private val rulesP2 = rulesP1 + listOf(8 to "42 | 42 8", 11 to "42 31 | 42 11 31").toMap()
-    private val lines = data[1].split("\n")
+    private val data by lazy { resourceStrings(2020, 19) }
+    private val rulesP1 by lazy { toRulesMap(data[0]) }
+    private val rulesP2 by lazy { rulesP1 + listOf(8 to "42 | 42 8", 11 to "42 31 | 42 11 31").toMap() }
+    private val lines by lazy { data[1].split("\n") }
 
-    fun toRulesMap(d: String): Map<Int, String> = d.split("\n")
-        .map { it.split(":").let { (id, rule) -> id.toInt() to rule.replace("\"", "").trim() } }
-        .toMap()
+    fun toRulesMap(d: String): Map<Int, String> = d.split("\n").associate { it.split(":").let { (id, rule) -> id.toInt() to rule.replace("\"", "").trim() } }
 
     override fun part1() = runPuzzle(rulesP1, lines)
     override fun part2() = runPuzzle(rulesP2, lines)

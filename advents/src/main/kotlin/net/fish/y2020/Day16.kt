@@ -4,9 +4,9 @@ import net.fish.Day
 import net.fish.resourcePath
 
 object Day16 : Day {
-    private val rules = toRules(resourcePath("/2020/day16-1.txt"))
-    private val myTicket = resourcePath("/2020/day16-2.txt").first().split(",").map { it.toInt() }
-    private val otherTickets = resourcePath("/2020/day16-3.txt").map { line -> line.split(",").map { it.toInt() } }
+    private val rules by lazy { toRules(resourcePath("/2020/day16-1.txt")) }
+    private val myTicket by lazy { resourcePath("/2020/day16-2.txt").first().split(",").map { it.toInt() } }
+    private val otherTickets by lazy { resourcePath("/2020/day16-3.txt").map { line -> line.split(",").map { it.toInt() } } }
 
     override fun part1() = doPart1(rules, otherTickets)
     override fun part2() = doPart2(rules, myTicket, otherTickets)

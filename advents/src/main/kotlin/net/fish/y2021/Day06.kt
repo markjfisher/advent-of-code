@@ -5,7 +5,7 @@ import net.fish.maths.CircularArray
 import net.fish.resourceString
 
 object Day06 : Day {
-    private val data = resourceString(2021, 6).split(",").map { it.toInt() }
+    private val data by lazy { resourceString(2021, 6).split(",").map { it.toInt() } }
 
     override fun part1() = doIterations(data, 80)
     override fun part2() = doIterations(data, 256)

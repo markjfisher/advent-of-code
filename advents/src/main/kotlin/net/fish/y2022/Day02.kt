@@ -5,7 +5,7 @@ import net.fish.resourceLines
 import net.fish.y2022.Day02.HandTypes.*
 
 object Day02 : Day {
-    private val data = resourceLines(2022, 2)
+    private val data by lazy { resourceLines(2022, 2) }
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)

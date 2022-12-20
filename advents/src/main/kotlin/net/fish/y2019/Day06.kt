@@ -4,8 +4,8 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day06: Day {
-    private val orbitData = resourceLines(2019, 6)
-    private val graph = createGraph(orbitData)
+    private val orbitData by lazy { resourceLines(2019, 6) }
+    private val graph by lazy { createGraph(orbitData) }
 
     override fun part1() = graph.orbitCounts()
     override fun part2() = graph.traverseCount("YOU", "SAN")
@@ -20,6 +20,12 @@ object Day06: Day {
             Orbit(parent = parent, body = body)
         }
         return Graph(objects = uniqueObjects, orbits = orbits)
+    }
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        println(part1())
+        println(part2())
     }
 
 }

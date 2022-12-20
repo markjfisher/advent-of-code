@@ -5,7 +5,7 @@ import net.fish.geometry.Point
 import net.fish.resourceString
 
 object Day13 : Day {
-    private val program = resourceString(2019, 13).split(",").map { it.toLong() }
+    private val program by lazy { resourceString(2019, 13).split(",").map { it.toLong() } }
 
     override fun part1(): Any {
         val computer = AdventComputer(program).run()

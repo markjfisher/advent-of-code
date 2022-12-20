@@ -51,7 +51,7 @@ the mass of the added fuel?
  */
 
 object Day01: Day {
-    private val modules = resourceLines(2019, 1).map { it.toInt() }
+    private val modules by lazy { resourceLines(2019, 1).map { it.toInt() } }
 
     override fun part1() = calculateFuel(modules)
     override fun part2() = calculateFuelRecursively(modules)
@@ -78,6 +78,12 @@ object Day01: Day {
         if (data.first <= 8) return data.second
         val fuelForMass = data.first / 3 - 2
         return fuelFor(Pair(fuelForMass, data.second + fuelForMass))
+    }
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        println(part1())
+        println(part2())
     }
 
 }

@@ -2,9 +2,10 @@ package net.fish.y2020
 
 import net.fish.Day
 import net.fish.resourceString
+import net.fish.resourceStrings
 
 object Day06 : Day {
-    private val data = resourceString(2020, 6)
+    private val data by lazy { resourceString(2020, 6) }
 
     override fun part1() = listOfUniqueAnswersByGroup(data).sum()
     override fun part2() = listOfCommonAnswersByGroup(data).sum()

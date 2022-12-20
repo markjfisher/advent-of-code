@@ -6,7 +6,7 @@ import kotlin.math.abs
 import kotlin.math.pow
 
 object Day24 : Day {
-    private val data = resourceLines(2021, 24)
+    private val data by lazy { resourceLines(2021, 24) }
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2()

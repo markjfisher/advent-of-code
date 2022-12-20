@@ -4,8 +4,8 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day05 : Day {
-    private val data = resourceLines(2020, 5)
-    private val seatIds = data.map { it.toSeatId() }.sorted()
+    private val data by lazy { resourceLines(2020, 5) }
+    private val seatIds by lazy { data.map { it.toSeatId() }.sorted() }
 
     override fun part1() = seatIds.maxOrNull() ?: 0
     override fun part2() = findSeatId(seatIds)

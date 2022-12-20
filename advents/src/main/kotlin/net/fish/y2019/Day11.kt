@@ -6,7 +6,7 @@ import net.fish.geometry.Point
 import net.fish.geometry.bounds
 
 object Day11: Day {
-    private val program = resourceString(2019, 11).split(",").map { it.toLong() }
+    private val program by lazy { resourceString(2019, 11).split(",").map { it.toLong() } }
 
     override fun part1(): Any {
         return run(0).grid.keys.size

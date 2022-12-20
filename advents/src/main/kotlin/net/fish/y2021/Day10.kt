@@ -4,7 +4,7 @@ import net.fish.Day
 import net.fish.resourceLines
 
 object Day10 : Day {
-    private val data = resourceLines(2021, 10)
+    private val data by lazy { resourceLines(2021, 10) }
     private val bracketScores = mapOf(')' to 3L, ']' to 57L, '}' to 1197L, '>' to 25137L)
     private val closeChars = bracketScores.keys
     private val matchingOpenBracket = mapOf(')' to '(', '}' to '{', ']' to '[', '>' to '<')

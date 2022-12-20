@@ -8,7 +8,7 @@ import net.fish.y2021.Day22.CutPlane.Z
 import org.joml.Vector3i
 
 object Day22 : Day {
-    private val lineExtractor = Regex("""(on|off) x=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)""")
+    private val lineExtractor by lazy { Regex("""(on|off) x=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)""") }
     private val lines: List<CuboidLine> by lazy { toCuboidLines(resourceLines(2021, 22)) }
 
     override fun part1() = doPart1(lines)

@@ -5,7 +5,7 @@ import net.fish.maths.permutations
 import net.fish.resourceString
 
 object Day07: Day {
-    private val program = resourceString(2019, 7).split(",").map { it.toLong() }
+    private val program by lazy {  resourceString(2019, 7).split(",").map { it.toLong() } }
 
     override fun part1() = (0L..4L).toList()
         .permutations()

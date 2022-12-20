@@ -16,7 +16,7 @@ import net.fish.maths.rotateMatrix
 private val logger = KotlinLogging.logger { }
 
 object Day20 : Day {
-    private val tiles = toTiles(resourceStrings(2020, 20))
+    private val tiles by lazy { toTiles(resourceStrings(2020, 20)) }
     lateinit var solution: Map<Point, TileSolution>
 
     fun toTiles(data: List<String>): List<Tile> {

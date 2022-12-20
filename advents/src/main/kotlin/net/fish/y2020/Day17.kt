@@ -13,7 +13,7 @@ import net.fish.resourceLines
 private val logger = KotlinLogging.logger { }
 
 object Day17 : Day {
-    private val data = resourceLines(2020, 17)
+    private val data by lazy { resourceLines(2020, 17) }
 
     fun toCube(data: List<String>, dimensions: Int): ConwayCube {
         val cube = ConwayCube(dimensions = dimensions)

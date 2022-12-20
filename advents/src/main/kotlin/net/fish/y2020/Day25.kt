@@ -6,7 +6,7 @@ import java.math.BigInteger
 
 object Day25 : Day {
     override val warmUps = 2
-    private val publicKeys = resourceLines(2020, 25).map { it.toInt() }
+    private val publicKeys by lazy { resourceLines(2020, 25).map { it.toInt() } }
 
     // override fun part1() = doPart1(publicKeys)
     // override fun part1() = doPart1WithBigIntegers(publicKeys) // takes about

@@ -8,7 +8,7 @@ import kotlin.math.abs
 
 object Day12: Day {
     private val coordinateExtractor by lazy { Regex("""<x=(.+), y=(.+), z=(.+)>""") }
-    private val bodies = toBodies(resourceLines(2019, 12))
+    private val bodies by lazy { toBodies(resourceLines(2019, 12)) }
 
     fun toBodies(lines: List<String>): List<Body> = lines.map { line ->
         coordinateExtractor.find(line)?.destructured!!.let { (x, y, z) -> Body(x.toInt(), y.toInt(), z.toInt()) }
