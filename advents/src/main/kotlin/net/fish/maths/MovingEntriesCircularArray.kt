@@ -1,16 +1,12 @@
 package net.fish.maths
 
-import java.util.*
 import kotlin.math.ceil
 
 data class LongCircArrayEntry(val v: Long, val initIndex: Int)
 
 data class MovingEntriesCircularArray(val initialData: List<Long>) {
-    private var data: LinkedList<LongCircArrayEntry> = LinkedList<LongCircArrayEntry>()
-
-    init {
-        init()
-    }
+    private var data: MutableList<LongCircArrayEntry> = mutableListOf()
+    init { init() }
 
     fun init() {
         data.clear()
@@ -27,8 +23,6 @@ data class MovingEntriesCircularArray(val initialData: List<Long>) {
         val n = if (index < 0 ) ceil(-index.toFloat() / data.size).toInt() else 0
         return data[(index + n * data.size) % data.size].v
     }
-    fun last(): Long = data.last.v
-    fun first(): Long = data.first.v
 
     fun move(entry: LongCircArrayEntry, count: Long) {
         // no movement
@@ -36,11 +30,11 @@ data class MovingEntriesCircularArray(val initialData: List<Long>) {
 
         val currentIndex = data.indexOf(entry)
         val newIndex = currentIndex + count
-        val insertPosition = if (newIndex >= data.size) {
-            newIndex % linkCount
-        } else if (newIndex < 0) {
-            (newIndex % linkCount) + linkCount
-        } else newIndex
+        val insertPosition = when {
+            newIndex >= data.size -> newIndex % linkCount
+            newIndex < 0 -> (newIndex % linkCount) + linkCount
+            else -> newIndex
+        }
 
         data.removeAt(currentIndex)
         data.add(insertPosition.toInt(), entry)

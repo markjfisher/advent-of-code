@@ -11,10 +11,10 @@ object Day20 : Day {
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data.map { it * 811589153 })
 
-    fun doPart1(data: List<Long>): Long = decrypt(data)
-    fun doPart2(data: List<Long>): Long = decrypt(data, 10)
+    fun doPart1(data: List<Long>): Long = coordinates(decrypt(data))
+    fun doPart2(data: List<Long>): Long = coordinates(decrypt(data, 10))
 
-    private fun decrypt(data: List<Long>, iterations: Int = 1): Long {
+    fun decrypt(data: List<Long>, iterations: Int = 1): MovingEntriesCircularArray {
         val circ = MovingEntriesCircularArray(data)
         val entries = data.mapIndexed { i, d -> LongCircArrayEntry(d, i) }
         (1..iterations).forEach { _ ->
@@ -22,11 +22,12 @@ object Day20 : Day {
                 circ.move(e, e.v)
             }
         }
+        return circ
+    }
+
+    private fun coordinates(circ: MovingEntriesCircularArray): Long {
         val indexOfZero = circ.findZero()
-        val i1 = circ.at(indexOfZero + 1000)
-        val i2 = circ.at(indexOfZero + 2000)
-        val i3 = circ.at(indexOfZero + 3000)
-        return i1 + i2 + i3
+        return listOf(1000, 2000, 3000).sumOf { circ.at(indexOfZero + it) }
     }
 
     @JvmStatic
