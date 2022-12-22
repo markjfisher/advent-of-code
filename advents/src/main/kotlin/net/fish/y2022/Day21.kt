@@ -8,9 +8,12 @@ object Day21 : Day {
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)
+    // override fun part2() = doPart2WithSolver(data)
 
     fun doPart1(data: List<String>): Long {
-        return solve("root", parseMonkeys(data).toMutableMap())
+        val monkeys = parseMonkeys(data).toMutableMap()
+        solve("root", monkeys)
+        return (monkeys["root"] as ValueMonkey).value.toLong()
     }
 
     // Use binary search to find answer. First time this ran was rather long to get a decent boundary
@@ -32,10 +35,34 @@ object Day21 : Day {
             if (oldMid == mid) throw Exception("solution not within bounds: $lb, $ub")
             oldMid = mid
             monkeys["humn"] = ValueMonkey("humn", mid.toDouble())
-            val r = solve("root", monkeys)
+            val solved = solve("root", monkeys)
+            if (!solved) throw Exception("can't solve") // TODO not needed yet
+            val r = (monkeys["root"] as ValueMonkey).value.toLong()
             if (r == 0L) return mid
             if (r > 0L) lower = mid else upper = mid
         }
+    }
+
+    // WIP
+    fun doPart2WithSolver(data: List<String>): Long {
+        val monkeys = parseMonkeys(data).toMutableMap()
+        monkeys.remove("humn")
+
+        val root = monkeys["root"] as MathsMonkey
+        val left = root.left
+        val right = root.right
+
+        val canSolveLeft = solve(left, monkeys)
+        val canSolveRight = solve(right, monkeys)
+        if (!canSolveLeft && !canSolveRight) throw Exception("Harder than thought")
+
+        val monkeyToSolve = if(canSolveLeft) right else left
+        val monkeySolved = if(canSolveLeft) left else right
+        val targetValue = (monkeys[monkeySolved] as ValueMonkey).value
+
+        // we have some formula of type
+
+        return 0L
     }
 
     fun parseMonkeys(data: List<String>): Map<String, Monkey> {
@@ -58,9 +85,11 @@ object Day21 : Day {
         }
     }
 
-    fun solve(name: String, monkeys: MutableMap<String, Monkey>): Long {
+    fun solve(name: String, monkeys: MutableMap<String, Monkey>): Boolean {
         var solved = false
-        while(!solved) {
+        var canSolve = true
+        while(!solved && canSolve) {
+            val mathsMonkeyCount = monkeys.count { it.value is MathsMonkey }
             monkeys.forEach { (name, monkey) ->
                 if (monkey is MathsMonkey) {
                     if (monkeys[monkey.left] is ValueMonkey && monkeys[monkey.right] is ValueMonkey) {
@@ -77,9 +106,10 @@ object Day21 : Day {
                     }
                 }
             }
+            if (mathsMonkeyCount == monkeys.count { it.value is MathsMonkey }) canSolve = false
             solved = monkeys[name] is ValueMonkey
         }
-        return (monkeys[name] as ValueMonkey).value.toLong()
+        return solved
     }
 
     @JvmStatic

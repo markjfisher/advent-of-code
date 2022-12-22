@@ -29,6 +29,7 @@ val jomlVersion: String by project
 
 val orToolsVersion: String by project
 val mordantVersion: String by project
+val kEvalVersion: String by project
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -47,7 +48,8 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:$logbackEncoderVersion")
 
     implementation("com.github.ajalt.mordant:mordant:$mordantVersion")
-    implementation("com.google.ortools:ortools-java:$orToolsVersion")
+    // implementation("com.google.ortools:ortools-java:$orToolsVersion")
+    implementation("com.notkamui.libs:keval:$kEvalVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterEngineVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterEngineVersion")

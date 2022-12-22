@@ -250,7 +250,7 @@ data class Jig(
 
         val rotations = angle / 90
         var newMatrix = rotateMatrix(matrix)
-        (0 until (rotations - 1)).forEach { newMatrix = rotateMatrix(newMatrix) }
+        (0 until (rotations - 1)).forEach { _ -> newMatrix = rotateMatrix(newMatrix) }
         val newData = mutableListOf<String>()
         for (i in newMatrix.indices) {
             newData.add(newMatrix[i].joinToString(""))
