@@ -167,7 +167,10 @@ object Day22 : Day {
 
         private fun debugLocation() {
             val dirNum = facingScore(facing)
-            println("$dirNum (${location.x}, ${location.y})")
+            // println("$dirNum (${location.x}, ${location.y})")
+            val (l, d) = Forest.convertToInputShapeCoordinate(location, facing, cubeSize)
+            val n = facingScore(d)
+            println("$n (${l.x}, ${l.y})")
         }
 
         fun move(part: Int = 1, count: Int = 1) {
@@ -355,7 +358,7 @@ object Day22 : Day {
                 return when {
                     point.within(s1) -> Pair(point - Point(size, 0), facing)
                     point.within(s2) -> Pair(rotate270[point - Point(0, size)]!! + Point(0, size * 3), facing.ccw())
-                    point.within(s3) -> Pair(rotate270[point - Point(size, size)]!! + Point(0, size * 2), facing.cw())
+                    point.within(s3) -> Pair(rotate270[point - Point(size, size)]!! + Point(0, size * 2), facing.ccw())
                     point.within(s4) -> Pair(point - Point(size, 0), facing)
                     point.within(s5) -> Pair(point - Point(size, 0), facing)
                     point.within(s6) -> Pair(rotate180[point - Point(3 * size, 2 * size)]!! + Point(2 * size, 0), facing.cw().cw())

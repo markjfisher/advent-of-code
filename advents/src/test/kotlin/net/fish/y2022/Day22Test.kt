@@ -23,7 +23,7 @@ internal class Day22Test {
     @Test
     fun `can do part 2 on test data in input format`() {
         val forest = Day22.toForest(resourceStrings("/2022/day22-test2.txt", trim = false))
-        assertThat(Day22.doPart2(forest, 4)).isEqualTo(10004)
+        assertThat(Day22.doPart2(forest, 4)).isEqualTo(10006)
     }
 
     @Test
@@ -469,7 +469,7 @@ internal class Day22Test {
         // From Test to Input shape
         assertThat(Day22.Forest.convertToInputShapeCoordinate(Point(9, 1), Direction.NORTH, 4)).isEqualTo(Pair(Point(5, 1), Direction.NORTH))
         assertThat(Day22.Forest.convertToInputShapeCoordinate(Point(1, 5), Direction.NORTH, 4)).isEqualTo(Pair(Point(1, 14), Direction.WEST))
-        assertThat(Day22.Forest.convertToInputShapeCoordinate(Point(4, 4), Direction.NORTH, 4)).isEqualTo(Pair(Point(0, 11),  Direction.EAST))
+        assertThat(Day22.Forest.convertToInputShapeCoordinate(Point(4, 4), Direction.NORTH, 4)).isEqualTo(Pair(Point(0, 11),  Direction.WEST))
         assertThat(Day22.Forest.convertToInputShapeCoordinate(Point(9, 5), Direction.NORTH, 4)).isEqualTo(Pair(Point(5, 5),  Direction.NORTH))
         assertThat(Day22.Forest.convertToInputShapeCoordinate(Point(10, 9), Direction.NORTH, 4)).isEqualTo(Pair(Point(6, 9),  Direction.NORTH))
         assertThat(Day22.Forest.convertToInputShapeCoordinate(Point(14, 10), Direction.NORTH, 4)).isEqualTo(Pair(Point(9, 1),  Direction.SOUTH))
