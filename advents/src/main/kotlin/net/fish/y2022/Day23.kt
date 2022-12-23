@@ -30,8 +30,8 @@ object Day23 : Day {
     fun doPart2(elfGrid: ElfGrid): Int {
         do {
             elfGrid.step(1)
-        } while (!elfGrid.checkStatic())
-        return elfGrid.currentIteration + 1
+        } while (!elfGrid.isStatic())
+        return elfGrid.currentIteration
     }
 
     data class ElfGrid(val elves: MutableSet<Point>) {
@@ -47,7 +47,7 @@ object Day23 : Day {
 
         fun step(steps: Int = 1) {
             (0 until steps).forEach { _ ->
-                if (checkStatic()) return
+                if (static) return
                 currentIteration++
                 val proposedMovesMap = mutableMapOf<Point, Point>()
                 // select elves who have no neighbours at all
@@ -71,6 +71,7 @@ object Day23 : Day {
                 commonLocations.forEach { common ->
                     proposedMovesMap.filter { it.value == common }.keys.forEach { proposedMovesMap.remove(it) }
                 }
+                if (proposedMovesMap.isEmpty()) static = true
                 // merge the results back into the elves
                 elves.removeAll(proposedMovesMap.keys)
                 elves.addAll(proposedMovesMap.values)
@@ -79,12 +80,7 @@ object Day23 : Day {
 
         }
 
-        fun checkStatic(): Boolean {
-            if (elves.all { p -> neighbours.none { elves.contains(p + it) } }) {
-                static = true
-            }
-            return static
-        }
+        fun isStatic(): Boolean = static
 
         fun toGrid(p1: Point? = null, p2: Point? = null): List<String> {
             var bounds = elves.bounds()

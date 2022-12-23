@@ -81,7 +81,8 @@ internal class Day23Test {
             ".#.",
             "..."
         ).map { it.toCharArray().toList() })
-        assertThat(elfGrid.checkStatic()).isTrue
+        elfGrid.step()
+        assertThat(elfGrid.isStatic()).isTrue
     }
 
     @Test
@@ -94,7 +95,7 @@ internal class Day23Test {
             "..##.",
             "....."
         ).map { it.toCharArray().toList() })
-        assertThat(elfGrid.checkStatic()).isFalse
+        assertThat(elfGrid.isStatic()).isFalse
         elfGrid.step()
         assertThat(elfGrid.toGrid(Point(0, 0), Point(4, 4))).containsExactly(
             "..##.",
