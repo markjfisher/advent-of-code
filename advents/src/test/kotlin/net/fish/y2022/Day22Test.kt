@@ -21,6 +21,12 @@ internal class Day22Test {
     }
 
     @Test
+    fun `can do part 2 on test data in input format`() {
+        val forest = Day22.toForest(resourceStrings("/2022/day22-test2.txt", trim = false))
+        assertThat(Day22.doPart2(forest, 4)).isEqualTo(10004)
+    }
+
+    @Test
     fun `translated 2nd test data matches original`() {
         val forest1 = Day22.toForest(resourceStrings("/2022/day22-test.txt", trim = false))
         val forest2 = Day22.toForest(resourceStrings("/2022/day22-test2.txt", trim = false))
