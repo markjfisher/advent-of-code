@@ -67,10 +67,11 @@ object Day24 : Day {
 
     private val blizzardStates = mutableMapOf<Int, Map<Point, List<Direction>>>()
     private fun blizzardStateAt(t: Int, w: Int, h: Int): Map<Point, List<Direction>> {
-        if (!blizzardStates.containsKey(t)) {
-            blizzardStates[t] = moveBlizzard(blizzardStates[t - 1]!!, w, h)
+        val i = t % ((w - 2) * (h - 2))
+        if (!blizzardStates.containsKey(i)) {
+            blizzardStates[i] = moveBlizzard(blizzardStates[i - 1]!!, w, h)
         }
-        return blizzardStates[t]!!
+        return blizzardStates[i]!!
     }
 
     private val newLocations = listOf(Point(1, 0), Point(-1, 0), Point(0, 1), Point(0, -1), Point(0, 0))
