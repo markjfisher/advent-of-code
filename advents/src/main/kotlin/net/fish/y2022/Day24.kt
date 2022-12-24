@@ -15,7 +15,10 @@ object Day24 : Day {
         val weatherGrid = toWeatherGrid(data)
         return traverse(weatherGrid)
     }
-    fun doPart2(data: List<String>): Int = data.size
+    fun doPart2(data: List<String>): Int {
+        val weatherGrid = toWeatherGrid(data)
+        return traverse(weatherGrid, 2)
+    }
 
     fun toWeatherGrid(data: List<String>): WeatherGrid {
         val asChars = data.map { it.toCharArray().toList() }
@@ -43,7 +46,7 @@ object Day24 : Day {
         return WeatherGrid(walls, blizzards, start, end, width, height)
     }
 
-    data class WeatherGridState(val p: Point, val t: Int)
+    data class WeatherGridState(val p: Point, val t: Int, val goalsReached: List<Boolean> = listOf())
 
     fun moveBlizzard(state: Map<Point, List<Direction>>, width: Int, height: Int): Map<Point, List<Direction>> {
         return state.entries.fold(mutableMapOf()) { m, (p, dirs) ->
@@ -62,7 +65,7 @@ object Day24 : Day {
     }
 
     private val blizzardStates = mutableMapOf<Int, Map<Point, List<Direction>>>()
-    fun blizzardStateAt(t: Int, w: Int, h: Int): Map<Point, List<Direction>> {
+    private fun blizzardStateAt(t: Int, w: Int, h: Int): Map<Point, List<Direction>> {
         if (!blizzardStates.containsKey(t)) {
             blizzardStates[t] = moveBlizzard(blizzardStates[t - 1]!!, w, h)
         }
@@ -70,7 +73,7 @@ object Day24 : Day {
     }
 
     private val newLocations = listOf(Point(1, 0), Point(-1, 0), Point(0, 1), Point(0, -1), Point(0, 0))
-    fun traverse(grid: WeatherGrid): Int {
+    fun traverse(grid: WeatherGrid, part: Int = 1): Int {
         val initialState = WeatherGridState(grid.start, 0)
         val queue = ArrayDeque<WeatherGridState>()
         queue.addLast(initialState)
@@ -79,16 +82,43 @@ object Day24 : Day {
 
         while (queue.isNotEmpty()) {
             val state = queue.removeFirst()
-            if (seen.contains(state)) continue
-            seen.add(state)
-            val (p, t) = state
+            val seenState = state.copy(goalsReached = mutableListOf())
+            if (seen.contains(seenState)) continue
+            seen.add(seenState)
+            val (p, t, goals) = state
+
+            // fast exit part 2
+            if (p == grid.end && goals.size == 2) return t
+
             val blizzardState = blizzardStateAt(t, grid.width, grid.height)
+
             if (!blizzardState.containsKey(p) && !grid.walls.contains(p) && p.x >= 0 && p.y >= 0 && p.x < grid.width && p.y < grid.height) {
                 // we're in a non-windy spot
                 newLocations.forEach { n ->
                     val newLocation = p + n
-                    if (newLocation == grid.end) return t + 1
-                    queue.addLast(WeatherGridState(newLocation, t + 1))
+                    if (newLocation == grid.end) {
+                        if (part == 1) return t + 1
+                        if (goals.isEmpty()) {
+                            // we made it to end first time, start again heading to start
+                            queue.clear()
+                            val newGoals = goals + true
+                            queue.addLast(WeatherGridState(newLocation, t + 1, newGoals))
+                        } else {
+                            // we're at the end, on our way back, but can't move yet
+                            queue.addLast(WeatherGridState(newLocation, t + 1, goals))
+                        }
+                    } else if (newLocation == grid.start) {
+                        if (goals.size == 1) {
+                            // back at the start, pick up those snacks and head to end again!
+                            queue.clear()
+                            val newGoals = goals + true
+                            queue.addLast(WeatherGridState(newLocation, t + 1, newGoals))
+                        } else {
+                            queue.addLast(WeatherGridState(newLocation, t + 1, goals))
+                        }
+                    } else {
+                        queue.addLast(WeatherGridState(newLocation, t + 1, goals))
+                    }
                 }
             }
         }
@@ -117,30 +147,7 @@ object Day24 : Day {
         return lines.toList()
     }
 
-    data class WeatherGrid(val walls: Set<Point>, val blizzard: Map<Point, List<Direction>>, val start: Point, val end: Point, val width: Int, val height: Int) {
-        fun toGrid(): List<String> {
-            val lines = mutableListOf<String>()
-            for (j in 0 until height) {
-                var row = ""
-                for (i in 0 until width) {
-                    val p = Point(i, j)
-                    row += if (walls.contains(p)) {
-                        "#"
-                    } else if (blizzard.containsKey(p)) {
-                        val dirs = blizzard[p]!!
-                        if (dirs.size == 1) when (dirs[0]) {
-                            Direction.NORTH -> "^"
-                            Direction.SOUTH -> "v"
-                            Direction.EAST -> ">"
-                            Direction.WEST -> "<"
-                        } else dirs.size.toString()
-                    } else "."
-                }
-                lines += row
-            }
-            return lines.toList()
-        }
-    }
+    data class WeatherGrid(val walls: Set<Point>, val blizzard: Map<Point, List<Direction>>, val start: Point, val end: Point, val width: Int, val height: Int)
 
     @JvmStatic
     fun main(args: Array<String>) {

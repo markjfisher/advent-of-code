@@ -21,6 +21,20 @@ internal class Day24Test {
     }
 
     @Test
+    fun `can do part 2`() {
+        val weatherGrid = Day24.toWeatherGrid(listOf(
+            "#.######",
+            "#>>.<^<#",
+            "#.<..<<#",
+            "#>v.><>#",
+            "#<^v^^>#",
+            "######.#"
+        ))
+        val time = Day24.traverse(weatherGrid, 2)
+        assertThat(time).isEqualTo(54)
+    }
+
+    @Test
     fun `can create weather grid`() {
         val weatherGrid = Day24.toWeatherGrid(listOf(
             "#.######",
@@ -30,13 +44,11 @@ internal class Day24Test {
             "#<^v^^>#",
             "######.#"
         ))
-        assertThat(weatherGrid.toGrid()).containsExactly(
-            "#.######",
-            "#>>.<^<#",
-            "#.<..<<#",
-            "#>v.><>#",
-            "#<^v^^>#",
-            "######.#"
+        assertThat(Day24.displayBlizzard(weatherGrid.blizzard, weatherGrid.width, weatherGrid.height)).containsExactly(
+            ">>.<^<",
+            ".<..<<",
+            ">v.><>",
+            "<^v^^>"
         )
         assertThat(weatherGrid.start).isEqualTo(Point(1,0))
         assertThat(weatherGrid.end).isEqualTo(Point(6,5))
@@ -70,7 +82,7 @@ internal class Day24Test {
             "#<^v^^>#",
             "######.#"
         ))
-        var blizzard = Day24.moveBlizzard(weatherGrid.blizzard, weatherGrid.width, weatherGrid.height)
+        val blizzard = Day24.moveBlizzard(weatherGrid.blizzard, weatherGrid.width, weatherGrid.height)
         assertThat(Day24.displayBlizzard(blizzard, weatherGrid.width, weatherGrid.height)).containsExactly(
             ".>3.<.",
             "<..<<.",
