@@ -15,6 +15,7 @@ object Day24 : Day {
         val weatherGrid = toWeatherGrid(data)
         return traverse(weatherGrid)
     }
+
     fun doPart2(data: List<String>): Int {
         val weatherGrid = toWeatherGrid(data)
         return traverse(weatherGrid, 2)
@@ -106,18 +107,11 @@ object Day24 : Day {
                             // we're at the end, on our way back, but can't move yet
                             queue.addLast(WeatherGridState(newLocation, t + 1, goals))
                         }
-                    } else if (newLocation == grid.start) {
-                        if (goals == 1) {
-                            // back at the start, pick up those snacks and head to end again!
-                            queue.clear()
-                            queue.addLast(WeatherGridState(newLocation, t + 1, 2))
-                        } else {
-                            queue.addLast(WeatherGridState(newLocation, t + 1, goals))
-                        }
-                    } else {
-                        if (grid.contains(newLocation)) {
-                            queue.addLast(WeatherGridState(newLocation, t + 1, goals))
-                        }
+                    } else if (newLocation == grid.start && goals == 1) {
+                        queue.clear()
+                        queue.addLast(WeatherGridState(newLocation, t + 1, 2))
+                    } else if (grid.contains(newLocation)) {
+                        queue.addLast(WeatherGridState(newLocation, t + 1, goals))
                     }
                 }
             }
@@ -149,7 +143,7 @@ object Day24 : Day {
 
     data class WeatherGrid(val walls: Set<Point>, val blizzard: Map<Point, List<Direction>>, val start: Point, val end: Point, val width: Int, val height: Int) {
         fun contains(p: Point): Boolean {
-            return !walls.contains(p) && (p == start || p == end || p.within(Pair(Point(1,1),Point(width - 2,height - 2))))
+            return !walls.contains(p) && (p == start || p == end || p.within(Pair(Point(1, 1), Point(width - 2, height - 2))))
         }
     }
 

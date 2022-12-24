@@ -82,12 +82,19 @@ internal class Day24Test {
             "#<^v^^>#",
             "######.#"
         ))
-        val blizzard = Day24.moveBlizzard(weatherGrid.blizzard, weatherGrid.width, weatherGrid.height)
+        var blizzard = Day24.moveBlizzard(weatherGrid.blizzard, weatherGrid.width, weatherGrid.height)
         assertThat(Day24.displayBlizzard(blizzard, weatherGrid.width, weatherGrid.height)).containsExactly(
             ".>3.<.",
             "<..<<.",
             ">2.22.",
             ">v..^<"
+        )
+        blizzard = Day24.moveBlizzard(blizzard, weatherGrid.width, weatherGrid.height)
+        assertThat(Day24.displayBlizzard(blizzard, weatherGrid.width, weatherGrid.height)).containsExactly(
+            ".2>2..",
+            ".^22^<",
+            ".>2.^>",
+            ".>..<."
         )
     }
 }
