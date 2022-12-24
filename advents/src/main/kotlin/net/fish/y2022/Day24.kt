@@ -46,7 +46,7 @@ object Day24 : Day {
         return WeatherGrid(walls, blizzards, start, end, width, height)
     }
 
-    data class WeatherGridState(val p: Point, val t: Int, val goalsReached: List<Boolean> = listOf())
+    data class WeatherGridState(val p: Point, val t: Int, val goalsReached: Int = 0)
 
     fun moveBlizzard(state: Map<Point, List<Direction>>, width: Int, height: Int): Map<Point, List<Direction>> {
         return state.entries.fold(mutableMapOf()) { m, (p, dirs) ->
@@ -77,47 +77,47 @@ object Day24 : Day {
         val initialState = WeatherGridState(grid.start, 0)
         val queue = ArrayDeque<WeatherGridState>()
         queue.addLast(initialState)
-        val seen = mutableSetOf<WeatherGridState>()
+        val seen = mutableSetOf<Pair<Point, Int>>()
         blizzardStates[0] = grid.blizzard
 
         while (queue.isNotEmpty()) {
             val state = queue.removeFirst()
-            val seenState = state.copy(goalsReached = mutableListOf())
-            if (seen.contains(seenState)) continue
-            seen.add(seenState)
             val (p, t, goals) = state
 
+            val seenState = Pair(p, t)
+            if (seen.contains(seenState)) continue
+            seen.add(seenState)
+
             // fast exit part 2
-            if (p == grid.end && goals.size == 2) return t
+            if (p == grid.end && goals == 2) return t
 
             val blizzardState = blizzardStateAt(t, grid.width, grid.height)
-
-            if (!blizzardState.containsKey(p) && !grid.walls.contains(p) && p.x >= 0 && p.y >= 0 && p.x < grid.width && p.y < grid.height) {
-                // we're in a non-windy spot
+            if (!blizzardState.containsKey(p) && grid.contains(p)) {
+                // we're in a valid non-windy spot
                 newLocations.forEach { n ->
                     val newLocation = p + n
                     if (newLocation == grid.end) {
                         if (part == 1) return t + 1
-                        if (goals.isEmpty()) {
+                        if (goals == 0) {
                             // we made it to end first time, start again heading to start
                             queue.clear()
-                            val newGoals = goals + true
-                            queue.addLast(WeatherGridState(newLocation, t + 1, newGoals))
+                            queue.addLast(WeatherGridState(newLocation, t + 1, 1))
                         } else {
                             // we're at the end, on our way back, but can't move yet
                             queue.addLast(WeatherGridState(newLocation, t + 1, goals))
                         }
                     } else if (newLocation == grid.start) {
-                        if (goals.size == 1) {
+                        if (goals == 1) {
                             // back at the start, pick up those snacks and head to end again!
                             queue.clear()
-                            val newGoals = goals + true
-                            queue.addLast(WeatherGridState(newLocation, t + 1, newGoals))
+                            queue.addLast(WeatherGridState(newLocation, t + 1, 2))
                         } else {
                             queue.addLast(WeatherGridState(newLocation, t + 1, goals))
                         }
                     } else {
-                        queue.addLast(WeatherGridState(newLocation, t + 1, goals))
+                        if (grid.contains(newLocation)) {
+                            queue.addLast(WeatherGridState(newLocation, t + 1, goals))
+                        }
                     }
                 }
             }
@@ -147,7 +147,11 @@ object Day24 : Day {
         return lines.toList()
     }
 
-    data class WeatherGrid(val walls: Set<Point>, val blizzard: Map<Point, List<Direction>>, val start: Point, val end: Point, val width: Int, val height: Int)
+    data class WeatherGrid(val walls: Set<Point>, val blizzard: Map<Point, List<Direction>>, val start: Point, val end: Point, val width: Int, val height: Int) {
+        fun contains(p: Point): Boolean {
+            return !walls.contains(p) && (p == start || p == end || p.within(Pair(Point(1,1),Point(width - 2,height - 2))))
+        }
+    }
 
     @JvmStatic
     fun main(args: Array<String>) {
