@@ -6,6 +6,7 @@ import net.fish.geometry.Point
 import net.fish.resourceLines
 
 object Day24 : Day {
+    override val warmUps = 1
     private val data by lazy { resourceLines(2022, 24) }
 
     override fun part1() = doPart1(data)
@@ -143,8 +144,9 @@ object Day24 : Day {
     }
 
     data class WeatherGrid(val walls: Set<Point>, val blizzard: Map<Point, List<Direction>>, val start: Point, val end: Point, val width: Int, val height: Int) {
+        private val bounds = Pair(Point(1, 1), Point(width - 2, height - 2))
         fun contains(p: Point): Boolean {
-            return !walls.contains(p) && (p == start || p == end || p.within(Pair(Point(1, 1), Point(width - 2, height - 2))))
+            return (p == start || p == end || p.within(bounds)) && !walls.contains(p)
         }
     }
 
