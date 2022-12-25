@@ -3,7 +3,9 @@ package net.fish.y2022
 import net.fish.Day
 import net.fish.geometry.Direction
 import net.fish.geometry.Point
+import net.fish.geometry.abs
 import net.fish.resourceLines
+import kotlin.math.sqrt
 
 object Day24 : Day {
     override val warmUps = 1
@@ -76,6 +78,7 @@ object Day24 : Day {
     }
 
     private val newLocations = listOf(Point(1, 0), Point(-1, 0), Point(0, 1), Point(0, -1), Point(0, 0))
+
     fun traverse(grid: WeatherGrid, part: Int = 1): Int {
         val initialState = WeatherGridState(grid.start, 0)
         val queue = ArrayDeque<WeatherGridState>()
@@ -91,17 +94,20 @@ object Day24 : Day {
             if (seen.contains(seenState)) continue
             seen.add(seenState)
 
+            // println("checking p: $p, t: $t, goals: $goals")
+
             // fast exit part 2
             if (p == grid.end && goals == 2) return t
 
             val blizzardState = blizzardStateAt(t, grid.width, grid.height)
-            if (!blizzardState.containsKey(p) && grid.contains(p)) {
+            if (!blizzardState.containsKey(p)) {
                 // we're in a valid non-windy spot
                 newLocations.forEach { n ->
                     val newLocation = p + n
                     if (newLocation == grid.end) {
                         if (part == 1) return t + 1
                         if (goals == 0) {
+                            println("Changed to state 1 at time $t")
                             // we made it to end first time, start again heading to start
                             queue.clear()
                             queue.addLast(WeatherGridState(newLocation, t + 1, 1))
@@ -110,6 +116,7 @@ object Day24 : Day {
                             queue.addLast(WeatherGridState(newLocation, t + 1, goals))
                         }
                     } else if (newLocation == grid.start && goals == 1) {
+                        println("Changed to state 2 at time $t")
                         queue.clear()
                         queue.addLast(WeatherGridState(newLocation, t + 1, 2))
                     } else if (grid.contains(newLocation)) {
@@ -121,6 +128,72 @@ object Day24 : Day {
 
         throw Exception("No solution found")
     }
+
+    // Can't get this to work - attempting to emulate https://gist.github.com/dtinth/f7675dfc0a028e1e65cbfd4b331def58 to be able to use beam search
+    // But it goes wrong!
+    fun traverse2(grid: WeatherGrid, part: Int = 1): Int {
+        val initialState = WeatherGridState(grid.start, 0)
+        val queue = ArrayDeque<WeatherGridState>()
+        queue.addLast(initialState)
+        val seen = mutableSetOf<Pair<Point, Int>>()
+        blizzardStates[0] = grid.blizzard
+
+        while (true) {
+            val newStates = mutableListOf<WeatherGridState>()
+            while (queue.isNotEmpty()) {
+                val state = queue.removeFirst()
+                val (p, t, goals) = state
+
+                val seenState = Pair(p, t)
+                if (seen.contains(seenState)) continue
+                seen.add(seenState)
+
+                // println("checking p: $p, t: $t, goals: $goals")
+
+                // fast exit part 2
+                if (p == grid.end && goals == 2) return t
+
+                val blizzardState = blizzardStateAt(t, grid.width, grid.height)
+
+                var added = 0
+                newLocations.forEach { n ->
+                    val newLocation = p + n
+                    if (grid.contains(newLocation) && !blizzardState.containsKey(newLocation)) {
+                        val newGoals = when {
+                            goals == 0 && newLocation == grid.end -> {
+                                queue.clear()
+                                println("changed to state 1 at time $t")
+                                1
+                            }
+                            goals == 1 && newLocation == grid.start -> {
+                                queue.clear()
+                                println("changed to state 2 at time $t")
+                                2
+                            }
+                            else -> goals
+                        }
+                        newStates.add(WeatherGridState(newLocation, t + 1, newGoals))
+                        added++
+                    }
+                    if (newLocation == grid.end && part == 1) {
+                        return t + 1
+                    }
+//                    if (newLocation == grid.end && part == 2 && goals == 2) {
+//                        return t + 1
+//                    }
+//                    if (newLocation == grid.end && )
+                }
+                // println("Added: $added")
+            }
+            // try and reduce the states by taking beam approach, taking top 50 states
+            // val sorted = newStates.sortedBy { (p, t, goals) -> grid.heuristic(p, t, goals) }
+            // queue.addAll(sorted)
+            queue.addAll(newStates)
+        }
+
+        // throw Exception("No solution found")
+    }
+
 
     fun displayBlizzard(blizzard: Map<Point, List<Direction>>, width: Int, height: Int): List<String> {
         val lines = mutableListOf<String>()
@@ -145,14 +218,21 @@ object Day24 : Day {
 
     data class WeatherGrid(val walls: Set<Point>, val blizzard: Map<Point, List<Direction>>, val start: Point, val end: Point, val width: Int, val height: Int) {
         private val bounds = Pair(Point(1, 1), Point(width - 2, height - 2))
+        private val hypot = sqrt(width.toFloat() * width + height * height).toInt()
         fun contains(p: Point): Boolean {
             return (p == start || p == end || p.within(bounds)) && !walls.contains(p)
+        }
+
+        fun heuristic(location: Point, time: Int, goals: Int): Int {
+            val h = time + ((if (goals == 0) end else start) - location).abs().let { it.x + it.y } + hypot * (if (goals == 0) 2 else 1)
+            // println("p: $location, t: $time, goals: $goals, h: $h")
+            return h
         }
     }
 
     @JvmStatic
     fun main(args: Array<String>) {
-        println(part1())
+        // println(part1())
         println(part2())
     }
 
