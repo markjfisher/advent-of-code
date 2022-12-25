@@ -26,9 +26,9 @@ object Day25 : Day {
 
     fun toSnafu(n: Long): String {
         return if (n == 0L) ""
-        else when (n % 5L) {
-            0L, 1L, 2L -> toSnafu(n / 5L) + fromDigits[n % 5L]
-            3L, 4L -> toSnafu(n / 5L + 1L) + fromDigits[n % 5L - 5L]
+        else when (val m = n % 5L) {
+            0L, 1L, 2L -> toSnafu(n / 5L) + fromDigits[m]
+            3L, 4L -> toSnafu(n / 5L + 1L) + fromDigits[m - 5L]
             else -> throw Exception("modulus fail for $n")
         }
 
