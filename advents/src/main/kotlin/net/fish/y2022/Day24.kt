@@ -107,7 +107,7 @@ object Day24 : Day {
                     if (newLocation == grid.end) {
                         if (part == 1) return t + 1
                         if (goals == 0) {
-                            println("Changed to state 1 at time $t")
+//                            println("Changed to state 1 at time $t")
                             // we made it to end first time, start again heading to start
                             queue.clear()
                             queue.addLast(WeatherGridState(newLocation, t + 1, 1))
@@ -116,7 +116,7 @@ object Day24 : Day {
                             queue.addLast(WeatherGridState(newLocation, t + 1, goals))
                         }
                     } else if (newLocation == grid.start && goals == 1) {
-                        println("Changed to state 2 at time $t")
+//                        println("Changed to state 2 at time $t")
                         queue.clear()
                         queue.addLast(WeatherGridState(newLocation, t + 1, 2))
                     } else if (grid.contains(newLocation)) {
