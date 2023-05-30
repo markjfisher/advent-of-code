@@ -25,7 +25,7 @@ abstract class Hud {
         if (vg == MemoryUtil.NULL) {
             throw Exception("Could not init nanovg")
         }
-        val font = NanoVG.nvgCreateFontMem(vg, FONT_NAME, fontBuffer, 0)
+        val font = NanoVG.nvgCreateFontMem(vg, FONT_NAME, fontBuffer, false)
         if (font == -1) {
             throw Exception("Could not add font")
         }

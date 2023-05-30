@@ -194,7 +194,7 @@ class DumboOctopusGame : GameLogic, GameWorld<DumboOctopusItemData>(
             if (animationStep >= startsOn) {
                 // now work out the compressed pulse flashing colour for this item.
                 // Normally, if it started at animation 0, then we look up the animation colours at x position directly.
-                // Buf it we have less steps to take, we need to speed through the animation
+                // But if we have less steps to take, we need to speed through the animation
                 val percentageThrough = (animationStep + 1 - startsOn) / (gameSpeed - startsOn)
                 val brightness = SurfaceOptions.calculatePercentage(percentageThrough, flashingBrightnessMap, 5)
                 val octopus = storage.getData(flasher.item)!!

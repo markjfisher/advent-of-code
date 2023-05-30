@@ -1,6 +1,7 @@
 package net.fish.y2022
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -24,5 +25,10 @@ internal class Day25Test {
     fun `can convert to and from snafu`(s: String, d: String) {
         assertThat(Day25.fromSnafu(s)).isEqualTo(d.toLong())
         assertThat(Day25.toSnafu(d.toLong())).isEqualTo(s)
+    }
+
+    @Test
+    fun `can convert`() {
+        println(Day25.toSnafu(18L))
     }
 }
