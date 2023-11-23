@@ -83,6 +83,11 @@ tasks {
         classpath = sourceSets["main"].runtimeClasspath
     }
 
+    register("advent2023", JavaExec::class) {
+        mainClass.set("net.fish.y2023.AdventOfCode2023")
+        classpath = sourceSets["main"].runtimeClasspath
+    }
+
     register("advent2022day12", JavaExec::class) {
         mainClass.set("net.fish.y2022.Advent2022Day12")
         classpath = sourceSets["main"].runtimeClasspath
@@ -99,14 +104,14 @@ tasks {
 
     named<KotlinCompile>("compileKotlin") {
         kotlinOptions {
-            jvmTarget = "11"
+            jvmTarget = "17"
             javaParameters = true
         }
     }
 
     named<KotlinCompile>("compileTestKotlin") {
         kotlinOptions {
-            jvmTarget = "11"
+            jvmTarget = "17"
             javaParameters = true
             freeCompilerArgs += listOf("-Xinline-classes", "-Xopt-in=kotlin.RequiresOptIn")
         }
