@@ -74,3 +74,35 @@ fun Collection<Point>.bounds() =
 fun Point.abs() = Point(kotlin.math.abs(x), kotlin.math.abs(y))
 fun Point.max(): Int = maxOf(x, y)
 fun Point.sign(): Point = Point(x.sign, y.sign)
+
+fun Pair<Point, Point>.edgePoints(): Sequence<Point> {
+    val upperLeft = first
+    val lowerRight = second
+
+    return sequence {
+        // Top edge
+        yieldAll((upperLeft.x..lowerRight.x).map { x -> Point(x, upperLeft.y) })
+
+        // Right edge
+        yieldAll((upperLeft.y + 1 until lowerRight.y).map { y -> Point(lowerRight.x, y) })
+
+        // Bottom edge
+        yieldAll((lowerRight.x downTo upperLeft.x).map { x -> Point(x, lowerRight.y) })
+
+        // Left edge
+        yieldAll((lowerRight.y - 1 downTo upperLeft.y + 1).map { y -> Point(upperLeft.x, y) })
+    }
+}
+
+fun Pair<Point, Point>.points(): Sequence<Point> {
+    val upperLeft = first
+    val lowerRight = second
+
+    return sequence {
+        for (y in upperLeft.y..lowerRight.y) {
+            for (x in upperLeft.x..lowerRight.x) {
+                yield(Point(x, y))
+            }
+        }
+    }
+}

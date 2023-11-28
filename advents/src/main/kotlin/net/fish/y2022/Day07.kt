@@ -39,6 +39,8 @@ object Day07 : Day {
     }
 
     fun readDisk(data: List<String>): AOCDir {
+        // The instructions always "ls" a directory once going into it, which then gives us the definitions for that dir.
+        // The ls instruction itself is ignored
         val root = AOCDir("/", mutableListOf(), mutableListOf(), null)
         var currentDir = root
         val fileRE = Regex("^\\d+ ")

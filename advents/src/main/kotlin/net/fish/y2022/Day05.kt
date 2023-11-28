@@ -24,11 +24,13 @@ object Day05 : Day {
             do { val instruction = move(model) } while (instruction != NoMoreInstructions)
         }
 
+        // Could use a boolean instead of MoverInstruction, we just need to know if it processed anything
         fun move(model: MoverModel): MoverInstruction {
             return if (currentInstruction < instructions.size) {
                 val instruction = instructions[currentInstruction++]
                 val taken = (0 until instruction.count).map { _ -> columns[instruction.from - 1]!!.removeLast() }
                 (if (model == M9000) taken else taken.reversed()).forEach { c -> columns[instruction.to - 1]!!.addLast(c) }
+                // only returned to indicate it wasn't end
                 instruction
             } else NoMoreInstructions
         }
@@ -41,8 +43,11 @@ object Day05 : Day {
         val moves = data[1]
 
         val columns = layout.split("\n").reversed().drop(1).fold(mutableMapOf<Int, ArrayDeque<Char>>()) { ac, row ->
+            // position of letters on the line is 1, 5, 9, ... from "[Z] [M] [P]..."
             row.filterIndexed { i, _ -> (i - 1) % 4 == 0 }.mapIndexed { i, c ->
-                if (c != ' ') { ac.getOrDefault(i, ArrayDeque()).let { it.addLast(c); ac[i]= it } }
+                // get or create the map entry for the index, then add the character to the end of the (double ended) queue
+                // the char will be a space where there's nothing in that column, e.g. "    [D]"
+                if (c != ' ') { ac.getOrDefault(i, ArrayDeque()).let { it.addLast(c); ac[i] = it } }
             }
             ac
         }

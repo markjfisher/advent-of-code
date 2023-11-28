@@ -78,4 +78,36 @@ internal class PointTest {
 
         assertThat(Point(1, 1).manhattenDistance(Point(-1, -1))).isEqualTo(4)
     }
+
+    @Test
+    fun `edge points of boundry`() {
+        val boundary = listOf(Point(1, 1), Point(4,3)).bounds()
+        val edgePoints = boundary.edgePoints().toList()
+        assertThat(edgePoints).containsExactly(
+            Point(1,1),
+            Point(2,1),
+            Point(3,1),
+            Point(4,1),
+            Point(4,2),
+            Point(4,3),
+            Point(3,3),
+            Point(2,3),
+            Point(1,3),
+            Point(1,2),
+        )
+    }
+
+    @Test
+    fun `sequence of all points in boundary`() {
+        val boundary = listOf(Point(1, 1), Point(2,3)).bounds()
+        val allPoints = boundary.points()
+        assertThat(allPoints.toList()).containsExactly(
+            Point(1,1),
+            Point(2,1),
+            Point(1,2),
+            Point(2,2),
+            Point(1,3),
+            Point(2,3),
+        )
+    }
 }

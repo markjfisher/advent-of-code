@@ -5,8 +5,7 @@ import net.fish.collections.takeWhileInclusive
 import net.fish.geometry.Direction
 import net.fish.geometry.Point
 import net.fish.geometry.bounds
-import net.fish.maths.IntCombinations
-import net.fish.maths.Ring
+import net.fish.maths.PairCombinations
 import net.fish.resourceLines
 import net.fish.y2021.GridDataUtils
 
@@ -23,16 +22,15 @@ object Day08 : Day {
         return TreeGrid(GridDataUtils.mapIntPointsFromLines(data))
     }
 
-    class PairCombinations(size: Int): IntCombinations(2) {
-        override val state = Array(2) { Ring(size) }.toList()
-        override fun state() = state.map { it.state() }.reversed()
-    }
-
     data class TreeGrid(private val gridData: Map<Point, Int>) {
         private val compassDirs = listOf(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)
         private val boundary: Pair<Point, Point> = gridData.keys.bounds()
-        private val treeColumns = PairCombinations(boundary.second.x + 1).groupBy { it[0] }.values.map { it.map { x -> Point(x[0], x[1]) } }
-        private val treeRows = PairCombinations(boundary.second.y + 1).groupBy { it[1] }.values.map { it.map { y -> Point(y[0], y[1]) } }
+        // PairCombinations are lists of "lists of pairs". see tests.
+        // This orders the combinations of (0,0), (0,1), ... into by column or row. See tests
+        // list of N lists of the columns point locations, {(0,0), (0,1), (0,2), (0,3), ...}, {(1,0), (1,1), (1,2), (1,3), ...}, ...
+        private val treeColumns = PairCombinations(boundary.second.x + 1).groupBy { it[0] }.values.map { it.map { p -> Point(p[0], p[1]) } }
+        // list of N lists of the rows point locations, {(0,0), (1,0), (2,0), (3,0), ...}, {(0,1), (1,1), (2,1), (3,1), ...}, ...
+        private val treeRows = PairCombinations(boundary.second.y + 1).groupBy { it[1] }.values.map { it.map { p -> Point(p[0], p[1]) } }
 
         private fun allPoints(): Set<Point> = gridData.keys
         private fun onBoundary(p: Point): Boolean =
