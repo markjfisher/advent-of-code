@@ -17,7 +17,7 @@ object Day06 : Day {
             fishTimes[t] = fishTimes[t] + 1
         }
         // move all counts down 1, the old 0s become 6s but spawn that many 8s
-        (0 until iterations).forEach {
+        repeat((0 until iterations).count()) {
             val zero = fishTimes[0]
             fishTimes.rotateLeft()
             fishTimes[6] += zero
