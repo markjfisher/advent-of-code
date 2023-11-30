@@ -110,4 +110,10 @@ internal class PointTest {
             Point(2,3),
         )
     }
+
+    @Test
+    fun `area of boundary`() {
+        val area = listOf(Point(1, 1), Point(5, 4)).bounds().area()
+        assertThat(area).isEqualTo(12)
+    }
 }

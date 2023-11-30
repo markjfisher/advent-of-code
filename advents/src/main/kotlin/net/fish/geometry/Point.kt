@@ -106,3 +106,5 @@ fun Pair<Point, Point>.points(): Sequence<Point> {
         }
     }
 }
+
+fun Pair<Point, Point>.area(): Long = (second.x - first.x).toLong() * (second.y - first.y).toLong()
