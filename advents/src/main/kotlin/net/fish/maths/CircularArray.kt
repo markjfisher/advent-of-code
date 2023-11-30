@@ -1,9 +1,10 @@
 package net.fish.maths
 
+import java.util.*
 import kotlin.math.ceil
 
 data class CircularArray(val initialData: List<Long> = emptyList()) {
-    private var data: MutableList<Long> = initialData.toMutableList()
+    private var data: LinkedList<Long> = LinkedList(initialData)
     private var arrayIndex: Int = 0
 
     init {
