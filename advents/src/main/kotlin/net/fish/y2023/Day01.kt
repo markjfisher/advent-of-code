@@ -10,33 +10,41 @@ object Day01 : Day {
     override fun part2() = doPart2(data)
 
     fun doPart1(data: List<String>): Int = data
-        .map { it.toCharArray().filter { c -> c.isDigit() } } // convert to chars of just the digits
-        .map { it.map { d -> d.digitToInt() } }               // convert to list of ints
-        .sumOf { it.first() * 10 + it.last() }                // add of (10*first + last)
+        .map { parseNumbers(it, numberMap) }
+        .sumOf { it.first() * 10 + it.last() }
 
     fun doPart2(data: List<String>): Int = data
-        .map { replaceNamesWithNumbers(it) }                  // convert string with named numbers to list of just digits
-        .sumOf { it.first() * 10 + it.last() }                // as part 1, sum 10 * first + last
+        .map { parseNumbers(it, nameMap + numberMap) }
+        .sumOf { it.first() * 10 + it.last() }
 
-    fun replaceNamesWithNumbers(s: String): List<Int> {
+    val numberMap = mapOf(
+        "1" to 1, "2" to 2, "3" to 3, "4" to 4, "5" to 5, "6" to 6, "7" to 7, "8" to 8, "9" to 9, "0" to 0
+    )
+
+    val nameMap = mapOf(
+        "one" to 1,
+        "two" to 2,
+        "three" to 3,
+        "four" to 4,
+        "five" to 5,
+        "six" to 6,
+        "seven" to 7,
+        "eight" to 8,
+        "nine" to 9,
+    )
+
+    fun parseNumbers(s: String, m: Map<String, Int>): List<Int> {
         val ints = mutableListOf<Int>()
-        var index = 0
-        while (index < s.length) {
-            val c = s.toCharArray()[index]
-            when {
-                c.isDigit() -> ints += "$c".toInt()
-                s.substring(index).startsWith("one") -> ints += 1
-                s.substring(index).startsWith("two") -> ints += 2
-                s.substring(index).startsWith("three") -> ints += 3
-                s.substring(index).startsWith("four") -> ints += 4
-                s.substring(index).startsWith("five") -> ints += 5
-                s.substring(index).startsWith("six") -> ints += 6
-                s.substring(index).startsWith("seven") -> ints += 7
-                s.substring(index).startsWith("eight") -> ints += 8
-                s.substring(index).startsWith("nine") -> ints += 9
+        var index = s.length
+        do {
+            // by looking backwards, we avoid things like "oneight" being a problem.
+            val indexMatch = s.findLastAnyOf(m.keys, index, false)
+            if (indexMatch != null) {
+                // We're looking backwards, so always add new number to front
+                ints.add(0, m[indexMatch.second]!!)
+                index = indexMatch.first - 1
             }
-            index++
-        }
+        } while (indexMatch != null)
         return ints
     }
 
@@ -45,5 +53,4 @@ object Day01 : Day {
         println(part1())
         println(part2())
     }
-
 }

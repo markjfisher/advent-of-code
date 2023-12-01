@@ -20,7 +20,9 @@ class Day01Test {
     @Test
     fun `can replace names with numbers`() {
         val d = "oneighthree1oneightwo"
-        assertThat(Day01.replaceNamesWithNumbers(d)).containsExactly(1, 8, 3, 1, 1, 8, 2)
+        assertThat(Day01.parseNumbers(d, Day01.numberMap)).containsExactly(1)
+        assertThat(Day01.parseNumbers(d, Day01.nameMap)).containsExactly(1, 8, 3, 1, 8, 2)
+        assertThat(Day01.parseNumbers(d, Day01.nameMap + Day01.numberMap)).containsExactly(1, 8, 3, 1, 1, 8, 2)
     }
 
 }
