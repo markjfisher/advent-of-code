@@ -6,7 +6,7 @@ inline fun <reified R> rotateMatrix(mat: Array<Array<R>>): Array<Array<R>> {
     // only allow nxn matrix
     check(mat.size == mat[0].size)
 
-    var matCopy = copyMatrix(mat)
+    val matCopy = copyMatrix(mat)
 
     val size = mat.size
 

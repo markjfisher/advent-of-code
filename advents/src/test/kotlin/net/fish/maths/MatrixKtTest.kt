@@ -22,4 +22,12 @@ internal class MatrixKtTest {
         assertThat(transposed[3]).containsExactly(4, 9, 14, 19, 24)
         assertThat(transposed[4]).containsExactly(5, 10, 15, 20, 25)
     }
+
+    @Test
+    fun `can create NxM array with initial value`() {
+        val x = Pair(2, 3).createArray(1)
+        assertThat(x.size).isEqualTo(2)
+        assertThat(x[0]).containsExactly(1, 1, 1)
+        assertThat(x[1]).containsExactly(1, 1, 1)
+    }
 }
