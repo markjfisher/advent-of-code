@@ -2,27 +2,43 @@ package net.fish.y2023
 
 import net.fish.Day
 import net.fish.resourceLines
-import net.fish.resourceStrings
 
 object Day01 : Day {
-    // ASSUME LIST OF INTEGERS
-    private val data1 by lazy { resourceLines(2023, 1).map { it.toInt() } }
+    private val data by lazy { resourceLines(2023, 1) }
 
-    // BLOCKS OF INTEGERS
-    private val data2 by lazy { toX(resourceStrings(2023, 1)) }
+    override fun part1() = doPart1(data)
+    override fun part2() = doPart2(data)
 
-    // SOME FUNCTION OVER THE BLOCK
-    fun toX(blocks: List<String>) {
-        blocks.map { block ->
-            val blockSum = block.split("\n").sumOf { i -> i.toInt() }
+    fun doPart1(data: List<String>): Int = data
+        .map { it.toCharArray().filter { c -> c.isDigit() } } // convert to chars of just the digits
+        .map { it.map { d -> d.digitToInt() } }               // convert to list of ints
+        .sumOf { it.first() * 10 + it.last() }                // add of (10*first + last)
+
+    fun doPart2(data: List<String>): Int = data
+        .map { replaceNamesWithNumbers(it) }                  // convert string with named numbers to list of just digits
+        .sumOf { it.first() * 10 + it.last() }                // as part 1, sum 10 * first + last
+
+    fun replaceNamesWithNumbers(s: String): List<Int> {
+        val ints = mutableListOf<Int>()
+        var index = 0
+        while (index < s.length) {
+            val c = s.toCharArray()[index]
+            when {
+                c.isDigit() -> ints += "$c".toInt()
+                s.substring(index).startsWith("one") -> ints += 1
+                s.substring(index).startsWith("two") -> ints += 2
+                s.substring(index).startsWith("three") -> ints += 3
+                s.substring(index).startsWith("four") -> ints += 4
+                s.substring(index).startsWith("five") -> ints += 5
+                s.substring(index).startsWith("six") -> ints += 6
+                s.substring(index).startsWith("seven") -> ints += 7
+                s.substring(index).startsWith("eight") -> ints += 8
+                s.substring(index).startsWith("nine") -> ints += 9
+            }
+            index++
         }
+        return ints
     }
-
-    override fun part1() = doPart1(data1)
-    override fun part2() = doPart2(data1)
-
-    fun doPart1(data: List<Int>): Int = data.size
-    fun doPart2(data: List<Int>): Int = data.size
 
     @JvmStatic
     fun main(args: Array<String>) {
