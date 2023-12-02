@@ -20,7 +20,7 @@ object Day06 : Day {
         val boundLocationOwnedPoints: MutableMap<Location, Int> = mutableMapOf()
         // We only need to consider points in the bounds of edge locations
         val bounds = locations.map { it.position }.bounds()
-        for(y in bounds.first.y .. bounds.second.y) {
+        for (y in bounds.first.y..bounds.second.y) {
             for (x in bounds.first.x..bounds.second.x) {
                 val p = Point(x, y)
                 val b2 = belongsTo(p, locations)
@@ -32,10 +32,7 @@ object Day06 : Day {
                 }
             }
         }
-        println(boundLocationOwnedPoints)
-        val boundLocationWithLargestOwnedPoints = boundLocationOwnedPoints.maxBy { it.value }
-        println("max: ${boundLocationWithLargestOwnedPoints.key} = ${boundLocationWithLargestOwnedPoints.value}")
-        return boundLocationWithLargestOwnedPoints.value
+        return boundLocationOwnedPoints.maxBy { it.value }.value
     }
 
     fun doPart2(locations: List<Location>): Int {
