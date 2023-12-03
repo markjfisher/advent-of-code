@@ -107,4 +107,20 @@ fun Pair<Point, Point>.points(): Sequence<Point> {
     }
 }
 
+fun Pair<Point, Point>.rows(): Sequence<List<Point>> {
+    val upperLeft = first
+    val lowerRight = second
+
+    return sequence {
+        for (y in upperLeft.y..lowerRight.y) {
+            val line = mutableListOf<Point>()
+            for (x in upperLeft.x .. lowerRight.x) {
+                line += Point(x, y)
+            }
+            yield(line.toList())
+            // line.clear()
+        }
+    }
+}
+
 fun Pair<Point, Point>.area(): Long = (second.x - first.x).toLong() * (second.y - first.y).toLong()
