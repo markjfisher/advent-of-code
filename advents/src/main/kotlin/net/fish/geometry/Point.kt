@@ -118,7 +118,6 @@ fun Pair<Point, Point>.rows(): Sequence<List<Point>> {
                 line += Point(x, y)
             }
             yield(line.toList())
-            // line.clear()
         }
     }
 }
