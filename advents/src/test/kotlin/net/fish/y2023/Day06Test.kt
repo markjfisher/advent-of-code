@@ -12,7 +12,9 @@ class Day06Test {
 
     @Test
     fun `can do part 2`() {
-        assertThat(Day06.doPart2(listOf(71530), listOf(940200))).isEqualTo(71503)
+        // check both methods work.
+        assertThat(Day06.marginOfError(listOf(71530), listOf(940200))).isEqualTo(71503)
+        assertThat(Day06.moe2(71530, 940200)).isEqualTo(71503)
     }
 
 }
