@@ -29,6 +29,7 @@ object Day08 : Day {
                 }
                 steps++
             }
+            println("steps: $steps")
             return steps
         }
 
@@ -37,11 +38,45 @@ object Day08 : Day {
             val ends = nodes.keys.filter { it.endsWith("Z") }.toSet()
 
             // for each start, find the length of the cycle until it hits an end node, then find LCM of all those cycle times
+            // NOTE: this only works because the input data is set up to make:
+            // - the distance from A to Z node = distance from Z to Z node
+            // - paths don't cross each other (there are 6 independent paths)
+            // - the path length is exactly a multiple of the LR data length (which is prime)
             return starts
                 .map { node -> walk(node, ends) }
                 .reduce { ac, f -> lcm(ac, f) }
         }
+
+        // Function to help test the paths. Not used in solution
+        fun walking(start: String, steps: Int, directionInstructions: Iterator<Char>, debug: Boolean = false): String {
+            val visited = mutableSetOf<String>()
+            var currentLocation = start
+            println("Start: $start")
+            visited.add(start)
+            for (i in 0 until steps) {
+                val dir = directionInstructions.next()
+                currentLocation = when (dir) {
+                    'L' -> nodes[currentLocation]!!.first
+                    'R' -> nodes[currentLocation]!!.second
+                    else -> throw Exception("Unknown instruction $dir")
+                }
+                if (debug) {
+                    println("$dir ->  $currentLocation")
+                }
+                visited.add(currentLocation)
+            }
+            println("End: $currentLocation, visited ${visited.size}: $visited")
+            return currentLocation
+        }
     }
+
+    private fun analyse() {
+        val instructions = data
+        val directionInstructions = instructions.dirs.asSequence().cycle().iterator()
+        val last = instructions.walking("AAA", 20513, directionInstructions, true)
+        println(last)
+    }
+
 
     fun readPuzzle(data: List<String>): DesertInstructions {
         val sequence = data[0]
@@ -59,6 +94,7 @@ object Day08 : Day {
     fun main(args: Array<String>) {
         println(part1())
         println(part2())
+        //analyse()
     }
 
 }
