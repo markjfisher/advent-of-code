@@ -92,7 +92,9 @@ object Day10 : Day {
         fun countInside(): Int {
             val loop = findLoop()
             val dots = points.filter { it.value == '.' }.keys
-            return dots.count { isPointInLoop(loop, it) }
+            // optimization: we only need turning points, as the segments are same if the next point is same horizontally or vertically.
+            val turningPoints = loop.filter { points[it] != '-' && points[it] != '|' }
+            return dots.count { isPointInLoop(turningPoints, it) }
         }
 
         private fun isPointInLoop(loop: List<Point>, point: Point): Boolean {

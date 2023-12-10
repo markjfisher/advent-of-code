@@ -29,7 +29,7 @@ object Day08 : Day {
                 }
                 steps++
             }
-            println("steps: $steps")
+            // println("steps: $steps")
             return steps
         }
 
