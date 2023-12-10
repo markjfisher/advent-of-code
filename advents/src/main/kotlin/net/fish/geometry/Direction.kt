@@ -23,6 +23,13 @@ enum class Direction {
         EAST -> NORTH
     }
 
+    fun opposite() = when(this) {
+        NORTH -> SOUTH
+        SOUTH -> NORTH
+        WEST -> EAST
+        EAST -> WEST
+    }
+
     fun turnR(degrees: Int) = when (degrees) {
         90 -> this.cw()
         180 -> this.cw().cw()
