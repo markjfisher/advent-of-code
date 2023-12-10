@@ -9,16 +9,17 @@ import net.fish.y2021.GridDataUtils
 object Day10 : Day {
     private val data by lazy { resourceLines(2023, 10) }
 
-    override fun part1() = doPart1(data)
-    override fun part2() = doPart2(data)
+    // shave some time off by knowing where S starts and having replaced it with correct character
+    override fun part1() = doPart1(data, Point(109, 76), false)
+    override fun part2() = doPart2(data, Point(109, 76), false)
 
-    fun doPart1(data: List<String>): Int {
+    fun doPart1(data: List<String>, start: Point? = null, tryPipes: Boolean = true): Int {
         val pipeMaze = parsePuzzle(data)
-        return pipeMaze.findLoop().size / 2
+        return pipeMaze.findLoop(start, tryPipes).size / 2
     }
-    fun doPart2(data: List<String>): Int {
+    fun doPart2(data: List<String>, start: Point? = null, tryPipes: Boolean = true): Int {
         val pipeMaze = parsePuzzle(data)
-        val reducedMaze = pipeMaze.removeNonLooped()
+        val reducedMaze = pipeMaze.removeNonLooped(start, tryPipes)
         return reducedMaze.countInside()
     }
 
@@ -47,37 +48,46 @@ object Day10 : Day {
     )
 
     data class PipeMaze(val points: Map<Point, Char>) {
-        fun findLoop(): List<Point> {
-            tailrec fun walk(current: Point, dir: Direction, currentPath: MutableList<Point>): List<Point> {
-                // println("@$current, going: $dir: $currentPath")
-
+        val loop = mutableListOf<Point>()
+        fun findLoop(useStart: Point? = null, tryPipes: Boolean = true): List<Point> {
+            val start = useStart ?: points.filter { it.value == 'S' }.keys.first()
+            tailrec fun walk(startingPipe: Char, current: Point, dir: Direction, currentPath: MutableList<Point>): List<Point> {
                 val newLocation = current + dir
+
                 // moving to a point that doesn't exist, or is a space
-                if (!points.contains(newLocation) || points[newLocation] == '.') return emptyList()
-
-                val newPipe = points[newLocation]!!
-                // we looped
-                if (newPipe == 'S') return currentPath
-
-                // check if we walked around a loop that doesn't get to start - don't think this is possible as we have no T junction
-                if (currentPath.contains(newLocation)) return emptyList()
+                val newPipe = points[newLocation]
+                if (newPipe == null || newPipe == '.') {
+                    return emptyList()
+                }
 
                 // does the next part have a piece that connects?
-                val nextConnectedDir = entryToExitMap[Pair(newPipe, dir.opposite())] ?: return emptyList()
+                // we need to use dir.opposite, as we come in from the opposite side to the direction we're moving
+                val nextConnectedDir = entryToExitMap[Pair(if(newPipe == 'S') startingPipe else newPipe, dir.opposite())]//  ?: return emptyList()
+                if (nextConnectedDir == null) {
+                    return emptyList()
+                }
+                if (newLocation == start) {
+                    return currentPath
+                }
 
                 // it's a valid, and connected point, so continue along it
                 currentPath += newLocation
-                // we need to use dir.opposite, as we come in from the opposite side to the direction we're moving
-                return walk(newLocation, nextConnectedDir, currentPath)
+                return walk(startingPipe, newLocation, nextConnectedDir, currentPath)
             }
 
-            val start = points.filter { it.value == 'S' }.keys.first()
-            val loops = setOf('|', '-', 'L', 'J', '7', 'F').map { replaceChar -> walk(start, directionsFor[replaceChar]!!.first().second, mutableListOf(start)) }
-            return loops.first { it.isNotEmpty() }
+            if (tryPipes) {
+                val loops = setOf('|', '-', 'L', 'J', '7', 'F').map { replaceChar ->
+                    walk(replaceChar, start, directionsFor[replaceChar]!!.first().second, mutableListOf(start))
+                }
+                return loops.first { it.isNotEmpty() }
+            } else {
+                val startPipe = points[useStart!!]!!
+                return walk(startPipe, useStart, directionsFor[startPipe]!!.first().second, mutableListOf(useStart))
+            }
         }
 
-        fun removeNonLooped(): PipeMaze {
-            val loop = findLoop()
+        fun removeNonLooped(useStart: Point? = null, tryPipes: Boolean = true): PipeMaze {
+            val loop = findLoop(useStart, tryPipes)
             // replace anything not part of the pipe with a '.'
             val newPoints = points.map { e ->
                 if (loop.contains(e.key)) {
@@ -86,11 +96,13 @@ object Day10 : Day {
                     e.key to '.'
                 }
             }.toMap()
-            return PipeMaze(newPoints)
+            val newMaze = PipeMaze(newPoints)
+            newMaze.loop.addAll(loop)
+            return newMaze
         }
 
         fun countInside(): Int {
-            val loop = findLoop()
+            // val loop = findLoop()
             val dots = points.filter { it.value == '.' }.keys
             // optimization: we only need turning points, as the segments are same if the next point is same horizontally or vertically.
             val turningPoints = loop.filter { points[it] != '-' && points[it] != '|' }
