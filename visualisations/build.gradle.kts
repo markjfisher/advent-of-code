@@ -106,14 +106,14 @@ tasks {
 
     named<KotlinCompile>("compileKotlin") {
         kotlinOptions {
-            jvmTarget = "11"
+            jvmTarget = "17"
             javaParameters = true
         }
     }
 
     named<KotlinCompile>("compileTestKotlin") {
         kotlinOptions {
-            jvmTarget = "11"
+            jvmTarget = "17"
             javaParameters = true
             freeCompilerArgs += listOf("-Xinline-classes", "-Xopt-in=kotlin.RequiresOptIn")
         }

@@ -114,12 +114,12 @@ tasks {
         kotlinOptions {
             jvmTarget = "17"
             javaParameters = true
-            freeCompilerArgs += listOf("-Xinline-classes", "-Xopt-in=kotlin.RequiresOptIn")
+            freeCompilerArgs += listOf("-Xinline-classes", "-opt-in=kotlin.RequiresOptIn")
         }
     }
 
     withType<Test> {
-        maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+        // maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
     }
 
     named<Test>("test") {

@@ -28,6 +28,7 @@ object Day11 : Day {
         lateinit var emptyColumns: Set<Int>
         lateinit var emptyRows: Set<Int>
         private val allPairs: Sequence<Pair<Point, Point>> = points.combinations(2).map { it.zipWithNext() }.flatten()
+
         init {
             findEmpty()
         }
