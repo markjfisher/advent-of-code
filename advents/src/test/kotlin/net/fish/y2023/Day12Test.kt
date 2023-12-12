@@ -6,30 +6,14 @@ import org.junit.jupiter.api.Test
 
 class Day12Test {
     @Test
-    fun `can find combinations`() {
-        assertThat(Day12.opDamExtractor(".")).containsExactly(".")
-        assertThat(Day12.opDamExtractor("?")).containsExactly(".", "#")
-        assertThat(Day12.opDamExtractor(".?.")).containsExactly("...", ".#.")
-        assertThat(Day12.opDamExtractor("??")).containsExactlyInAnyOrder("..", ".#", "#.", "##")
-    }
-
-    @Test
-    fun `can find sequence lengths`() {
-        assertThat(Day12.opDamToSeq(".")).isEmpty()
-        assertThat(Day12.opDamToSeq("#")).containsExactly(1)
-        assertThat(Day12.opDamToSeq("#.")).containsExactly(1)
-        assertThat(Day12.opDamToSeq("#.#")).containsExactly(1,1)
-        assertThat(Day12.opDamToSeq("##.#")).containsExactly(2,1)
-        assertThat(Day12.opDamToSeq("#.##")).containsExactly(1,2)
-        assertThat(Day12.opDamToSeq("#.##.")).containsExactly(1,2)
-        assertThat(Day12.opDamToSeq("#.##..")).containsExactly(1,2)
-        assertThat(Day12.opDamToSeq("....#.....##..#####.........")).containsExactly(1,2,5)
-    }
-
-    @Test
-    fun `can find matching count`() {
-        assertThat(Day12.matchingOpDam("???.###", listOf(1, 1, 3))).isEqualTo(1)
-        assertThat(Day12.matchingOpDam(".??..??...?##.", listOf(1, 1, 3))).isEqualTo(4)
+    fun `can do new count`() {
+        assertThat(Day12.count("#?..#", listOf(2, 1))).isEqualTo(1)
+        assertThat(Day12.count("?", listOf(1))).isEqualTo(1)
+        assertThat(Day12.count("??", listOf(1))).isEqualTo(2)
+        assertThat(Day12.count("???.###", listOf(1, 1 , 3))).isEqualTo(1)
+        assertThat(Day12.count("?###????????", listOf(3, 2, 1))).isEqualTo(10)
+        assertThat(Day12.count(".#?.#?.#?.#?.#", listOf(1, 1, 1, 1, 1))).isEqualTo(1)
+        assertThat(Day12.count(".??..??...?##.?.??..??...?##.?.??..??...?##.?.??..??...?##.?.??..??...?##.", listOf(1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 3))).isEqualTo(16384)
     }
 
     @Test
@@ -43,6 +27,6 @@ class Day12Test {
     fun `can do part 2`() {
         val data = resourcePath("/2023/day12-test.txt")
         val v = Day12.doPart2(data)
-        assertThat(v).isEqualTo(0)
+        assertThat(v).isEqualTo(525152)
     }
 }
