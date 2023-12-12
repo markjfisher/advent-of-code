@@ -3,7 +3,7 @@ package net.fish.y2023
 import net.fish.Day
 import net.fish.geometry.Point
 import net.fish.geometry.bounds
-import net.fish.maths.combinations
+import net.fish.maths.pairwise
 import net.fish.resourceLines
 
 object Day11 : Day {
@@ -27,7 +27,7 @@ object Day11 : Day {
     ) {
         lateinit var emptyColumns: Set<Int>
         lateinit var emptyRows: Set<Int>
-        private val allPairs: Sequence<Pair<Point, Point>> = points.combinations(2).map { it.zipWithNext() }.flatten()
+        private val allPairs: Sequence<Pair<Point, Point>> = points.toList().pairwise()
 
         init {
             findEmpty()

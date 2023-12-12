@@ -168,6 +168,14 @@ fun <T> Iterable<T>.combinations(length: Int): Sequence<List<T>> =
         }
     }
 
+fun <T> List<T>.pairwise() = sequence {
+    for (i in indices) {
+        for (j in i + 1..indices.last) {
+            yield(get(i) to get(j))
+        }
+    }
+}
+
 // Faster permutations.
 fun <T> Iterable<T>.permutations(length: Int? = null): Sequence<List<T>> =
     sequence {
