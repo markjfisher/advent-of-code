@@ -43,6 +43,12 @@ object Day13 : Day {
         }
     }
 
+    // Generates Lists of pairs of columns or rows that need to be tested for reflection
+    // starting at the first value plus next value, then values outside those by 1
+    // checkPairs(0, 1) = [(0,1)]
+    // checkPairs(2, 4) = [(2,3), (1,4)], but (0,5) is not in the max range as 5>4
+    // See tests for full case
+
     fun checkPairs(n: Int, max: Int): List<Pair<Int, Int>> {
         val pairs = mutableListOf<Pair<Int, Int>>()
         var round = 1
@@ -62,25 +68,26 @@ object Day13 : Day {
             val currentColumnReflection = columnReflection()
             var newRow = -1
             var newColumn = -1
+            // BRUTE FORCE AHOY!
             points.forEach { (p, c) ->
                 val newPoints = points.toMutableMap()
                 newPoints[p] = if (c == '.') '#' else '.'
                 val newGrid = RockGrid(newPoints.toMap())
                 val rrs = newGrid.rowReflections()
-                val crs = newGrid.columnReflections()
-
                 val rrsNotCurrent = rrs.filterNot { it == currentRowReflection || it == -1 }
-                val crsNotCurrent = crs.filterNot { it == currentColumnReflection || it == -1 }
-
                 if (rrsNotCurrent.isNotEmpty()) {
 //                    println ("p: $p ROW CHANGE\ncurrent:\n${gridString()}")
 //                    println ("new:\n${newGrid.gridString()}")
                     newRow = rrsNotCurrent.first()
-                }
-                if (crsNotCurrent.isNotEmpty()) {
-//                    println ("p: $p COL CHANGE\ncurrent:\n${gridString()}")
-//                    println ("new:\n${newGrid.gridString()}")
-                    newColumn = crsNotCurrent.first()
+                } else {
+                    val crs = newGrid.columnReflections()
+                    val crsNotCurrent = crs.filterNot { it == currentColumnReflection || it == -1 }
+
+                    if (crsNotCurrent.isNotEmpty()) {
+    //                    println ("p: $p COL CHANGE\ncurrent:\n${gridString()}")
+    //                    println ("new:\n${newGrid.gridString()}")
+                        newColumn = crsNotCurrent.first()
+                    }
                 }
             }
             return Pair(newRow, newColumn)
@@ -104,14 +111,13 @@ object Day13 : Day {
             return findReflections(rows)
         }
 
-        fun rowReflection(): Int = rowReflections().first()
-
         private fun columnReflections(): List<Int> {
             val bounds = points.map { it.key }.bounds()
             val columns = bounds.columns().map { it.map{ p -> points[p]}.joinToString("") }.toList()
             return findReflections(columns)
         }
 
+        fun rowReflection(): Int = rowReflections().first()
         fun columnReflection(): Int = columnReflections().first()
 
         private fun gridString(): String {
