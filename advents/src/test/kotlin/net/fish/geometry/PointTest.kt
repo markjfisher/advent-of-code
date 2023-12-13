@@ -116,4 +116,23 @@ internal class PointTest {
         val area = listOf(Point(1, 1), Point(5, 4)).bounds().area()
         assertThat(area).isEqualTo(12)
     }
+
+    @Test
+    fun `can find rows`() {
+        val rows = listOf(Point(1, 1), Point(3, 2)).bounds().rows().toList()
+        assertThat(rows).containsExactly(
+            listOf(Point(x=1, y=1), Point(x=2, y=1), Point(x=3, y=1)),
+            listOf(Point(x=1, y=2), Point(x=2, y=2), Point(x=3, y=2))
+        )
+    }
+
+    @Test
+    fun `can find columns`() {
+        val columns = listOf(Point(1, 1), Point(3, 2)).bounds().columns().toList()
+        assertThat(columns).containsExactly(
+            listOf(Point(x=1, y=1), Point(x=1, y=2)),
+            listOf(Point(x=2, y=1), Point(x=2, y=2)),
+            listOf(Point(x=3, y=1), Point(x=3, y=2))
+        )
+    }
 }
