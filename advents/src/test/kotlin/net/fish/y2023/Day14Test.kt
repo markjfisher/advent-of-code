@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test
 
 class Day14Test {
     @Test
-    fun `can parse panel`() {
+    fun `can parse panel2`() {
         val data = resourcePath("/2023/day14-test.txt")
-        val panel = Day14.createPanel(data)
+        val panel = Day14.createPanel2(data)
         assertThat(panel.toString()).isEqualTo("""
             O....#....
             O.OO#....#
@@ -25,9 +25,9 @@ class Day14Test {
     }
 
     @Test
-    fun `can move panel north`() {
+    fun `can move panel2 north`() {
         val data = resourcePath("/2023/day14-test.txt")
-        val panel = Day14.createPanel(data)
+        val panel = Day14.createPanel2(data)
         val newPanel = panel.move(Direction.NORTH)
         assertThat(newPanel.toString()).isEqualTo("""
             OOOO.#.O..
@@ -44,10 +44,122 @@ class Day14Test {
     }
 
     @Test
-    fun `can spin panel`() {
+    fun `can move panel2 west`() {
+        val data = """
+            ...
+            O..
+            .O.
+            ..O
+            #O.
+            #OO
+            #.O
+            #..
+            .#O
+            .#.
+            O#.
+            ..#
+            O.#
+            .O#
+            OO#
+            O.O
+            ..O
+            .OO
+            OOO
+        """.trimIndent()
+        val panel = Day14.createPanel2(data.split("\n"))
+        val newPanel = panel.move(Direction.WEST)
+        assertThat(newPanel.toString()).isEqualTo("""
+            ...
+            O..
+            O..
+            O..
+            #O.
+            #OO
+            #O.
+            #..
+            .#O
+            .#.
+            O#.
+            ..#
+            O.#
+            O.#
+            OO#
+            OO.
+            O..
+            OO.
+            OOO
+        """.trimIndent())
+    }
+
+    @Test
+    fun `can move panel2 south`() {
+        val data = """
+            O..OO.O.O..####..O.
+            OO..OO..###..OO.O..
+            OOOO####..O.OO.O...
+        """.trimIndent()
+        val panel = Day14.createPanel2(data.split("\n"))
+        val newPanel = panel.move(Direction.SOUTH)
+        assertThat(newPanel.toString()).isEqualTo("""
+            O...O...O..####....
+            OO.OOOO.###..O.....
+            OOOO####..O.OOOOOO.
+        """.trimIndent())
+    }
+
+    @Test
+    fun `can move panel2 east`() {
+        val data = """
+            ...
+            O..
+            .O.
+            ..O
+            #O.
+            #OO
+            #.O
+            #..
+            .#O
+            .#.
+            O#.
+            ..#
+            O.#
+            .O#
+            OO#
+            O.O
+            ..O
+            .OO
+            OOO
+        """.trimIndent()
+        val panel = Day14.createPanel2(data.split("\n"))
+        val newPanel = panel.move(Direction.EAST)
+        assertThat(newPanel.toString()).isEqualTo("""
+            ...
+            ..O
+            ..O
+            ..O
+            #.O
+            #OO
+            #.O
+            #..
+            .#O
+            .#.
+            O#.
+            ..#
+            .O#
+            .O#
+            OO#
+            .OO
+            ..O
+            .OO
+            OOO
+        """.trimIndent())
+    }
+
+    @Test
+    fun `can spin panel2`() {
         val data = resourcePath("/2023/day14-test.txt")
-        val panel = Day14.createPanel(data)
-        val p1 = panel.spin(1)
+        val panel = Day14.createPanel2(data)
+        val p1 = panel.spin()
         assertThat(p1.toString()).isEqualTo("""
             .....#....
             ....#...O#
@@ -61,7 +173,7 @@ class Day14Test {
             #..OO#....
         """.trimIndent())
 
-        val p2 = p1.spin(1)
+        val p2 = p1.spin()
         assertThat(p2.toString()).isEqualTo("""
             .....#....
             ....#...O#
@@ -75,7 +187,7 @@ class Day14Test {
             #.OOO#...O
         """.trimIndent())
 
-        val p3 = p2.spin(1)
+        val p3 = p2.spin()
         assertThat(p3.toString()).isEqualTo("""
             .....#....
             ....#...O#
@@ -88,6 +200,14 @@ class Day14Test {
             #...O###.O
             #.OOO#...O
         """.trimIndent())
+    }
+
+    @Test
+    fun `can find cycle time`() {
+        val data = resourcePath("/2023/day14-test.txt")
+        val panel = Day14.createPanel2(data)
+        val startAndCycle = panel.findPanelCycle()
+        assertThat(startAndCycle).isEqualTo(Pair(3, 7))
     }
 
     @Test

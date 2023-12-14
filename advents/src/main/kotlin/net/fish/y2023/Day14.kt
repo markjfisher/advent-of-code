@@ -7,155 +7,111 @@ import net.fish.resourceLines
 import net.fish.y2021.GridDataUtils
 
 object Day14 : Day {
-    override val warmUps: Int = 0
+    override val warmUps: Int = 2
     private val data by lazy { resourceLines(2023, 14) }
 
     override fun part1() = doPart1(data)
     override fun part2() = doPart2(data)
 
-    val previousPanels = mutableListOf<Panel>()
+    val cache = mutableListOf<Panel>()
 
-    data class Panel(val points: Map<Point, Char>) {
-        val bounds = points.map { it.key }.bounds()
-        val width = bounds.second.x + 1
-        val height = bounds.second.y + 1
-        val columns = bounds.columns()
-        val rows = bounds.rows()
+    data class Panel(val stones: Set<Point>, val fixed: Set<Point>, val width: Int, val height: Int) {
+        fun move(direction: Direction) = move(listOf(direction))
 
-        fun spin(count: Long): Panel {
-            val pairOfStartLength: Pair<Int, Int> = findPanelCycle()
-            val prevIndex = pairOfStartLength.first + (count - pairOfStartLength.first) % pairOfStartLength.second
-            return previousPanels[prevIndex.toInt()]
+        fun move(directions: List<Direction>): Panel {
+            val moved = directions.fold(stones.toSet()) { ss, direction ->
+                when(direction) {
+                    NORTH -> movePoints(ss.sortedWith(compareBy { it.y }), direction)
+                    SOUTH -> movePoints(ss.sortedWith(compareByDescending { it.y }), direction)
+                    WEST -> movePoints(ss.sortedWith(compareBy { it.x }), direction)
+                    EAST -> movePoints(ss.sortedWith(compareByDescending { it.x }), direction)
+                }
+            }
+            return Panel(moved, fixed, width, height)
         }
 
-        private fun findPanelCycle(): Pair<Int, Int> {
-            tailrec fun iter(panel: Panel): Pair<Int, Int> {
-                val start = System.nanoTime()
-                var newPanel = panel.move(NORTH)
-                newPanel = newPanel.move(WEST)
-                newPanel = newPanel.move(SOUTH)
-                newPanel = newPanel.move(EAST)
-                // println("spin = ${(System.nanoTime() - start) / 1_000_000}ms")
-                if (previousPanels.contains(newPanel)) {
-                    val firstTime = previousPanels.indexOf(newPanel)
-                    val cycleTime = previousPanels.size - firstTime
-//                    println("cycle found, start: $firstTime, cycle: $cycleTime")
-                    return Pair(firstTime, cycleTime)
+        private fun movePoints(ps: List<Point>, direction: Direction): Set<Point> {
+            fun inBounds(p: Point) = p.x in (0 until width) && p.y in (0 until height)
+            val newPoints = ps.toMutableSet()
+            ps.forEach { p ->
+                // keep moving the rock in the given direction until it's can't move anymore
+                var newP: Point = p
+                var blocked = false
+                while (!blocked) {
+                    val checkP = newP + direction
+                    if (!inBounds(checkP) || newPoints.contains(checkP) || fixed.contains(checkP)) {
+                        blocked = true
+                    } else {
+                        newP = checkP
+                    }
+                }
+                if (newP != p) {
+                    newPoints.remove(p)
+                    newPoints.add(newP)
+                }
+            }
+            return newPoints
+        }
+
+        fun spin(): Panel {
+            return this.move(listOf(NORTH, WEST, SOUTH, EAST))
+        }
+
+        fun findPanelCycle(): Pair<Int, Int> {
+            cache.clear()
+            tailrec fun iter(p: Panel): Pair<Int, Int> {
+                val newPanel = p.spin()
+                val prevIndex = cache.indexOf(newPanel)
+                if (prevIndex != -1) {
+                    val cycleTime = cache.size - prevIndex
+                    return Pair(prevIndex, cycleTime)
                 } else {
-                    previousPanels.add(newPanel)
+                    cache.add(newPanel)
                     return iter(newPanel)
                 }
             }
-            previousPanels.clear()
-            previousPanels.add(this)
+            cache.add(this)
             return iter(this)
         }
 
-        fun move(direction: Direction): Panel = when (direction) {
-            NORTH -> {
-                var hasMoved: Boolean
-                val newPoints = points.toMutableMap()
-                do {
-                    hasMoved = false
-                    rows.drop(1).forEach { row ->
-                        row.filter { newPoints[it] == 'O'  && newPoints[it + direction] == '.' }.forEach { p ->
-                            newPoints[p + direction] = 'O'
-                            newPoints[p] = '.'
-                            hasMoved = true
-                        }
-                    }
-                } while (hasMoved)
-                Panel(newPoints)
-            }
-            EAST -> {
-                var hasMoved: Boolean
-                val newPoints = points.toMutableMap()
-                do {
-                    hasMoved = false
-                    columns.take(width - 1).toList().reversed().forEach { column ->
-                        column.filter { newPoints[it] == 'O'  && newPoints[it + direction] == '.'}.forEach { p ->
-                            newPoints[p + direction] = 'O'
-                            newPoints[p] = '.'
-                            hasMoved = true
-                        }
-                    }
-                } while (hasMoved)
-                Panel(newPoints)
-            }
-            SOUTH -> {
-                var hasMoved: Boolean
-                val newPoints = points.toMutableMap()
-                do {
-                    hasMoved = false
-                    rows.take(height - 1).toList().reversed().forEach { row ->
-                        row.filter { newPoints[it] == 'O'  && newPoints[it + direction] == '.'}.forEach { p ->
-                            newPoints[p + direction] = 'O'
-                            newPoints[p] = '.'
-                            hasMoved = true
-                        }
-                    }
-                } while (hasMoved)
-                Panel(newPoints)
-            }
-            WEST -> {
-                var hasMoved: Boolean
-                val newPoints = points.toMutableMap()
-                do {
-                    hasMoved = false
-                    columns.drop(1).forEach { column ->
-                        column.filter { newPoints[it] == 'O' && newPoints[it + direction] == '.'}.forEach { p ->
-                            newPoints[p + direction] = 'O'
-                            newPoints[p] = '.'
-                            hasMoved = true
-                        }
-                    }
-                } while (hasMoved)
-                Panel(newPoints)
-            }
+        fun spin(count: Long): Panel {
+            val cycleData = findPanelCycle()
+            val prevIndex = cycleData.first + (count - cycleData.first) % cycleData.second
+            return cache[prevIndex.toInt()]
         }
 
         fun weight(): Long {
-            return rows.foldIndexed(0L) { i, ac, row ->
-                ac + (height - i) * row.count { points[it] == 'O' }
+            return stones.fold(0L) { ac, p ->
+                ac + (height - p.y)
             }
         }
-
         override fun toString(): String {
             var s = ""
-            val bounds = points.map { it.key }.bounds()
-            for (y in bounds.first.y .. bounds.second.y) {
-                for (x in bounds.first.x .. bounds.second.x) {
-                    s += points[Point(x, y)]
+            for (y in 0 until height) {
+                for (x in 0 until width) {
+                    s += when {
+                        stones.contains(Point(x,y)) -> "O"
+                        fixed.contains(Point(x,y)) -> "#"
+                        else -> "."
+                    }
                 }
                 s += "\n"
             }
             return s.dropLast(1)
         }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as Panel
-
-            return points.filterValues { it == 'O' }.all { p -> other.points[p.key] == p.value }
-        }
-
-        override fun hashCode(): Int {
-            return points.hashCode()
-        }
     }
 
-    fun createPanel(data: List<String>): Panel {
-        return Panel(GridDataUtils.mapCharPointsFromLines(data))
+    fun createPanel2(data: List<String>): Panel {
+        val grid = GridDataUtils.mapCharPointsFromLines(data)
+        return Panel(grid.filter { it.value == 'O' }.keys, grid.filter { it.value == '#' }.keys, data[0].length, data.size)
     }
 
     fun doPart1(data: List<String>): Long {
-        val panel = createPanel(data)
+        val panel = createPanel2(data)
         return panel.move(NORTH).weight()
     }
     fun doPart2(data: List<String>): Long {
-        return createPanel(data).spin(1000000000L).weight()
+        return createPanel2(data).spin(1000000000L).weight()
     }
 
     @JvmStatic
