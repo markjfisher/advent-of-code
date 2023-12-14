@@ -28,8 +28,8 @@ class Day14Test {
     fun `can move panel2 north`() {
         val data = resourcePath("/2023/day14-test.txt")
         val panel = Day14.createPanel2(data)
-        val newPanel = panel.move(Direction.NORTH)
-        assertThat(newPanel.toString()).isEqualTo("""
+        panel.move(Direction.NORTH)
+        assertThat(panel.toString()).isEqualTo("""
             OOOO.#.O..
             OO..#....#
             OO..O##..O
@@ -67,8 +67,8 @@ class Day14Test {
             OOO
         """.trimIndent()
         val panel = Day14.createPanel2(data.split("\n"))
-        val newPanel = panel.move(Direction.WEST)
-        assertThat(newPanel.toString()).isEqualTo("""
+        panel.move(Direction.WEST)
+        assertThat(panel.toString()).isEqualTo("""
             ...
             O..
             O..
@@ -99,8 +99,8 @@ class Day14Test {
             OOOO####..O.OO.O...
         """.trimIndent()
         val panel = Day14.createPanel2(data.split("\n"))
-        val newPanel = panel.move(Direction.SOUTH)
-        assertThat(newPanel.toString()).isEqualTo("""
+        panel.move(Direction.SOUTH)
+        assertThat(panel.toString()).isEqualTo("""
             O...O...O..####....
             OO.OOOO.###..O.....
             OOOO####..O.OOOOOO.
@@ -131,8 +131,8 @@ class Day14Test {
             OOO
         """.trimIndent()
         val panel = Day14.createPanel2(data.split("\n"))
-        val newPanel = panel.move(Direction.EAST)
-        assertThat(newPanel.toString()).isEqualTo("""
+        panel.move(Direction.EAST)
+        assertThat(panel.toString()).isEqualTo("""
             ...
             ..O
             ..O
@@ -159,8 +159,8 @@ class Day14Test {
     fun `can spin panel2`() {
         val data = resourcePath("/2023/day14-test.txt")
         val panel = Day14.createPanel2(data)
-        val p1 = panel.spin()
-        assertThat(p1.toString()).isEqualTo("""
+        panel.spin()
+        assertThat(panel.toString()).isEqualTo("""
             .....#....
             ....#...O#
             ...OO##...
@@ -173,8 +173,8 @@ class Day14Test {
             #..OO#....
         """.trimIndent())
 
-        val p2 = p1.spin()
-        assertThat(p2.toString()).isEqualTo("""
+        panel.spin()
+        assertThat(panel.toString()).isEqualTo("""
             .....#....
             ....#...O#
             .....##...
@@ -187,8 +187,8 @@ class Day14Test {
             #.OOO#...O
         """.trimIndent())
 
-        val p3 = p2.spin()
-        assertThat(p3.toString()).isEqualTo("""
+        panel.spin()
+        assertThat(panel.toString()).isEqualTo("""
             .....#....
             ....#...O#
             .....##...
