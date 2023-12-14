@@ -4,10 +4,9 @@ import net.fish.Day
 import net.fish.geometry.PathPositions
 import net.fish.geometry.findIntersections
 import net.fish.geometry.move
-import net.fish.resourceLines
 import net.fish.geometry.stepsTo
 import net.fish.geometry.wireManhattanDistance
-import net.fish.y2022.Day20
+import net.fish.resourceLines
 
 object Day03 : Day {
     override val warmUps: Int = 0
