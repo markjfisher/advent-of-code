@@ -98,7 +98,7 @@ object Day03 : Day {
                 val nextChar = grid[currentPoint]!!
                 if (parsingNumber) {
                     if (nextChar.isDigit()) {
-                        nextNumberList += "$nextChar".toInt()
+                        nextNumberList += nextChar.digitToInt()
                     } else {
                         // end of a number sequence, don't forget to also check if it's a symbol
                         numberGrid.numbers += GridNumber(position = numberStartPosition, value = toInt(nextNumberList))
@@ -109,7 +109,7 @@ object Day03 : Day {
                 } else {
                     if (nextChar.isDigit()) {
                         // started a new number
-                        nextNumberList += "$nextChar".toInt()
+                        nextNumberList += nextChar.digitToInt()
                         parsingNumber = true
                         numberStartPosition = currentPoint
                     } else {

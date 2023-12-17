@@ -53,6 +53,8 @@ data class Point(val x: Int, val y: Int): Comparable<Point> {
     }
 
     fun manhattenDistance(other: Point): Int = kotlin.math.abs(x - other.x) + kotlin.math.abs(y - other.y)
+
+    fun neighbours(): Set<Point> = setOf(this + NORTH, this + EAST, this + SOUTH, this + WEST)
 }
 
 fun Collection<Point>.minX() = this.minOfOrNull { it.x }
@@ -139,6 +141,20 @@ fun Pair<Point, Point>.columns(): Sequence<List<Point>> {
 
 fun Pair<Point, Point>.area(): Long = (second.x - first.x).toLong() * (second.y - first.y).toLong()
 
+fun Collection<Point>.asStringGrid(onChar: Char = '#', offChar: Char = '.'): String {
+    val bounds = bounds()
+    var s = ""
+    for (y in bounds.first.y .. bounds.second.y) {
+        for (x in bounds.first.x .. bounds.second.x) {
+            s += if (contains(Point(x, y))) onChar else offChar
+        }
+        s += "\n"
+    }
+    // remove final \n
+    return s.dropLast(1)
+}
+
+// Some helpers on treating List<List<int>> like a Grid of Points without specifying the Point structure in the grid
 operator fun <E> Collection<Collection<E>>.contains(point: Point): Boolean =
     this.isNotEmpty() && point.y in this.indices && point.x in this.first().indices
 
