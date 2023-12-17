@@ -138,3 +138,9 @@ fun Pair<Point, Point>.columns(): Sequence<List<Point>> {
 }
 
 fun Pair<Point, Point>.area(): Long = (second.x - first.x).toLong() * (second.y - first.y).toLong()
+
+operator fun <E> Collection<Collection<E>>.contains(point: Point): Boolean =
+    this.isNotEmpty() && point.y in this.indices && point.x in this.first().indices
+
+operator fun <E> Array<Array<E>>.get(point: Point) = this[point.y][point.x]
+operator fun <E> List<List<E>>.get(point: Point) = this[point.y][point.x]
