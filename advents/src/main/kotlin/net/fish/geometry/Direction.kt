@@ -39,6 +39,16 @@ enum class Direction {
 
     fun turnL(degrees: Int) = turnR(360 - degrees)
 
+    fun toPoint(): Point {
+        // strictly negative North, positive South, same for E/W
+        return when(this) {
+            NORTH -> Point(0,-1)
+            EAST -> Point(1, 0)
+            WEST -> Point(-1, 0)
+            SOUTH -> Point(0, 1)
+        }
+    }
+
     companion object {
         fun from(s: String) : Direction = from(s.first())
         fun from(char: Char) : Direction = when(char.uppercaseChar()) {
@@ -58,5 +68,6 @@ enum class Direction {
             val dir = c.uppercaseChar()
             return if (dir == 'F') return heading else from(dir)
         }
+
     }
 }

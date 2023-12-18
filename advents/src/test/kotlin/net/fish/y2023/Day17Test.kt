@@ -79,7 +79,7 @@ class Day17Test {
             ...........##
         """.trimIndent())
     }
-    
+
     @Test
     fun `can do part 2`() {
         val grid = GridDataUtils.mapIntPointsFromLines(resourcePath("/2023/day17-test.txt"))

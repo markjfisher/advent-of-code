@@ -24,6 +24,8 @@ data class Point(val x: Int, val y: Int): Comparable<Point> {
         SOUTH -> Point(x, y + 1)
         WEST -> Point(x - 1, y)
     }
+    operator fun times(count: Int) = Point(x * count, y * count)
+    operator fun times(count: Long) = Point(x * count.toInt(), y * count.toInt())
     operator fun unaryMinus() = Point(-x, -y)
 
     // Treat point as vector here, there's no real difference in maths
