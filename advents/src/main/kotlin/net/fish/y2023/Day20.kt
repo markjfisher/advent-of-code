@@ -1,6 +1,8 @@
 package net.fish.y2023
 
+import com.marcinmoskala.math.product
 import net.fish.Day
+import net.fish.maths.lcm
 import net.fish.resourceLines
 import net.fish.y2023.Day20.ModuleState.OFF
 import net.fish.y2023.Day20.ModuleState.ON
@@ -19,7 +21,25 @@ object Day20 : Day {
         return pulseCoordinator.lowPulseCount * pulseCoordinator.highPulseCount
     }
 
-    fun doPart2(data: List<String>): Int = data.size
+    fun doPart2(data: List<String>): Long {
+        val pulseCoordinator = createCoordinator(data)
+        // need to find the cycle time of all the rx inputs when they go HIGH, so they can send a low pulse.
+        // Inspecting the data, we have:
+        //  &bm, &cl, &tn, &dr -> &vr -> rx
+        // so we look at rx's parent's inputs, find the HIGH cycle times of those, and then LCD them.
+        // thus we can keep looping until we have cycle times for ALL Conjuctions (except vr), and break out, then find the right ones for rx (or vr)
+        val rxInput = (pulseCoordinator.modules["rx"] as Untyped).input
+        val conjuctionsToMonitor = (pulseCoordinator.modules[rxInput]!! as Conjunction).inputs.keys // e.g. setOf("bm", "cl", ...)
+        // println("looking for conjuctions of $conjuctionsToMonitor")
+
+        while (true) {
+            pulseCoordinator.start(rxInput)
+            val overallCycleTimes = conjuctionsToMonitor.map { (pulseCoordinator.modules[it]!! as Conjunction).cycleTime }
+            if (overallCycleTimes.all { it != 0L }) {
+                return overallCycleTimes.reduce { ac, f -> lcm(ac, f) }
+            }
+        }
+    }
 
     sealed class Module(open val name: String, open val destinations: List<String>) {
         abstract fun process(pulse: Pulse, from: String): List<Pair<String, Pulse>>
@@ -27,24 +47,12 @@ object Day20 : Day {
 
     enum class ModuleState {
         OFF, ON;
-
-        operator fun not(): ModuleState {
-            return when (this) {
-                OFF -> ON
-                ON -> OFF
-            }
-        }
+        operator fun not(): ModuleState = if (this == OFF) ON else OFF
     }
 
     enum class Pulse {
         LOW, HIGH;
-
-        operator fun not(): Pulse {
-            return when (this) {
-                LOW -> HIGH
-                HIGH -> LOW
-            }
-        }
+        operator fun not(): Pulse = if (this == LOW) HIGH else LOW
     }
 
     data class FlipFlop(override val name: String, override val destinations: List<String>, var state: ModuleState = OFF) : Module(name, destinations) {
@@ -61,7 +69,7 @@ object Day20 : Day {
         }
     }
 
-    data class Conjunction(override val name: String, override val destinations: List<String>, val inputs: MutableMap<String, Pulse>) : Module(name, destinations) {
+    data class Conjunction(override val name: String, override val destinations: List<String>, val inputs: MutableMap<String, Pulse>, var cycleTime: Long = 0L) : Module(name, destinations) {
         override fun process(pulse: Pulse, from: String): List<Pair<String, Pulse>> {
             val toProcess = mutableListOf<Pair<String, Pulse>>()
             inputs[from] = pulse
@@ -80,34 +88,39 @@ object Day20 : Day {
         }
     }
 
-    data class Untyped(override val name: String): Module(name, mutableListOf()) {
-        override fun process(pulse: Pulse, from: String): List<Pair<String, Pulse>> {
-            return emptyList()
-        }
+    data class Untyped(override val name: String, val input: String): Module(name, mutableListOf()) {
+        override fun process(pulse: Pulse, from: String): List<Pair<String, Pulse>> = emptyList()
     }
 
     // <from, to, pulse>
     data class PulseCoordinator(val queue: ArrayDeque<Triple<String, String, Pulse>> = ArrayDeque(), val modules: Map<String, Module>) {
         var lowPulseCount: Long = 0L
         var highPulseCount: Long = 0L
-        val allPulsesSent = mutableListOf<Triple<String, String, Pulse>>()
+        var currentCycle = 0L
 
         fun clear() {
             lowPulseCount = 0L
             highPulseCount = 0L
-            allPulsesSent.clear()
         }
 
-        fun start() {
+        fun start(target: String = "") {
             queue += Triple("button", "broadcaster", LOW)
+            currentCycle++
             while (queue.isNotEmpty()) {
                 val triple = queue.removeFirst()
-                allPulsesSent += triple
                 when (triple.third) {
                     LOW -> lowPulseCount++
                     HIGH -> highPulseCount++
                 }
                 val module = modules[triple.second] ?: throw Exception("Unknown module in pair: $triple")
+                if (triple.second == target && triple.third == HIGH) {
+                    // println("triple: $triple")
+                    val fromModule = modules[triple.first]!! as Conjunction
+                    if (fromModule.cycleTime == 0L) {
+                        fromModule.cycleTime = currentCycle
+                        // println("set cycle time for $fromModule")
+                    }
+                }
                 val nextPulsePairs = module.process(triple.third, triple.first)
                 // the module we just spoke to gave us some pulses to process, they need to go on top of the queue in reverse order so that when they are removed from stack, we get correct order
                 nextPulsePairs.reversed().forEach { pair ->
@@ -115,6 +128,7 @@ object Day20 : Day {
                 }
             }
         }
+
     }
 
     fun createCoordinator(data: List<String>): PulseCoordinator {
@@ -145,7 +159,11 @@ object Day20 : Day {
 
         // add any untyped (destinations that are not in the current modules)
         val untypedNames = allDestinations - allModuleNames
-        untypedNames.forEach { name ->  moduleMap[name] = Untyped(name) }
+        untypedNames.forEach { name ->
+            val modulesWithThisDestination = moduleMap.values.filter { it.destinations.contains(name) }.map { it.name }
+            if (modulesWithThisDestination.size > 1) throw Exception("Only expecting untyped to be from 1 module")
+            moduleMap[name] = Untyped(name, modulesWithThisDestination.first())
+        }
 
         return PulseCoordinator(modules = moduleMap.toMap())
     }

@@ -35,7 +35,7 @@ class Day20Test {
                 "b" to FlipFlop("b", listOf("con"), OFF),
                 "inv" to Conjunction("inv", listOf("b"), mutableMapOf("a" to LOW)),
                 "con" to Conjunction("con", listOf("output"), mutableMapOf("a" to LOW, "b" to LOW)),
-                "output" to Day20.Untyped("output")
+                "output" to Day20.Untyped("output", "con")
             )
         )
     }
@@ -54,10 +54,11 @@ class Day20Test {
         assertThat(v).isEqualTo(11687500L)
     }
 
-    @Test
-    fun `can do part 2`() {
-        val data = resourcePath("/2023/day20-test.txt")
-        val v = Day20.doPart2(data)
-        assertThat(v).isEqualTo(0)
-    }
+    // part 2 has no RX in test data.
+//    @Test
+//    fun `can do part 2`() {
+//        val data = resourcePath("/2023/day20-test.txt")
+//        val v = Day20.doPart2(data)
+//        assertThat(v).isEqualTo(0)
+//    }
 }
