@@ -1,6 +1,5 @@
 package net.fish.y2023
 
-import com.marcinmoskala.math.product
 import net.fish.Day
 import net.fish.maths.lcm
 import net.fish.resourceLines
@@ -10,6 +9,11 @@ import net.fish.y2023.Day20.Pulse.HIGH
 import net.fish.y2023.Day20.Pulse.LOW
 
 object Day20 : Day {
+    // would have worked:
+    // val moduleRegex = Regex("""^([%&]?)([a-z]+) -> ([a-z]+(?:, [a-z]+)*)$""")
+    // data.map { line ->
+    //   moduleRegex.matchEntire(line)!!.destructured
+
     private val data by lazy { resourceLines(2023, 20) }
 
     override fun part1() = doPart1(data)
@@ -36,7 +40,7 @@ object Day20 : Day {
             pulseCoordinator.start(rxInput)
             val overallCycleTimes = conjuctionsToMonitor.map { (pulseCoordinator.modules[it]!! as Conjunction).cycleTime }
             if (overallCycleTimes.all { it != 0L }) {
-                return overallCycleTimes.reduce { ac, f -> lcm(ac, f) }
+                return overallCycleTimes.lcm()
             }
         }
     }
