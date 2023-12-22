@@ -72,7 +72,8 @@ object Day21 : Day {
 
     // Works out the factors needed for the geometric progression
     // Takes 4s to run, so left to provide if needed. Test just gets first value.
-    fun countEvery(grid: Set<Point>, start: Point, mod: Int, maxValues: Int, width: Int): List<Int> {
+    // The values are based on grid size (width) and the modulus of the target
+    fun countEvery(grid: Set<Point>, start: Point, target: Long, maxValues: Int, width: Int): List<Int> {
         // move the points to neighbours in virtual grid that extends infinitely
         fun move(points: Set<Point>): Set<Point> {
             return points.flatMap { p->
@@ -82,11 +83,12 @@ object Day21 : Day {
 
         var current = setOf(start)
         val returns = mutableListOf<Int>()
-        var iteration = 0
+        var iteration = 0L
         while (returns.size < maxValues) {
             iteration++
             current = move(current)
-            if ((iteration % width) == mod) returns += current.size
+            // have we moved the remainder of the size of the target count / width into the next area? If so, we've iterated one whole grid along, so take count
+            if ((iteration % width) == (target % width)) returns += current.size
         }
         return returns
     }
