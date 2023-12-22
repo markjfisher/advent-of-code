@@ -1,9 +1,9 @@
 package net.fish.y2023
 
+import net.fish.geometry.Point3D
 import net.fish.resourcePath
 import net.fish.y2023.Day22.SandBlock
 import org.assertj.core.api.Assertions.assertThat
-import org.joml.Vector3i
 import org.junit.jupiter.api.Test
 
 class Day22Test {
@@ -12,13 +12,13 @@ class Day22Test {
         val data = resourcePath("/2023/day22-test.txt")
         val sandGrid = Day22.generateSandGrid(data)
         assertThat(sandGrid.blocks).containsExactly(
-            SandBlock(0, listOf(Vector3i(1,0,1), Vector3i(1,1,1), Vector3i(1,2,1))),
-            SandBlock(1, listOf(Vector3i(0,0,2), Vector3i(1,0,2), Vector3i(2,0,2))),
-            SandBlock(2, listOf(Vector3i(0,2,3), Vector3i(1,2,3), Vector3i(2,2,3))),
-            SandBlock(3, listOf(Vector3i(0,0,4), Vector3i(0,1,4), Vector3i(0,2,4))),
-            SandBlock(4, listOf(Vector3i(2,0,5), Vector3i(2,1,5), Vector3i(2,2,5))),
-            SandBlock(5, listOf(Vector3i(0,1,6), Vector3i(1,1,6), Vector3i(2,1,6))),
-            SandBlock(6, listOf(Vector3i(1,1,8), Vector3i(1,1,9))),
+            SandBlock(id = 0, start = Point3D(x = 1, y = 0, z = 1), end = Point3D(x = 1, y = 2, z = 1)),
+            SandBlock(id = 1, start = Point3D(x = 0, y = 0, z = 2), end = Point3D(x = 2, y = 0, z = 2)),
+            SandBlock(id = 2, start = Point3D(x = 0, y = 2, z = 3), end = Point3D(x = 2, y = 2, z = 3)),
+            SandBlock(id = 3, start = Point3D(x = 0, y = 0, z = 4), end = Point3D(x = 0, y = 2, z = 4)),
+            SandBlock(id = 4, start = Point3D(x = 2, y = 0, z = 5), end = Point3D(x = 2, y = 2, z = 5)),
+            SandBlock(id = 5, start = Point3D(x = 0, y = 1, z = 6), end = Point3D(x = 2, y = 1, z = 6)),
+            SandBlock(id = 6, start = Point3D(x = 1, y = 1, z = 8), end = Point3D(x = 1, y = 1, z = 9))
         )
     }
 
@@ -26,15 +26,14 @@ class Day22Test {
     fun `can drop blocks`() {
         val data = resourcePath("/2023/day22-test.txt")
         val sandGrid = Day22.generateSandGrid(data)
-        sandGrid.drop()
-        assertThat(sandGrid.blocks).containsExactly(
-            SandBlock(0, listOf(Vector3i(1,0,1), Vector3i(1,1,1), Vector3i(1,2,1))),
-            SandBlock(1, listOf(Vector3i(0,0,2), Vector3i(1,0,2), Vector3i(2,0,2))),
-            SandBlock(2, listOf(Vector3i(0,2,2), Vector3i(1,2,2), Vector3i(2,2,2))),
-            SandBlock(3, listOf(Vector3i(0,0,3), Vector3i(0,1,3), Vector3i(0,2,3))),
-            SandBlock(4, listOf(Vector3i(2,0,3), Vector3i(2,1,3), Vector3i(2,2,3))),
-            SandBlock(5, listOf(Vector3i(0,1,4), Vector3i(1,1,4), Vector3i(2,1,4))),
-            SandBlock(6, listOf(Vector3i(1,1,5), Vector3i(1,1,6))),
+        assertThat(sandGrid.settledBlocks).containsExactly(
+            SandBlock(id = 0, start = Point3D(x = 1, y = 0, z = 1), end = Point3D(x = 1, y = 2, z = 1)),
+            SandBlock(id = 1, start = Point3D(x = 0, y = 0, z = 2), end = Point3D(x = 2, y = 0, z = 2)),
+            SandBlock(id = 2, start = Point3D(x = 0, y = 2, z = 2), end = Point3D(x = 2, y = 2, z = 2)),
+            SandBlock(id = 3, start = Point3D(x = 0, y = 0, z = 3), end = Point3D(x = 0, y = 2, z = 3)),
+            SandBlock(id = 4, start = Point3D(x = 2, y = 0, z = 3), end = Point3D(x = 2, y = 2, z = 3)),
+            SandBlock(id = 5, start = Point3D(x = 0, y = 1, z = 4), end = Point3D(x = 2, y = 1, z = 4)),
+            SandBlock(id = 6, start = Point3D(x = 1, y = 1, z = 5), end = Point3D(x = 1, y = 1, z = 6))
         )
     }
 
@@ -49,7 +48,7 @@ class Day22Test {
     fun `can do part 2`() {
         val data = resourcePath("/2023/day22-test.txt")
         val v = Day22.doPart2(data)
-        assertThat(v).isEqualTo(0)
+        assertThat(v).isEqualTo(7)
     }
 
 }

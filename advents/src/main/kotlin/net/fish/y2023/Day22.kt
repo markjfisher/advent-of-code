@@ -1,9 +1,10 @@
 package net.fish.y2023
 
 import net.fish.Day
+import net.fish.geometry.Area
+import net.fish.geometry.Point3D
+import net.fish.geometry.overlaps
 import net.fish.resourceLines
-import net.fish.resourcePath
-import org.joml.Vector3i
 
 object Day22 : Day {
     private val blockExtractor by lazy { Regex("""(\d+),(\d+),(\d+)~(\d+),(\d+),(\d+)""") }
@@ -14,69 +15,81 @@ object Day22 : Day {
 
     fun doPart1(data: List<String>): Int {
         val sandGrid = generateSandGrid(data)
-        sandGrid.drop()
-        return sandGrid.removableBlocksCount()
+        return sandGrid.redundantBricks.count()
     }
-    fun doPart2(data: List<String>): Int = data.size
+    fun doPart2(data: List<String>): Int {
+        val sandGrid = generateSandGrid(data)
+        return 0
+    }
 
-    data class SandBlock(val id: Int, val locations: List<Vector3i>) {
-        fun lowestZ(): Int = locations.minOf { it.z }
-        fun lowerBlock() = locations.forEach { it.z -= 1 }
+    data class SandBlock(val id: Int, val start: Point3D, val end: Point3D) {
+        init {
+            require(start.z <= end.z) { "Start and end given out of order." }
+            require(start.z >= 1) { "Sand block collides with ground." }
+            val isHorizontal = start.z == end.z && (start.x == end.x || start.y == end.y)
+            val isVertical = start.x == end.x && start.y == end.y
+            require(isHorizontal || isVertical) { "The sand block must be a straight line." }
+        }
+
+        val fallingArea: Area = Area(
+            xRange = minOf(start.x, end.x)..maxOf(start.x, end.x),
+            yRange = minOf(start.y, end.y)..maxOf(start.y, end.y),
+        )
+
+        fun fallTo(restHeight: Int): SandBlock = SandBlock(
+            id = id,
+            start = start.copy(z = restHeight),
+            end = end.copy(z = end.z - start.z + restHeight),
+        )
+
+        fun fallingAreaOverlaps(other: SandBlock): Boolean = fallingArea overlaps other.fallingArea
     }
 
     data class SandGrid(var blocks: List<SandBlock>) {
-        // move blocks down a unit if possible, if it was able to move, return true
-        fun fall(): Boolean {
-            // order blocks, then for each block, check that all the points below its lowest z point(s) have free space below them
-            var blockFell = false
-            blocks = blocks.sortedBy { it.lowestZ() }
-            for (block in blocks) {
-                if (block.lowestZ() > 1) {
-                    val blockBelowExists = blocks.any { other ->
-                        other != block && other.locations.any { otherLocation ->
-                            block.locations.any { blockLocation ->
-                                blockLocation.z - 1 == otherLocation.z &&
-                                        blockLocation.x == otherLocation.x &&
-                                        blockLocation.y == otherLocation.y
-                            }
-                        }
-                    }
+        val settledBlocks = blocks
+            .toMutableList()
+            .apply {
+                sortBy { it.start.z }
+                forEachIndexed { index, block ->
+                    this[index] = slice((0 until index))
+                        .filter { block.fallingAreaOverlaps(it) }
+                        .maxOfOrNull { it.end.z + 1 }
+                        .let { restHeight -> block.fallTo(restHeight ?: 1)}
+                }
+            }
+            .sortedBy { it.start.z }
 
-                    if (!blockBelowExists) {
-                        block.lowerBlock()
-                        blockFell = true
+        val supportedBy: Map<SandBlock, Set<SandBlock>>
+
+        private val SandBlock.supportedBricks: Set<SandBlock> get() = supportedBy.getValue(this)
+
+        val supporting: Map<SandBlock, Set<SandBlock>>
+
+        private val SandBlock.standingOn: Set<SandBlock> get() = supporting.getValue(this)
+
+        init {
+            val supportedBy: Map<SandBlock, MutableSet<SandBlock>> = settledBlocks.associateWith { mutableSetOf() }
+            val supporting: Map<SandBlock, MutableSet<SandBlock>> = settledBlocks.associateWith { mutableSetOf() }
+
+            settledBlocks.forEachIndexed { index, above ->
+                settledBlocks.slice((0 until index)).forEach { below ->
+                    if (below.fallingAreaOverlaps(above) && above.start.z == below.end.z + 1) {
+                        supportedBy.getValue(below).add(above)
+                        supporting.getValue(above).add(below)
                     }
                 }
             }
-            return blockFell
+
+            this.supportedBy = supportedBy
+            this.supporting = supporting
         }
 
-        fun drop() {
-            var iterations = 0
-            do {
-                val didFall = fall()
-                if (didFall) {
-                    iterations++
-                    println("falling .. $iterations")
-                }
-            } while (didFall)
-            // println(iterations)
-        }
+        val redundantBricks: Set<SandBlock> =
+            settledBlocks
+                .filter { it.supportedBricks.all { supported -> supported.standingOn.count() >= 2 } }
+                .toSet()
 
-        fun removableBlocksCount(): Int {
-            var count = 0
-            val originalBlocks = blocks.toList()
-            for(block in originalBlocks) {
-                println("checking ${block.id} in ${blocks.size} for removable")
-                blocks = originalBlocks.filter { it != block }
-                if(!fall()) {
-                    count++
-                    println("count -> $count")
-                }
-                blocks = originalBlocks
-            }
-            return count
-        }
+
     }
 
     fun generateSandGrid(data: List<String>): SandGrid {
@@ -89,13 +102,8 @@ object Day22 : Day {
                 val ex = exs.toInt()
                 val ey = eys.toInt()
                 val ez = ezs.toInt()
-                val locations = when {
-                    ix != ex -> (ix .. ex).map { Vector3i(it, iy, iz) }
-                    iy != ey -> (iy .. ey).map { Vector3i(ix, it, iz) }
-                    iz != ez -> (iz .. ez).map { Vector3i(ix, iy, it) }
-                    else -> listOf(Vector3i(ix, iy, iz))
-                }
-                SandBlock(id++, locations)
+
+                SandBlock(id++, Point3D(ix, iy, iz), Point3D(ex, ey, ez))
             }
         }
         return SandGrid(blocks)
@@ -103,7 +111,6 @@ object Day22 : Day {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        // 515 too high
         println(part1())
         println(part2())
     }

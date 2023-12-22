@@ -59,6 +59,15 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
 }
 
+kotlin {
+    jvmToolchain(17)
+    sourceSets.all {
+        languageSettings {
+            languageVersion = "2.0"
+        }
+    }
+}
+
 tasks {
     "build" {
         dependsOn(shadowJar)
@@ -107,6 +116,7 @@ tasks {
         kotlinOptions {
             jvmTarget = "17"
             javaParameters = true
+            // languageVersion = "1.8"
         }
     }
 
@@ -115,6 +125,7 @@ tasks {
             jvmTarget = "17"
             javaParameters = true
             freeCompilerArgs += listOf("-Xinline-classes", "-opt-in=kotlin.RequiresOptIn")
+            // languageVersion = "1.8"
         }
     }
 
