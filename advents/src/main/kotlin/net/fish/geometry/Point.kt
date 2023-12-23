@@ -156,6 +156,22 @@ fun Collection<Point>.asStringGrid(onChar: Char = '#', offChar: Char = '.'): Str
     return s.dropLast(1)
 }
 
+
+fun Map<Point, Char>.gridString(width: Int = 0, height: Int = 0, default: Char = '.', pointMapper: (Point) -> Char = { getOrDefault(it, default) }): String {
+    val bounds = this.keys.bounds()
+    val w = if(width == 0) (bounds.second.x - bounds.first.x + 1) else width
+    val h = if(height == 0) (bounds.second.y - bounds.first.y + 1) else height
+    var s = ""
+    for (y in 0 until w) {
+        for (x in 0 until h) {
+            s += pointMapper(Point(x, y))
+        }
+        s += "\n"
+    }
+    // remove final \n
+    return s.dropLast(1)
+}
+
 // Some helpers on treating List<List<int>> like a Grid of Points without specifying the Point structure in the grid
 operator fun <E> Collection<Collection<E>>.contains(point: Point): Boolean =
     this.isNotEmpty() && point.y in this.indices && point.x in this.first().indices

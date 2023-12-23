@@ -13,7 +13,7 @@ private fun isPointInLoop(loop: List<Point>, point: Point): Boolean {
             intersections++
         }
     }
-    val isInLoop = intersections %2 == 1
+    val isInLoop = intersections % 2 == 1
     // println("checking $point, r: $isInLoop, intersections = $intersections")
 
     return isInLoop

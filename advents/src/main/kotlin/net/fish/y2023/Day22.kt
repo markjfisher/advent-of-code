@@ -15,11 +15,14 @@ object Day22 : Day {
 
     fun doPart1(data: List<String>): Int {
         val sandGrid = generateSandGrid(data)
-        return sandGrid.redundantBricks.count()
+        return sandGrid.redundantBlocks.count()
     }
     fun doPart2(data: List<String>): Int {
         val sandGrid = generateSandGrid(data)
-        return 0
+        return sandGrid
+            .settledBlocks
+            .map { sandGrid.fallingBlocksIfDisintegrating(it) }
+            .sumOf { it.count() }
     }
 
     data class SandBlock(val id: Int, val start: Point3D, val end: Point3D) {
@@ -61,7 +64,7 @@ object Day22 : Day {
 
         val supportedBy: Map<SandBlock, Set<SandBlock>>
 
-        private val SandBlock.supportedBricks: Set<SandBlock> get() = supportedBy.getValue(this)
+        private val SandBlock.supportedBlocks: Set<SandBlock> get() = supportedBy.getValue(this)
 
         val supporting: Map<SandBlock, Set<SandBlock>>
 
@@ -84,12 +87,29 @@ object Day22 : Day {
             this.supporting = supporting
         }
 
-        val redundantBricks: Set<SandBlock> =
+        val redundantBlocks: Set<SandBlock> =
             settledBlocks
-                .filter { it.supportedBricks.all { supported -> supported.standingOn.count() >= 2 } }
+                .filter { it.supportedBlocks.all { supported -> supported.standingOn.count() >= 2 } }
                 .toSet()
 
+        fun fallingBlocksIfDisintegrating(block: SandBlock): Set<SandBlock> = buildSet {
+            val fallingBlocks = this
 
+            block.supportedBlocks
+                .filter { supported -> supported.standingOn.size == 1 }
+                .let(fallingBlocks::addAll)
+
+            val queue = ArrayDeque(elements = fallingBlocks)
+
+            while (queue.isNotEmpty()) {
+                queue.removeFirst()
+                    .supportedBlocks
+                    .minus(fallingBlocks)
+                    .filter { supportedByFalling -> fallingBlocks.containsAll(supportedByFalling.standingOn) }
+                    .onEach(fallingBlocks::add)
+                    .forEach(queue::add)
+            }
+        }
     }
 
     fun generateSandGrid(data: List<String>): SandGrid {

@@ -8,6 +8,7 @@ import net.fish.geometry.Direction.SOUTH
 import net.fish.geometry.Direction.WEST
 import net.fish.geometry.Point
 import net.fish.geometry.edgePoints
+import net.fish.geometry.gridString
 import net.fish.resourceLines
 import net.fish.y2021.GridDataUtils
 
@@ -168,17 +169,7 @@ object Day16 : Day {
             return s.dropLast(1)
         }
 
-        override fun toString(): String {
-            var s = ""
-            for (y in 0 until height) {
-                for (x in 0 until width) {
-                    s += mirrors.getOrDefault(Point(x, y), '.')
-                }
-                s += "\n"
-            }
-            // remove final \n
-            return s.dropLast(1)
-        }
+        override fun toString() = mirrors.gridString(width, height)
     }
 
     fun toBeamMaze(data: List<String>): BeamMaze {
