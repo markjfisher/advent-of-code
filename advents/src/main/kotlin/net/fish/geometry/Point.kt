@@ -178,3 +178,7 @@ operator fun <E> Collection<Collection<E>>.contains(point: Point): Boolean =
 
 operator fun <E> Array<Array<E>>.get(point: Point) = this[point.y][point.x]
 operator fun <E> List<List<E>>.get(point: Point) = this[point.y][point.x]
+
+operator fun List<String>.get(point: Point): Char = this[point.y][point.x]
+
+fun List<String>.containsPoint(point: Point) = isNotEmpty() && point.y in indices && point.x in first().indices
