@@ -60,7 +60,7 @@ dependencies {
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
 
-    //implementation(rootProject.files("z3/com.microsoft.z3.jar"))
+    implementation(rootProject.files("advents/z3/com.microsoft.z3.jar"))
 }
 
 kotlin {

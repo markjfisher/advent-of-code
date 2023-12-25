@@ -20,3 +20,6 @@ imgui.log
 imgui.log.*
 imgui.log.lck
 replay_pid*.log
+
+/advents/z3/*.lib
+/advents/z3/*.dll
