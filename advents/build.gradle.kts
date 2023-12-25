@@ -26,6 +26,7 @@ val mockkVersion: String by project
 val junitJupiterEngineVersion: String by project
 
 val jomlVersion: String by project
+val jgraphtVersion: String by project
 
 val orToolsVersion: String by project
 val mordantVersion: String by project
@@ -43,6 +44,7 @@ dependencies {
     implementation("com.marcinmoskala:DiscreteMathToolkit:$mathsToolKitVersion")
     implementation("org.reflections:reflections:$reflectionsVersion")
     implementation("org.joml:joml:$jomlVersion")
+    implementation("org.jgrapht:jgrapht-core:$jgraphtVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackClassicVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logbackEncoderVersion")
@@ -57,6 +59,8 @@ dependencies {
     testImplementation("org.assertj:assertj-core:$assertJVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+
+    //implementation(rootProject.files("z3/com.microsoft.z3.jar"))
 }
 
 kotlin {
