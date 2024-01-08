@@ -18,7 +18,8 @@ object Day24 : Day {
     private val data by lazy { resourceLines(2023, 24) }
 
     override fun part1() = doPart1(data, 200000000000000L, 400000000000000L)
-    override fun part2() = 558415252330828L // takes a couple of seconds: doPart2(data)
+//    override fun part2() = 558415252330828L
+    override fun part2() = doPart2(data)
 
     data class Hailstone(val p: Vector3d, val v: Vector3d) {
         fun doesIntersectXYInPositiveTime(other: Hailstone, intersection: Vector2d): Boolean {
@@ -79,7 +80,7 @@ object Day24 : Day {
 
             val dt = listOf(dt1, dt2, dt3)
 
-
+            // we only need 3 to solve the times (dt) of where the rocks trajectory will intersect the hailstones.
             val eqs = sim.hailstones.take(3).flatMapIndexed { idx, hs ->
                 listOf(
                     (x_t - hs.p.x.toLong()) eq (dt[idx] * (hs.v.x.toLong() - xvel_t)),
@@ -89,6 +90,9 @@ object Day24 : Day {
             }
 
             solve(eqs)
+            // println("x_t: ${eval(x_t)}, y_t: ${eval(y_t)}, z_t: ${eval(z_t)}")
+            // rock initial location:
+            // x_t: 231279746486542, y_t: 131907658181641, z_t: 195227847662645
 
             eval(x_t + y_t + z_t).toLong()
         }
