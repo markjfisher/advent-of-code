@@ -2,7 +2,7 @@ rootProject.name = "advent-of-code"
 
 include(
     "advents",
-    // "visualisations"
+    "visualisations"
 )
 
 pluginManagement {

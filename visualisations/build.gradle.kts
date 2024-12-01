@@ -99,6 +99,15 @@ dependencies {
     implementation(project(":advents"))
 }
 
+kotlin {
+    jvmToolchain(17)
+    sourceSets.all {
+        languageSettings {
+            languageVersion = "2.0"
+        }
+    }
+}
+
 tasks {
     named<ShadowJar>("shadowJar") {
         mergeServiceFiles()
